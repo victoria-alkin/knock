@@ -2,6 +2,9 @@
   "name": "knock",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "engines": {
+    "node": "22.x"
+  },
   "dependencies": {
     "@expo/ui": "~57.0.4",
     "expo": "~57.0.4",
