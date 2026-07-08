@@ -1,23 +1,23 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ConfirmBuildingScreen() {
   const router = useRouter();
-  const { name, address } = useLocalSearchParams<{
-    name?: string;
-    address?: string;
-    placeId?: string;
-    latitude?: string;
-    longitude?: string;
-  }>();
+  const { name, address, placeId, latitude, longitude } =
+    useLocalSearchParams<{
+      name?: string;
+      address?: string;
+      placeId?: string;
+      latitude?: string;
+      longitude?: string;
+    }>();
 
   const handleConfirm = () => {
-    // TODO: proceed to the verification step (geolocation) from the spec.
-    Alert.alert(
-      'Verification coming next',
-      'Building confirmed. The location-verification step will go here.',
-    );
+    router.push({
+      pathname: '/verify-location',
+      params: { name, address, placeId, latitude, longitude },
+    });
   };
 
   return (
