@@ -1,7 +1,10 @@
+import { useRouter } from 'expo-router';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -17,7 +20,10 @@ export default function HomeScreen() {
           The private community app for your apartment building.
         </Text>
 
-        <Pressable style={styles.button}>
+        <Pressable
+          style={styles.button}
+          onPress={() => router.push('/find-building')}
+        >
           <Text style={styles.buttonText}>Get Started</Text>
         </Pressable>
       </View>
