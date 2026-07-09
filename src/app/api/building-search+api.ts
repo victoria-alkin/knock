@@ -3,6 +3,21 @@
 
 const AUTOCOMPLETE_URL = 'https://places.googleapis.com/v1/places:autocomplete';
 
+// Keep residential buildings and plain street addresses; drop businesses
+// (restaurants, stores, etc.). A prediction is kept if any of its types match.
+// Note: Google can't filter these server-side for Autocomplete (address types
+// aren't allowed in includedPrimaryTypes), so we filter the predictions here.
+const RESIDENTIAL_OR_ADDRESS_TYPES = new Set([
+  'apartment_building',
+  'apartment_complex',
+  'condominium_complex',
+  'housing_complex',
+  'premise', // a named building or collection of buildings
+  'subpremise', // a unit/apartment within a premise
+  'street_address',
+  'route',
+]);
+
 type AutocompleteBody = {
   query?: string;
   sessionToken?: string;
@@ -37,7 +52,7 @@ export async function POST(request: Request) {
       // Ask only for what we render — smaller payloads, and it keeps the SKU on
       // the cheaper Autocomplete tier.
       'X-Goog-FieldMask':
-        'suggestions.placePrediction.placeId,suggestions.placePrediction.structuredFormat',
+        'suggestions.placePrediction.placeId,suggestions.placePrediction.structuredFormat,suggestions.placePrediction.types',
     },
     body: JSON.stringify({
       input: query,
@@ -60,6 +75,7 @@ export async function POST(request: Request) {
     suggestions?: {
       placePrediction?: {
         placeId?: string;
+        types?: string[];
         structuredFormat?: {
           mainText?: { text?: string };
           secondaryText?: { text?: string };
@@ -71,6 +87,9 @@ export async function POST(request: Request) {
   const suggestions = (data.suggestions ?? [])
     .map((s) => s.placePrediction)
     .filter((p): p is NonNullable<typeof p> => Boolean(p?.placeId))
+    .filter((p) =>
+      (p.types ?? []).some((t) => RESIDENTIAL_OR_ADDRESS_TYPES.has(t)),
+    )
     .map((p) => ({
       placeId: p.placeId as string,
       name: p.structuredFormat?.mainText?.text ?? '',
