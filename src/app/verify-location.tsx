@@ -3,7 +3,6 @@ import * as Location from 'expo-location';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   StyleSheet,
   Text,
@@ -27,13 +26,14 @@ type Status =
 
 export default function VerifyLocationScreen() {
   const router = useRouter();
-  const { name, address, latitude, longitude } = useLocalSearchParams<{
-    name?: string;
-    address?: string;
-    placeId?: string;
-    latitude?: string;
-    longitude?: string;
-  }>();
+  const { placeId, name, address, latitude, longitude } =
+    useLocalSearchParams<{
+      placeId?: string;
+      name?: string;
+      address?: string;
+      latitude?: string;
+      longitude?: string;
+    }>();
 
   const buildingLat = latitude ? Number(latitude) : NaN;
   const buildingLng = longitude ? Number(longitude) : NaN;
@@ -85,11 +85,10 @@ export default function VerifyLocationScreen() {
   }, [runVerification]);
 
   const handleContinue = () => {
-    // TODO: proceed to profile setup (name, display name, photo, interests).
-    Alert.alert(
-      'Profile setup coming next',
-      "You're verified! The profile setup step will go here.",
-    );
+    router.push({
+      pathname: '/profile-setup',
+      params: { placeId, name, address, latitude, longitude },
+    });
   };
 
   return (
