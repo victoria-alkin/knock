@@ -58,6 +58,34 @@ export async function getMyBuilding(): Promise<MyBuilding | null> {
   };
 }
 
+/** Update the current user's profile. RLS restricts this to your own row. */
+export async function updateProfile(fields: {
+  full_name: string;
+  display_name: string;
+  phone: string;
+}): Promise<{ error?: string }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      full_name: fields.full_name.trim(),
+      display_name: fields.display_name.trim(),
+      phone: fields.phone.trim(),
+    })
+    .eq('id', user.id);
+
+  return error ? { error: error.message } : {};
+}
+
+/** Clear the current session. */
+export async function signOut(): Promise<void> {
+  await supabase.auth.signOut();
+}
+
 /** The current user's profile, or null. */
 export async function getMyProfile(): Promise<MyProfile | null> {
   const {
