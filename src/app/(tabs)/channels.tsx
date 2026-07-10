@@ -1,9 +1,12 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CHANNELS } from '@/constants/channels';
 
 export default function ChannelsScreen() {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -14,7 +17,16 @@ export default function ChannelsScreen() {
         </Text>
 
         {CHANNELS.map((channel) => (
-          <View key={channel.key} style={styles.channelRow}>
+          <Pressable
+            key={channel.key}
+            style={styles.channelRow}
+            onPress={() =>
+              router.push({
+                pathname: '/channel/[channelKey]',
+                params: { channelKey: channel.key },
+              })
+            }
+          >
             <View style={styles.iconWrap}>
               <Text style={styles.icon}>{channel.emoji}</Text>
             </View>
@@ -24,7 +36,8 @@ export default function ChannelsScreen() {
                 {channel.description}
               </Text>
             </View>
-          </View>
+            <Text style={styles.chevron}>›</Text>
+          </Pressable>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -77,6 +90,11 @@ const styles = StyleSheet.create({
   },
   channelInfo: {
     flex: 1,
+  },
+  chevron: {
+    fontSize: 26,
+    color: '#6D28D9',
+    marginLeft: 8,
   },
   channelName: {
     fontSize: 16,

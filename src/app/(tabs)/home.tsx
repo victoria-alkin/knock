@@ -102,8 +102,8 @@ export default function HomeScreen() {
               style={styles.channelChip}
               onPress={() =>
                 router.push({
-                  pathname: '/create-post',
-                  params: { channel: channel.key },
+                  pathname: '/channel/[channelKey]',
+                  params: { channelKey: channel.key },
                 })
               }
             >
