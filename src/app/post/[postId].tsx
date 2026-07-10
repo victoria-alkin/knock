@@ -17,8 +17,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CHANNELS } from '@/constants/channels';
 import {
   createReply,
+  deletePost,
+  deleteReply,
   fetchPost,
   fetchReplies,
+  getCurrentUserId,
   Post,
   relativeTime,
   Reply,
@@ -32,18 +35,46 @@ export default function PostDetailScreen() {
 
   const [post, setPost] = useState<Post | null>(null);
   const [replies, setReplies] = useState<Reply[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingPostDelete, setConfirmingPostDelete] = useState(false);
+  const [confirmingReplyId, setConfirmingReplyId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!postId) return;
-    const [p, r] = await Promise.all([fetchPost(postId), fetchReplies(postId)]);
+    const [p, r, uid] = await Promise.all([
+      fetchPost(postId),
+      fetchReplies(postId),
+      getCurrentUserId(),
+    ]);
     setPost(p);
     setReplies(r);
+    setCurrentUserId(uid);
     setLoading(false);
   }, [postId]);
+
+  const handleDeletePost = async () => {
+    if (!postId) return;
+    const { error: deleteError } = await deletePost(postId);
+    if (deleteError) {
+      setError(deleteError);
+      return;
+    }
+    router.back();
+  };
+
+  const handleDeleteReply = async (replyId: string) => {
+    const { error: deleteError } = await deleteReply(replyId);
+    if (deleteError) {
+      setError(deleteError);
+      return;
+    }
+    setConfirmingReplyId(null);
+    await load();
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -102,6 +133,23 @@ export default function PostDetailScreen() {
                 {relativeTime(post.createdAt)}
               </Text>
               <Text style={styles.postBody}>{post.body}</Text>
+
+              {post.authorId === currentUserId &&
+                (confirmingPostDelete ? (
+                  <View style={styles.confirmRow}>
+                    <Text style={styles.confirmText}>Delete this post?</Text>
+                    <Pressable onPress={handleDeletePost}>
+                      <Text style={styles.confirmYes}>Delete</Text>
+                    </Pressable>
+                    <Pressable onPress={() => setConfirmingPostDelete(false)}>
+                      <Text style={styles.confirmCancel}>Cancel</Text>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <Pressable onPress={() => setConfirmingPostDelete(true)}>
+                    <Text style={styles.deleteLink}>Delete post</Text>
+                  </Pressable>
+                ))}
             </View>
 
             <Text style={styles.repliesTitle}>
@@ -119,6 +167,23 @@ export default function PostDetailScreen() {
                   </Text>
                 </View>
                 <Text style={styles.replyBody}>{reply.body}</Text>
+
+                {reply.authorId === currentUserId &&
+                  (confirmingReplyId === reply.id ? (
+                    <View style={styles.confirmRow}>
+                      <Text style={styles.confirmText}>Delete?</Text>
+                      <Pressable onPress={() => handleDeleteReply(reply.id)}>
+                        <Text style={styles.confirmYes}>Delete</Text>
+                      </Pressable>
+                      <Pressable onPress={() => setConfirmingReplyId(null)}>
+                        <Text style={styles.confirmCancel}>Cancel</Text>
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <Pressable onPress={() => setConfirmingReplyId(reply.id)}>
+                      <Text style={styles.deleteLink}>Delete</Text>
+                    </Pressable>
+                  ))}
               </View>
             ))}
           </ScrollView>
@@ -244,6 +309,33 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#2C2340',
     lineHeight: 21,
+  },
+  deleteLink: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#B4243F',
+    marginTop: 12,
+  },
+  confirmRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginTop: 12,
+  },
+  confirmText: {
+    fontSize: 13,
+    color: '#67597F',
+    marginRight: 'auto',
+  },
+  confirmYes: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#B4243F',
+  },
+  confirmCancel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#6D28D9',
   },
   composer: {
     borderTopWidth: 1,

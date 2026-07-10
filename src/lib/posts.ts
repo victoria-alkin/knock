@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 
 export type Post = {
   id: string;
+  authorId: string;
   body: string;
   channel: string;
   createdAt: string;
@@ -11,10 +12,19 @@ export type Post = {
 
 export type Reply = {
   id: string;
+  authorId: string;
   body: string;
   createdAt: string;
   authorName: string;
 };
+
+/** The current user's id, or null. */
+export async function getCurrentUserId(): Promise<string | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user?.id ?? null;
+}
 
 /** Recent posts for a building, newest first. Optionally filtered to a channel. */
 export async function fetchBuildingPosts(
@@ -24,7 +34,7 @@ export async function fetchBuildingPosts(
   let query = supabase
     .from('posts')
     .select(
-      'id, body, channel, created_at, profiles ( display_name ), replies ( count )',
+      'id, author_id, body, channel, created_at, profiles ( display_name ), replies ( count )',
     )
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
@@ -45,7 +55,7 @@ export async function fetchPost(postId: string): Promise<Post | null> {
   const { data, error } = await supabase
     .from('posts')
     .select(
-      'id, body, channel, created_at, profiles ( display_name ), replies ( count )',
+      'id, author_id, body, channel, created_at, profiles ( display_name ), replies ( count )',
     )
     .eq('id', postId)
     .maybeSingle();
@@ -58,7 +68,7 @@ export async function fetchPost(postId: string): Promise<Post | null> {
 export async function fetchReplies(postId: string): Promise<Reply[]> {
   const { data, error } = await supabase
     .from('replies')
-    .select('id, body, created_at, profiles ( display_name )')
+    .select('id, author_id, body, created_at, profiles ( display_name )')
     .eq('post_id', postId)
     .order('created_at', { ascending: true });
 
@@ -66,10 +76,23 @@ export async function fetchReplies(postId: string): Promise<Reply[]> {
 
   return (data as unknown as RawReply[]).map((row) => ({
     id: row.id,
+    authorId: row.author_id,
     body: row.body,
     createdAt: row.created_at,
     authorName: row.profiles?.display_name ?? 'Neighbor',
   }));
+}
+
+/** Delete a post (RLS restricts this to your own). Cascades its replies. */
+export async function deletePost(postId: string): Promise<{ error?: string }> {
+  const { error } = await supabase.from('posts').delete().eq('id', postId);
+  return error ? { error: error.message } : {};
+}
+
+/** Delete a reply (RLS restricts this to your own). */
+export async function deleteReply(replyId: string): Promise<{ error?: string }> {
+  const { error } = await supabase.from('replies').delete().eq('id', replyId);
+  return error ? { error: error.message } : {};
 }
 
 export async function createReply(
@@ -125,6 +148,7 @@ export function relativeTime(iso: string): string {
 function toPost(row: RawPost): Post {
   return {
     id: row.id,
+    authorId: row.author_id,
     body: row.body,
     channel: row.channel,
     createdAt: row.created_at,
@@ -135,6 +159,7 @@ function toPost(row: RawPost): Post {
 
 type RawPost = {
   id: string;
+  author_id: string;
   body: string;
   channel: string;
   created_at: string;
@@ -144,6 +169,7 @@ type RawPost = {
 
 type RawReply = {
   id: string;
+  author_id: string;
   body: string;
   created_at: string;
   profiles: { display_name: string | null } | null;
