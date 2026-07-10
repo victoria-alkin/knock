@@ -108,10 +108,12 @@ export default function HomeScreen() {
               onPress={() =>
                 channel.key === 'events'
                   ? router.push('/events')
-                  : router.push({
-                      pathname: '/channel/[channelKey]',
-                      params: { channelKey: channel.key },
-                    })
+                  : channel.key === 'marketplace'
+                    ? router.push('/marketplace')
+                    : router.push({
+                        pathname: '/channel/[channelKey]',
+                        params: { channelKey: channel.key },
+                      })
               }
             >
               <Text style={styles.channelEmoji}>{channel.emoji}</Text>
