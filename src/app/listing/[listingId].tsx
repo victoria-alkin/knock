@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { startConversation } from '@/lib/dms';
 import {
   deleteListing,
   fetchListing,
@@ -69,6 +70,16 @@ export default function ListingDetailScreen() {
     if (!listingId) return;
     await deleteListing(listingId);
     router.back();
+  };
+
+  const handleMessageSeller = async () => {
+    if (!listing) return;
+    const { id, error } = await startConversation(listing.sellerId);
+    if (error || !id) return;
+    router.push({
+      pathname: '/dm/[conversationId]',
+      params: { conversationId: id, otherName: listing.sellerName },
+    });
   };
 
   if (loading) {
@@ -144,9 +155,11 @@ export default function ListingDetailScreen() {
             )}
           </View>
         ) : (
-          <Text style={styles.contactNote}>
-            Reach out to {listing.sellerName} in your building to arrange it.
-          </Text>
+          <Pressable style={styles.messageButton} onPress={handleMessageSeller}>
+            <Text style={styles.messageButtonText}>
+              Message {listing.sellerName}
+            </Text>
+          </Pressable>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -200,11 +213,14 @@ const styles = StyleSheet.create({
   confirmText: { fontSize: 14, color: '#67597F', marginRight: 'auto' },
   confirmYes: { fontSize: 14, fontWeight: '800', color: '#B4243F' },
   confirmCancel: { fontSize: 14, fontWeight: '700', color: '#6D28D9' },
-  contactNote: {
-    fontSize: 15,
-    color: '#76698C',
-    lineHeight: 22,
+  messageButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#6D28D9',
+    borderRadius: 999,
+    paddingVertical: 14,
+    paddingHorizontal: 22,
     marginTop: 6,
   },
+  messageButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
   emptyText: { fontSize: 15, color: '#76698C' },
 });

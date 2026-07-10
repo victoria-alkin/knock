@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CHANNELS } from '@/constants/channels';
+import { startConversation } from '@/lib/dms';
 import {
   createReply,
   deletePost,
@@ -76,6 +77,19 @@ export default function PostDetailScreen() {
     await load();
   };
 
+  const handleMessageAuthor = async () => {
+    if (!post) return;
+    const { id, error: dmError } = await startConversation(post.authorId);
+    if (dmError || !id) {
+      setError(dmError ?? 'Could not start a conversation.');
+      return;
+    }
+    router.push({
+      pathname: '/dm/[conversationId]',
+      params: { conversationId: id, otherName: post.authorName },
+    });
+  };
+
   useFocusEffect(
     useCallback(() => {
       let active = true;
@@ -134,8 +148,8 @@ export default function PostDetailScreen() {
               </Text>
               <Text style={styles.postBody}>{post.body}</Text>
 
-              {post.authorId === currentUserId &&
-                (confirmingPostDelete ? (
+              {post.authorId === currentUserId ? (
+                confirmingPostDelete ? (
                   <View style={styles.confirmRow}>
                     <Text style={styles.confirmText}>Delete this post?</Text>
                     <Pressable onPress={handleDeletePost}>
@@ -149,7 +163,17 @@ export default function PostDetailScreen() {
                   <Pressable onPress={() => setConfirmingPostDelete(true)}>
                     <Text style={styles.deleteLink}>Delete post</Text>
                   </Pressable>
-                ))}
+                )
+              ) : (
+                <Pressable
+                  style={styles.messageButton}
+                  onPress={handleMessageAuthor}
+                >
+                  <Text style={styles.messageButtonText}>
+                    Message {post.authorName}
+                  </Text>
+                </Pressable>
+              )}
             </View>
 
             <Text style={styles.repliesTitle}>
@@ -315,6 +339,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#B4243F',
     marginTop: 12,
+  },
+  messageButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#F1ECFA',
+    borderRadius: 999,
+    paddingVertical: 9,
+    paddingHorizontal: 16,
+    marginTop: 14,
+  },
+  messageButtonText: {
+    color: '#6D28D9',
+    fontSize: 14,
+    fontWeight: '800',
   },
   confirmRow: {
     flexDirection: 'row',
