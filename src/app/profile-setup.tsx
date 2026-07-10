@@ -53,9 +53,7 @@ export default function ProfileSetupScreen() {
       if (!session) {
         const { error: authError } = await supabase.auth.signInAnonymously();
         if (authError) {
-          setError(
-            'Could not start a session. Make sure anonymous sign-in is enabled.',
-          );
+          setError(`Could not start a session: ${authError.message}`);
           return;
         }
       }
