@@ -66,15 +66,23 @@ export default function ProfileSetupScreen() {
         return;
       }
 
-      // 2. Save the profile (owner-only per RLS).
+      // 2. Save the profile (owner-only per RLS). Phone goes in a separate
+      //    owner-only table so other residents can never read it.
       const { error: profileError } = await supabase.from('profiles').upsert({
         id: user.id,
         full_name: fullName.trim(),
         display_name: displayName.trim(),
-        phone: phone.trim(),
       });
       if (profileError) {
         setError(profileError.message);
+        return;
+      }
+
+      const { error: contactError } = await supabase
+        .from('private_contact')
+        .upsert({ id: user.id, phone: phone.trim() });
+      if (contactError) {
+        setError(contactError.message);
         return;
       }
 
@@ -142,9 +150,7 @@ export default function ProfileSetupScreen() {
           keyboardType="phone-pad"
           inputMode="tel"
         />
-        <Text style={styles.hint}>
-          We won&apos;t verify this yet — it just helps neighbors reach you.
-        </Text>
+        <Text style={styles.hint}>Private — only you can see this.</Text>
 
         {error && <Text style={styles.errorText}>{error}</Text>}
 

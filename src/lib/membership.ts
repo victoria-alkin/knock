@@ -69,16 +69,21 @@ export async function updateProfile(fields: {
   } = await supabase.auth.getUser();
   if (!user) return { error: 'You are not signed in.' };
 
-  const { error } = await supabase
+  const { error: profileError } = await supabase
     .from('profiles')
     .update({
       full_name: fields.full_name.trim(),
       display_name: fields.display_name.trim(),
-      phone: fields.phone.trim(),
     })
     .eq('id', user.id);
+  if (profileError) return { error: profileError.message };
 
-  return error ? { error: error.message } : {};
+  const { error: contactError } = await supabase
+    .from('private_contact')
+    .upsert({ id: user.id, phone: fields.phone.trim() });
+  if (contactError) return { error: contactError.message };
+
+  return {};
 }
 
 /** Clear the current session. */
@@ -93,11 +98,27 @@ export async function getMyProfile(): Promise<MyProfile | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase
-    .from('profiles')
-    .select('full_name, display_name, phone')
-    .eq('id', user.id)
-    .maybeSingle();
+  const [profileRes, contactRes] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('full_name, display_name')
+      .eq('id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('private_contact')
+      .select('phone')
+      .eq('id', user.id)
+      .maybeSingle(),
+  ]);
 
-  return (data as MyProfile) ?? null;
+  if (!profileRes.data) return null;
+
+  const prof = profileRes.data as { full_name: string | null; display_name: string | null };
+  const contact = contactRes.data as { phone: string | null } | null;
+
+  return {
+    full_name: prof.full_name,
+    display_name: prof.display_name,
+    phone: contact?.phone ?? null,
+  };
 }
