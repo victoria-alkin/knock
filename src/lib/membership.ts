@@ -13,6 +13,20 @@ export type MyProfile = {
   phone: string | null;
 };
 
+/**
+ * Whether the user has finished onboarding: a restored session AND a building
+ * membership. Used by the launch gate to skip onboarding for returning users.
+ */
+export async function isOnboarded(): Promise<boolean> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return false;
+
+  const building = await getMyBuilding();
+  return building !== null;
+}
+
 /** The building the current user has most recently joined, or null. */
 export async function getMyBuilding(): Promise<MyBuilding | null> {
   const {

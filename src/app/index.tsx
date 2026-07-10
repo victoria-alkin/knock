@@ -1,9 +1,51 @@
-import { useRouter } from 'expo-router';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Redirect, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function HomeScreen() {
+import { isOnboarded } from '@/lib/membership';
+
+type GateStatus = 'loading' | 'new' | 'onboarded';
+
+export default function WelcomeScreen() {
   const router = useRouter();
+  const [status, setStatus] = useState<GateStatus>('loading');
+
+  useEffect(() => {
+    let active = true;
+    isOnboarded().then((ok) => {
+      if (active) setStatus(ok ? 'onboarded' : 'new');
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (status === 'onboarded') {
+    return <Redirect href="/home" />;
+  }
+
+  if (status === 'loading') {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.content}>
+          <Image
+            source={require('../../assets/images/knock-logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <ActivityIndicator color="#6D28D9" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
