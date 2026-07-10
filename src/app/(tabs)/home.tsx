@@ -2,6 +2,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -62,7 +63,11 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.wordmark}>Knock</Text>
+        <Image
+          source={require('@/assets/images/knock-logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
 
         <View style={styles.buildingCard}>
           <Text style={styles.buildingName}>
@@ -182,11 +187,10 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 32,
   },
-  wordmark: {
-    fontSize: 26,
-    fontWeight: '900',
-    color: '#6D28D9',
-    textAlign: 'center',
+  logo: {
+    width: 130,
+    height: 48,
+    alignSelf: 'center',
     marginBottom: 18,
   },
   buildingCard: {
