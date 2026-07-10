@@ -2,7 +2,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -95,11 +94,7 @@ export default function ProfileSetupScreen() {
         return;
       }
 
-      // TODO: navigate to the Building Home screen once it exists.
-      Alert.alert(
-        `Welcome to ${name ?? 'your building'}!`,
-        "Your profile is set up and you've joined the community.",
-      );
+      router.replace('/home');
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
