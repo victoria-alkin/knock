@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -12,10 +12,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CHANNELS } from '@/constants/channels';
 import { getMyBuilding, MyBuilding } from '@/lib/membership';
+import { fetchBuildingPosts, Post, relativeTime } from '@/lib/posts';
+
+const CHANNEL_BY_KEY = Object.fromEntries(CHANNELS.map((c) => [c.key, c]));
 
 export default function HomeScreen() {
   const router = useRouter();
   const [building, setBuilding] = useState<MyBuilding | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,6 +35,21 @@ export default function HomeScreen() {
       active = false;
     };
   }, []);
+
+  // Refresh the feed whenever the screen regains focus (e.g. after posting).
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      (async () => {
+        if (!building) return;
+        const rows = await fetchBuildingPosts(building.id);
+        if (active) setPosts(rows);
+      })();
+      return () => {
+        active = false;
+      };
+    }, [building]),
+  );
 
   if (loading) {
     return (
@@ -81,7 +100,12 @@ export default function HomeScreen() {
             <Pressable
               key={channel.key}
               style={styles.channelChip}
-              onPress={() => router.push('/channels')}
+              onPress={() =>
+                router.push({
+                  pathname: '/create-post',
+                  params: { channel: channel.key },
+                })
+              }
             >
               <Text style={styles.channelEmoji}>{channel.emoji}</Text>
               <Text style={styles.channelName}>{channel.name}</Text>
@@ -89,14 +113,42 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
-        <Text style={styles.sectionTitle}>Recent activity</Text>
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyTitle}>No posts yet</Text>
-          <Text style={styles.emptyText}>
-            Be the first to post in {building?.name ?? 'your building'}. Say hi,
-            ask for help, or start an event.
-          </Text>
+        <View style={styles.feedHeader}>
+          <Text style={styles.sectionTitle}>Recent activity</Text>
+          <Pressable
+            style={styles.newPostButton}
+            onPress={() => router.push('/create-post')}
+          >
+            <Text style={styles.newPostText}>+ New post</Text>
+          </Pressable>
         </View>
+
+        {posts.length === 0 ? (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>No posts yet</Text>
+            <Text style={styles.emptyText}>
+              Be the first to post in {building?.name ?? 'your building'}. Say
+              hi, ask for help, or start an event.
+            </Text>
+          </View>
+        ) : (
+          posts.map((post) => {
+            const channel = CHANNEL_BY_KEY[post.channel];
+            return (
+              <View key={post.id} style={styles.postCard}>
+                <View style={styles.postMeta}>
+                  <Text style={styles.postAuthor}>{post.authorName}</Text>
+                  <Text style={styles.postChannel}>
+                    {channel ? `${channel.emoji} ${channel.name}` : post.channel}
+                    {' · '}
+                    {relativeTime(post.createdAt)}
+                  </Text>
+                </View>
+                <Text style={styles.postBody}>{post.body}</Text>
+              </View>
+            );
+          })
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -194,6 +246,24 @@ const styles = StyleSheet.create({
     color: '#4A3D63',
     textAlign: 'center',
   },
+  feedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  newPostButton: {
+    backgroundColor: '#6D28D9',
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    marginBottom: 12,
+  },
+  newPostText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
   emptyCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -212,6 +282,32 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#76698C',
     textAlign: 'center',
+    lineHeight: 22,
+  },
+  postCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#E7DFF5',
+    marginBottom: 12,
+  },
+  postMeta: {
+    marginBottom: 8,
+  },
+  postAuthor: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1F1438',
+  },
+  postChannel: {
+    fontSize: 13,
+    color: '#8A7BA3',
+    marginTop: 2,
+  },
+  postBody: {
+    fontSize: 15,
+    color: '#2C2340',
     lineHeight: 22,
   },
 });
