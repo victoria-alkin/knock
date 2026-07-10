@@ -95,13 +95,27 @@ export default function ChannelDetailScreen() {
           </View>
         ) : (
           posts.map((post) => (
-            <View key={post.id} style={styles.postCard}>
+            <Pressable
+              key={post.id}
+              style={styles.postCard}
+              onPress={() =>
+                router.push({
+                  pathname: '/post/[postId]',
+                  params: { postId: post.id },
+                })
+              }
+            >
               <View style={styles.postMeta}>
                 <Text style={styles.postAuthor}>{post.authorName}</Text>
                 <Text style={styles.postTime}>{relativeTime(post.createdAt)}</Text>
               </View>
               <Text style={styles.postBody}>{post.body}</Text>
-            </View>
+              <Text style={styles.postReplies}>
+                {post.replyCount === 0
+                  ? 'Reply'
+                  : `${post.replyCount} ${post.replyCount === 1 ? 'reply' : 'replies'}`}
+              </Text>
+            </Pressable>
           ))
         )}
       </ScrollView>
@@ -209,5 +223,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#2C2340',
     lineHeight: 22,
+  },
+  postReplies: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#6D28D9',
+    marginTop: 12,
   },
 });

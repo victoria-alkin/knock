@@ -1,0 +1,296 @@
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { CHANNELS } from '@/constants/channels';
+import {
+  createReply,
+  fetchPost,
+  fetchReplies,
+  Post,
+  relativeTime,
+  Reply,
+} from '@/lib/posts';
+
+const CHANNEL_BY_KEY = Object.fromEntries(CHANNELS.map((c) => [c.key, c]));
+
+export default function PostDetailScreen() {
+  const router = useRouter();
+  const { postId } = useLocalSearchParams<{ postId: string }>();
+
+  const [post, setPost] = useState<Post | null>(null);
+  const [replies, setReplies] = useState<Reply[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [body, setBody] = useState('');
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!postId) return;
+    const [p, r] = await Promise.all([fetchPost(postId), fetchReplies(postId)]);
+    setPost(p);
+    setReplies(r);
+    setLoading(false);
+  }, [postId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      (async () => {
+        if (active) await load();
+      })();
+      return () => {
+        active = false;
+      };
+    }, [load]),
+  );
+
+  const handleSend = async () => {
+    if (!postId || body.trim().length === 0) return;
+    setSending(true);
+    setError(null);
+    const { error: replyError } = await createReply(postId, body);
+    if (replyError) {
+      setError(replyError);
+      setSending(false);
+      return;
+    }
+    setBody('');
+    setSending(false);
+    await load();
+  };
+
+  const channel = post ? CHANNEL_BY_KEY[post.channel] : undefined;
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Text style={styles.back}>‹ Back</Text>
+        </Pressable>
+      </View>
+
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {loading ? (
+          <ActivityIndicator color="#6D28D9" style={styles.loader} />
+        ) : !post ? (
+          <View style={styles.centered}>
+            <Text style={styles.emptyText}>This post is no longer available.</Text>
+          </View>
+        ) : (
+          <ScrollView contentContainerStyle={styles.content}>
+            <View style={styles.postCard}>
+              <Text style={styles.postAuthor}>{post.authorName}</Text>
+              <Text style={styles.postChannel}>
+                {channel ? `${channel.emoji} ${channel.name}` : post.channel}
+                {' · '}
+                {relativeTime(post.createdAt)}
+              </Text>
+              <Text style={styles.postBody}>{post.body}</Text>
+            </View>
+
+            <Text style={styles.repliesTitle}>
+              {replies.length === 0
+                ? 'No replies yet'
+                : `${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}`}
+            </Text>
+
+            {replies.map((reply) => (
+              <View key={reply.id} style={styles.replyCard}>
+                <View style={styles.replyMeta}>
+                  <Text style={styles.replyAuthor}>{reply.authorName}</Text>
+                  <Text style={styles.replyTime}>
+                    {relativeTime(reply.createdAt)}
+                  </Text>
+                </View>
+                <Text style={styles.replyBody}>{reply.body}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        )}
+
+        {post && (
+          <View style={styles.composer}>
+            {error && <Text style={styles.errorText}>{error}</Text>}
+            <View style={styles.composerRow}>
+              <TextInput
+                value={body}
+                onChangeText={setBody}
+                placeholder="Write a reply…"
+                placeholderTextColor="#9B8CAF"
+                style={styles.input}
+                multiline
+                maxLength={4000}
+              />
+              <Pressable
+                style={[
+                  styles.sendButton,
+                  (body.trim().length === 0 || sending) &&
+                    styles.sendButtonDisabled,
+                ]}
+                disabled={body.trim().length === 0 || sending}
+                onPress={handleSend}
+              >
+                <Text style={styles.sendButtonText}>
+                  {sending ? '…' : 'Reply'}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F7F2FF',
+  },
+  flex: {
+    flex: 1,
+  },
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  back: {
+    fontSize: 16,
+    color: '#6D28D9',
+    fontWeight: '700',
+  },
+  loader: {
+    marginTop: 40,
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+  },
+  postCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#E7DFF5',
+    marginBottom: 22,
+  },
+  postAuthor: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1F1438',
+  },
+  postChannel: {
+    fontSize: 13,
+    color: '#8A7BA3',
+    marginTop: 2,
+    marginBottom: 10,
+  },
+  postBody: {
+    fontSize: 16,
+    color: '#2C2340',
+    lineHeight: 23,
+  },
+  repliesTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#4A3D63',
+    marginBottom: 12,
+  },
+  replyCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E7DFF5',
+    marginBottom: 10,
+  },
+  replyMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  replyAuthor: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1F1438',
+  },
+  replyTime: {
+    fontSize: 12,
+    color: '#8A7BA3',
+  },
+  replyBody: {
+    fontSize: 15,
+    color: '#2C2340',
+    lineHeight: 21,
+  },
+  composer: {
+    borderTopWidth: 1,
+    borderTopColor: '#E7DFF5',
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 12,
+    backgroundColor: '#FDFCFF',
+  },
+  composerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 10,
+  },
+  input: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#1F1438',
+    borderWidth: 1,
+    borderColor: '#E5DDF5',
+    maxHeight: 120,
+  },
+  sendButton: {
+    backgroundColor: '#6D28D9',
+    borderRadius: 999,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+  },
+  sendButtonDisabled: {
+    opacity: 0.5,
+  },
+  sendButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#B4243F',
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 15,
+    color: '#76698C',
+  },
+});
