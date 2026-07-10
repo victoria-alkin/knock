@@ -21,10 +21,12 @@ export default function ChannelsScreen() {
             key={channel.key}
             style={styles.channelRow}
             onPress={() =>
-              router.push({
-                pathname: '/channel/[channelKey]',
-                params: { channelKey: channel.key },
-              })
+              channel.key === 'events'
+                ? router.push('/events')
+                : router.push({
+                    pathname: '/channel/[channelKey]',
+                    params: { channelKey: channel.key },
+                  })
             }
           >
             <View style={styles.iconWrap}>
