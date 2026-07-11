@@ -11,6 +11,7 @@ export type MyProfile = {
   full_name: string | null;
   display_name: string | null;
   phone: string | null;
+  avatar_url: string | null;
 };
 
 /**
@@ -63,6 +64,7 @@ export async function updateProfile(fields: {
   full_name: string;
   display_name: string;
   phone: string;
+  avatar_url: string | null;
 }): Promise<{ error?: string }> {
   const {
     data: { user },
@@ -74,6 +76,7 @@ export async function updateProfile(fields: {
     .update({
       full_name: fields.full_name.trim(),
       display_name: fields.display_name.trim(),
+      avatar_url: fields.avatar_url,
     })
     .eq('id', user.id);
   if (profileError) return { error: profileError.message };
@@ -101,7 +104,7 @@ export async function getMyProfile(): Promise<MyProfile | null> {
   const [profileRes, contactRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('full_name, display_name')
+      .select('full_name, display_name, avatar_url')
       .eq('id', user.id)
       .maybeSingle(),
     supabase
@@ -113,12 +116,17 @@ export async function getMyProfile(): Promise<MyProfile | null> {
 
   if (!profileRes.data) return null;
 
-  const prof = profileRes.data as { full_name: string | null; display_name: string | null };
+  const prof = profileRes.data as {
+    full_name: string | null;
+    display_name: string | null;
+    avatar_url: string | null;
+  };
   const contact = contactRes.data as { phone: string | null } | null;
 
   return {
     full_name: prof.full_name,
     display_name: prof.display_name,
     phone: contact?.phone ?? null,
+    avatar_url: prof.avatar_url,
   };
 }

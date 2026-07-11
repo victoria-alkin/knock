@@ -1,6 +1,13 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -56,9 +63,16 @@ export default function ProfileScreen() {
         <Text style={styles.title}>Profile</Text>
 
         <View style={styles.card}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initial || '?'}</Text>
-          </View>
+          {profile?.avatar_url ? (
+            <Image
+              source={{ uri: profile.avatar_url }}
+              style={styles.avatar}
+            />
+          ) : (
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{initial || '?'}</Text>
+            </View>
+          )}
           <Text style={styles.displayName}>
             {profile?.display_name ?? 'You'}
           </Text>

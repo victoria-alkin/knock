@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { pickAndUploadAvatar } from '@/lib/avatar';
 import { getMyProfile, updateProfile } from '@/lib/membership';
 
 export default function EditProfileScreen() {
@@ -20,6 +22,8 @@ export default function EditProfileScreen() {
   const [fullName, setFullName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,6 +35,7 @@ export default function EditProfileScreen() {
         setFullName(profile?.full_name ?? '');
         setDisplayName(profile?.display_name ?? '');
         setPhone(profile?.phone ?? '');
+        setAvatarUrl(profile?.avatar_url ?? null);
         setLoading(false);
       }
     })();
@@ -38,6 +43,15 @@ export default function EditProfileScreen() {
       active = false;
     };
   }, []);
+
+  const handlePickAvatar = async () => {
+    setUploadingAvatar(true);
+    setError(null);
+    const { url, error: uploadError } = await pickAndUploadAvatar();
+    if (url) setAvatarUrl(url);
+    else if (uploadError) setError(uploadError);
+    setUploadingAvatar(false);
+  };
 
   const canSave =
     fullName.trim().length > 0 &&
@@ -52,6 +66,7 @@ export default function EditProfileScreen() {
       full_name: fullName,
       display_name: displayName,
       phone,
+      avatar_url: avatarUrl,
     });
     if (saveError) {
       setError(saveError);
@@ -87,6 +102,25 @@ export default function EditProfileScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
+        <View style={styles.avatarSection}>
+          <Pressable
+            style={styles.avatarPicker}
+            onPress={handlePickAvatar}
+            disabled={uploadingAvatar}
+          >
+            {uploadingAvatar ? (
+              <ActivityIndicator color="#6D28D9" />
+            ) : avatarUrl ? (
+              <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarPlus}>+</Text>
+            )}
+          </Pressable>
+          <Text style={styles.avatarHint}>
+            {avatarUrl ? 'Change photo' : 'Add a photo'}
+          </Text>
+        </View>
+
         <Text style={styles.label}>Full name</Text>
         <TextInput
           value={fullName}
@@ -165,6 +199,22 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 32,
   },
+  avatarSection: { alignItems: 'center', marginBottom: 24 },
+  avatarPicker: {
+    width: 96,
+    height: 96,
+    borderRadius: 999,
+    backgroundColor: '#F1ECFA',
+    borderWidth: 1,
+    borderColor: '#E5DDF5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  avatarImage: { width: 96, height: 96 },
+  avatarPlus: { fontSize: 40, color: '#6D28D9', fontWeight: '300' },
+  avatarHint: { fontSize: 14, color: '#76698C', fontWeight: '600' },
   label: {
     fontSize: 15,
     fontWeight: '700',

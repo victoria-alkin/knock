@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { pickAndUploadAvatar } from '@/lib/avatar';
 import { supabase } from '@/lib/supabase';
 
 export default function ProfileSetupScreen() {
@@ -27,8 +29,19 @@ export default function ProfileSetupScreen() {
   const [fullName, setFullName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handlePickAvatar = async () => {
+    setUploadingAvatar(true);
+    setError(null);
+    const { url, error: uploadError } = await pickAndUploadAvatar();
+    if (url) setAvatarUrl(url);
+    else if (uploadError) setError(uploadError);
+    setUploadingAvatar(false);
+  };
 
   const canSubmit =
     fullName.trim().length > 0 &&
@@ -72,6 +85,7 @@ export default function ProfileSetupScreen() {
         id: user.id,
         full_name: fullName.trim(),
         display_name: displayName.trim(),
+        avatar_url: avatarUrl,
       });
       if (profileError) {
         setError(profileError.message);
@@ -119,6 +133,25 @@ export default function ProfileSetupScreen() {
         <Text style={styles.description}>
           This is how neighbors at {name ?? 'your building'} will see you.
         </Text>
+
+        <View style={styles.avatarSection}>
+          <Pressable
+            style={styles.avatarPicker}
+            onPress={handlePickAvatar}
+            disabled={uploadingAvatar}
+          >
+            {uploadingAvatar ? (
+              <ActivityIndicator color="#6D28D9" />
+            ) : avatarUrl ? (
+              <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarPlus}>+</Text>
+            )}
+          </Pressable>
+          <Text style={styles.avatarHint}>
+            {avatarUrl ? 'Change photo' : 'Add a photo (optional)'}
+          </Text>
+        </View>
 
         <Text style={styles.label}>Full name</Text>
         <TextInput
@@ -208,6 +241,36 @@ const styles = StyleSheet.create({
     color: '#67597F',
     lineHeight: 23,
     marginBottom: 24,
+  },
+  avatarSection: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  avatarPicker: {
+    width: 96,
+    height: 96,
+    borderRadius: 999,
+    backgroundColor: '#F1ECFA',
+    borderWidth: 1,
+    borderColor: '#E5DDF5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  avatarImage: {
+    width: 96,
+    height: 96,
+  },
+  avatarPlus: {
+    fontSize: 40,
+    color: '#6D28D9',
+    fontWeight: '300',
+  },
+  avatarHint: {
+    fontSize: 14,
+    color: '#76698C',
+    fontWeight: '600',
   },
   label: {
     fontSize: 15,
