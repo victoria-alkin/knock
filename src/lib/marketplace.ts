@@ -13,6 +13,7 @@ export type Listing = {
   status: ListingStatus;
   sellerId: string;
   sellerName: string;
+  imageUrl: string | null;
   createdAt: string;
 };
 
@@ -24,12 +25,13 @@ type RawListing = {
   price_cents: number | null;
   status: ListingStatus;
   seller_id: string;
+  image_url: string | null;
   created_at: string;
   profiles: { display_name: string | null } | null;
 };
 
 const LISTING_SELECT =
-  'id, kind, title, description, price_cents, status, seller_id, created_at, profiles ( display_name )';
+  'id, kind, title, description, price_cents, status, seller_id, image_url, created_at, profiles ( display_name )';
 
 export async function fetchListings(buildingId: string): Promise<Listing[]> {
   const { data, error } = await supabase
@@ -60,6 +62,7 @@ export async function createListing(fields: {
   title: string;
   description: string;
   priceCents: number | null;
+  imageUrl: string | null;
 }): Promise<{ error?: string; id?: string }> {
   const {
     data: { user },
@@ -75,6 +78,7 @@ export async function createListing(fields: {
       title: fields.title.trim(),
       description: fields.description.trim() || null,
       price_cents: fields.kind === 'for_sale' ? fields.priceCents : null,
+      image_url: fields.imageUrl,
     })
     .select('id')
     .single();
@@ -112,6 +116,7 @@ function toListing(row: RawListing): Listing {
     status: row.status,
     sellerId: row.seller_id,
     sellerName: row.profiles?.display_name ?? 'Neighbor',
+    imageUrl: row.image_url,
     createdAt: row.created_at,
   };
 }

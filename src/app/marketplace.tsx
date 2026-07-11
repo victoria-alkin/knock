@@ -2,6 +2,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -98,6 +99,12 @@ export default function MarketplaceScreen() {
                 })
               }
             >
+              {listing.imageUrl ? (
+                <Image
+                  source={{ uri: listing.imageUrl }}
+                  style={styles.listingImage}
+                />
+              ) : null}
               <View style={styles.listingTop}>
                 <Text style={styles.kindBadge}>{KIND_LABEL[listing.kind]}</Text>
                 {listing.status === 'sold' ? (
@@ -166,6 +173,12 @@ const styles = StyleSheet.create({
     padding: 18,
     borderWidth: 1,
     borderColor: '#E7DFF5',
+    marginBottom: 12,
+  },
+  listingImage: {
+    width: '100%',
+    height: 160,
+    borderRadius: 12,
     marginBottom: 12,
   },
   listingTop: {

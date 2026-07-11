@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { pickAndUploadListingPhoto } from '@/lib/avatar';
 import { createListing, KIND_LABEL, ListingKind } from '@/lib/marketplace';
 import { getMyBuilding } from '@/lib/membership';
 
@@ -23,8 +25,19 @@ export default function CreateListingScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handlePickPhoto = async () => {
+    setUploadingImage(true);
+    setError(null);
+    const { url, error: uploadError } = await pickAndUploadListingPhoto();
+    if (url) setImageUrl(url);
+    else if (uploadError) setError(uploadError);
+    setUploadingImage(false);
+  };
 
   useEffect(() => {
     let active = true;
@@ -61,6 +74,7 @@ export default function CreateListingScreen() {
       title,
       description,
       priceCents,
+      imageUrl,
     });
     if (createError || !id) {
       setError(createError ?? 'Could not create the listing.');
@@ -112,6 +126,21 @@ export default function CreateListingScreen() {
             );
           })}
         </View>
+
+        <Text style={styles.label}>Photo</Text>
+        <Pressable
+          style={styles.photoPicker}
+          onPress={handlePickPhoto}
+          disabled={uploadingImage}
+        >
+          {imageUrl ? (
+            <Image source={{ uri: imageUrl }} style={styles.photo} />
+          ) : (
+            <Text style={styles.photoHint}>
+              {uploadingImage ? 'Uploading…' : '+ Add a photo'}
+            </Text>
+          )}
+        </Pressable>
 
         <Text style={styles.label}>Title</Text>
         <TextInput
@@ -200,5 +229,18 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   multiline: { minHeight: 100, textAlignVertical: 'top' },
+  photoPicker: {
+    height: 180,
+    borderRadius: 16,
+    backgroundColor: '#F1ECFA',
+    borderWidth: 1,
+    borderColor: '#E5DDF5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    marginBottom: 18,
+  },
+  photo: { width: '100%', height: '100%' },
+  photoHint: { fontSize: 15, color: '#6D28D9', fontWeight: '700' },
   errorText: { fontSize: 15, color: '#B4243F', marginTop: 4 },
 });

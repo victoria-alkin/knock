@@ -6,6 +6,7 @@ import {
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -109,6 +110,9 @@ export default function ListingDetailScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
+        {listing.imageUrl ? (
+          <Image source={{ uri: listing.imageUrl }} style={styles.image} />
+        ) : null}
         <View style={styles.topRow}>
           <Text style={styles.kindBadge}>{KIND_LABEL[listing.kind]}</Text>
           {listing.status === 'sold' ? (
@@ -172,6 +176,12 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingVertical: 12 },
   back: { fontSize: 16, color: '#6D28D9', fontWeight: '700' },
   content: { paddingHorizontal: 20, paddingBottom: 32 },
+  image: {
+    width: '100%',
+    height: 240,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
   topRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
   kindBadge: {
     fontSize: 12,
