@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Avatar } from '@/components/avatar';
 import { CHANNELS } from '@/constants/channels';
 import { getMyBuilding, MyBuilding } from '@/lib/membership';
 import { fetchBuildingPosts, Post, relativeTime } from '@/lib/posts';
@@ -154,13 +155,22 @@ export default function HomeScreen() {
                   })
                 }
               >
-                <View style={styles.postMeta}>
-                  <Text style={styles.postAuthor}>{post.authorName}</Text>
-                  <Text style={styles.postChannel}>
-                    {channel ? `${channel.emoji} ${channel.name}` : post.channel}
-                    {' · '}
-                    {relativeTime(post.createdAt)}
-                  </Text>
+                <View style={styles.postHeader}>
+                  <Avatar
+                    name={post.authorName}
+                    url={post.authorAvatar}
+                    size={38}
+                  />
+                  <View style={styles.postMeta}>
+                    <Text style={styles.postAuthor}>{post.authorName}</Text>
+                    <Text style={styles.postChannel}>
+                      {channel
+                        ? `${channel.emoji} ${channel.name}`
+                        : post.channel}
+                      {' · '}
+                      {relativeTime(post.createdAt)}
+                    </Text>
+                  </View>
                 </View>
                 <Text style={styles.postBody}>{post.body}</Text>
                 <Text style={styles.postReplies}>
@@ -314,8 +324,14 @@ const styles = StyleSheet.create({
     borderColor: '#E7DFF5',
     marginBottom: 12,
   },
+  postHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 10,
+  },
   postMeta: {
-    marginBottom: 8,
+    flex: 1,
   },
   postAuthor: {
     fontSize: 16,

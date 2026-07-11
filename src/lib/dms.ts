@@ -3,6 +3,7 @@ import { supabase } from './supabase';
 export type ConversationSummary = {
   id: string;
   otherName: string;
+  otherAvatar: string | null;
   lastMessage: string | null;
   lastAt: string | null;
 };
@@ -48,7 +49,10 @@ export async function fetchConversations(): Promise<ConversationSummary[]> {
   const convIds = rows.map((c) => c.id);
 
   const [{ data: profiles }, { data: msgs }] = await Promise.all([
-    supabase.from('profiles').select('id, display_name').in('id', otherIds),
+    supabase
+      .from('profiles')
+      .select('id, display_name, avatar_url')
+      .in('id', otherIds),
     supabase
       .from('messages')
       .select('conversation_id, body, created_at')
@@ -57,8 +61,14 @@ export async function fetchConversations(): Promise<ConversationSummary[]> {
   ]);
 
   const nameById = new Map<string, string>();
-  for (const p of (profiles ?? []) as { id: string; display_name: string | null }[]) {
+  const avatarById = new Map<string, string | null>();
+  for (const p of (profiles ?? []) as {
+    id: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  }[]) {
     nameById.set(p.id, p.display_name ?? 'Neighbor');
+    avatarById.set(p.id, p.avatar_url);
   }
 
   const lastByConv = new Map<string, { body: string; created_at: string }>();
@@ -74,9 +84,11 @@ export async function fetchConversations(): Promise<ConversationSummary[]> {
 
   const summaries: ConversationSummary[] = rows.map((c) => {
     const last = lastByConv.get(c.id) ?? null;
+    const otherId = otherIdByConv.get(c.id) ?? '';
     return {
       id: c.id,
-      otherName: nameById.get(otherIdByConv.get(c.id) ?? '') ?? 'Neighbor',
+      otherName: nameById.get(otherId) ?? 'Neighbor',
+      otherAvatar: avatarById.get(otherId) ?? null,
       lastMessage: last?.body ?? null,
       lastAt: last?.created_at ?? null,
     };

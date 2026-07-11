@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Avatar } from '@/components/avatar';
 import { ConversationSummary, fetchConversations } from '@/lib/dms';
 
 export default function MessagesScreen() {
@@ -61,11 +62,7 @@ export default function MessagesScreen() {
                   })
                 }
               >
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    {c.otherName.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
+                <Avatar name={c.otherName} url={c.otherAvatar} size={48} />
                 <View style={styles.rowText}>
                   <Text style={styles.rowName}>{c.otherName}</Text>
                   <Text style={styles.rowPreview} numberOfLines={1}>

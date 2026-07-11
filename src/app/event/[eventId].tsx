@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Avatar } from '@/components/avatar';
 import {
   EventDetail,
   fetchEvent,
@@ -131,14 +132,10 @@ export default function EventDetailScreen() {
         {event.going.length > 0 ? (
           <>
             <Text style={styles.sectionLabel}>Going</Text>
-            {event.going.map((name, i) => (
-              <View key={`${name}-${i}`} style={styles.attendeeRow}>
-                <View style={styles.attendeeAvatar}>
-                  <Text style={styles.attendeeInitial}>
-                    {name.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
-                <Text style={styles.attendeeName}>{name}</Text>
+            {event.going.map((attendee, i) => (
+              <View key={`${attendee.name}-${i}`} style={styles.attendeeRow}>
+                <Avatar name={attendee.name} url={attendee.avatar} size={36} />
+                <Text style={styles.attendeeName}>{attendee.name}</Text>
               </View>
             ))}
           </>

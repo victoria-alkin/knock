@@ -7,6 +7,7 @@ export type Post = {
   channel: string;
   createdAt: string;
   authorName: string;
+  authorAvatar: string | null;
   replyCount: number;
 };
 
@@ -16,6 +17,7 @@ export type Reply = {
   body: string;
   createdAt: string;
   authorName: string;
+  authorAvatar: string | null;
 };
 
 /** The current user's id, or null. */
@@ -34,7 +36,7 @@ export async function fetchBuildingPosts(
   let query = supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, profiles ( display_name ), replies ( count )',
+      'id, author_id, body, channel, created_at, profiles ( display_name, avatar_url ), replies ( count )',
     )
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
@@ -55,7 +57,7 @@ export async function fetchPost(postId: string): Promise<Post | null> {
   const { data, error } = await supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, profiles ( display_name ), replies ( count )',
+      'id, author_id, body, channel, created_at, profiles ( display_name, avatar_url ), replies ( count )',
     )
     .eq('id', postId)
     .maybeSingle();
@@ -68,7 +70,7 @@ export async function fetchPost(postId: string): Promise<Post | null> {
 export async function fetchReplies(postId: string): Promise<Reply[]> {
   const { data, error } = await supabase
     .from('replies')
-    .select('id, author_id, body, created_at, profiles ( display_name )')
+    .select('id, author_id, body, created_at, profiles ( display_name, avatar_url )')
     .eq('post_id', postId)
     .order('created_at', { ascending: true });
 
@@ -80,6 +82,7 @@ export async function fetchReplies(postId: string): Promise<Reply[]> {
     body: row.body,
     createdAt: row.created_at,
     authorName: row.profiles?.display_name ?? 'Neighbor',
+    authorAvatar: row.profiles?.avatar_url ?? null,
   }));
 }
 
@@ -153,9 +156,12 @@ function toPost(row: RawPost): Post {
     channel: row.channel,
     createdAt: row.created_at,
     authorName: row.profiles?.display_name ?? 'Neighbor',
+    authorAvatar: row.profiles?.avatar_url ?? null,
     replyCount: row.replies?.[0]?.count ?? 0,
   };
 }
+
+type RawProfile = { display_name: string | null; avatar_url: string | null };
 
 type RawPost = {
   id: string;
@@ -163,7 +169,7 @@ type RawPost = {
   body: string;
   channel: string;
   created_at: string;
-  profiles: { display_name: string | null } | null;
+  profiles: RawProfile | null;
   replies: { count: number }[] | null;
 };
 
@@ -172,5 +178,5 @@ type RawReply = {
   author_id: string;
   body: string;
   created_at: string;
-  profiles: { display_name: string | null } | null;
+  profiles: RawProfile | null;
 };

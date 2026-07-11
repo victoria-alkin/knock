@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CHANNELS } from '@/constants/channels';
+import { Avatar } from '@/components/avatar';
 import { startConversation } from '@/lib/dms';
 import {
   createReply,
@@ -140,12 +141,17 @@ export default function PostDetailScreen() {
         ) : (
           <ScrollView contentContainerStyle={styles.content}>
             <View style={styles.postCard}>
-              <Text style={styles.postAuthor}>{post.authorName}</Text>
-              <Text style={styles.postChannel}>
-                {channel ? `${channel.emoji} ${channel.name}` : post.channel}
-                {' · '}
-                {relativeTime(post.createdAt)}
-              </Text>
+              <View style={styles.postHeader}>
+                <Avatar name={post.authorName} url={post.authorAvatar} size={42} />
+                <View style={styles.postHeaderText}>
+                  <Text style={styles.postAuthor}>{post.authorName}</Text>
+                  <Text style={styles.postChannel}>
+                    {channel ? `${channel.emoji} ${channel.name}` : post.channel}
+                    {' · '}
+                    {relativeTime(post.createdAt)}
+                  </Text>
+                </View>
+              </View>
               <Text style={styles.postBody}>{post.body}</Text>
 
               {post.authorId === currentUserId ? (
@@ -185,7 +191,14 @@ export default function PostDetailScreen() {
             {replies.map((reply) => (
               <View key={reply.id} style={styles.replyCard}>
                 <View style={styles.replyMeta}>
-                  <Text style={styles.replyAuthor}>{reply.authorName}</Text>
+                  <View style={styles.replyAuthorRow}>
+                    <Avatar
+                      name={reply.authorName}
+                      url={reply.authorAvatar}
+                      size={28}
+                    />
+                    <Text style={styles.replyAuthor}>{reply.authorName}</Text>
+                  </View>
                   <Text style={styles.replyTime}>
                     {relativeTime(reply.createdAt)}
                   </Text>
@@ -284,6 +297,15 @@ const styles = StyleSheet.create({
     borderColor: '#E7DFF5',
     marginBottom: 22,
   },
+  postHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  postHeaderText: {
+    flex: 1,
+  },
   postAuthor: {
     fontSize: 17,
     fontWeight: '800',
@@ -293,7 +315,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#8A7BA3',
     marginTop: 2,
-    marginBottom: 10,
   },
   postBody: {
     fontSize: 16,
@@ -319,6 +340,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 6,
+  },
+  replyAuthorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   replyAuthor: {
     fontSize: 15,

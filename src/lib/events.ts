@@ -18,7 +18,7 @@ export type EventDetail = EventSummary & {
   hostId: string;
   maybeCount: number;
   notGoingCount: number;
-  going: string[]; // display names
+  going: { name: string; avatar: string | null }[];
 };
 
 type RawEvent = {
@@ -32,12 +32,12 @@ type RawEvent = {
   event_rsvps: {
     status: RsvpStatus;
     user_id: string;
-    profiles: { display_name: string | null } | null;
+    profiles: { display_name: string | null; avatar_url: string | null } | null;
   }[];
 };
 
 const EVENT_SELECT =
-  'id, title, description, location, starts_at, host_id, profiles ( display_name ), event_rsvps ( status, user_id, profiles ( display_name ) )';
+  'id, title, description, location, starts_at, host_id, profiles ( display_name ), event_rsvps ( status, user_id, profiles ( display_name, avatar_url ) )';
 
 /** Upcoming events for a building, soonest first. */
 export async function fetchEvents(buildingId: string): Promise<EventSummary[]> {
@@ -75,7 +75,10 @@ export async function fetchEvent(eventId: string): Promise<EventDetail | null> {
       .length,
     going: row.event_rsvps
       .filter((r) => r.status === 'going')
-      .map((r) => r.profiles?.display_name ?? 'Neighbor'),
+      .map((r) => ({
+        name: r.profiles?.display_name ?? 'Neighbor',
+        avatar: r.profiles?.avatar_url ?? null,
+      })),
   };
 }
 
