@@ -117,7 +117,11 @@ export default function HomeScreen() {
                       })
               }
             >
-              <Text style={styles.channelEmoji}>{channel.emoji}</Text>
+              <View
+                style={[styles.channelIcon, { backgroundColor: channel.color }]}
+              >
+                <Text style={styles.channelEmoji}>{channel.emoji}</Text>
+              </View>
               <Text style={styles.channelName}>{channel.name}</Text>
             </Pressable>
           ))}
@@ -260,17 +264,19 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   channelChip: {
-    width: 84,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E7DFF5',
-    paddingVertical: 14,
+    width: 68,
     alignItems: 'center',
     gap: 8,
   },
+  channelIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   channelEmoji: {
-    fontSize: 24,
+    fontSize: 26,
   },
   channelName: {
     fontSize: 12,

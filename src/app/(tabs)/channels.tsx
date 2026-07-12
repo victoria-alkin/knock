@@ -31,7 +31,7 @@ export default function ChannelsScreen() {
                     })
             }
           >
-            <View style={styles.iconWrap}>
+            <View style={[styles.iconWrap, { backgroundColor: channel.color }]}>
               <Text style={styles.icon}>{channel.emoji}</Text>
             </View>
             <View style={styles.channelInfo}>
