@@ -12,9 +12,19 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DateTimeField } from '@/components/date-time-field';
 import { pickAndUploadEventPhoto } from '@/lib/avatar';
 import { createEvent } from '@/lib/events';
 import { getMyBuilding } from '@/lib/membership';
+
+function defaultDate() {
+  return new Date();
+}
+function defaultTime() {
+  const d = new Date();
+  d.setHours(d.getHours() + 1, 0, 0, 0);
+  return d;
+}
 
 export default function CreateEventScreen() {
   const router = useRouter();
@@ -23,8 +33,8 @@ export default function CreateEventScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
-  const [date, setDate] = useState(''); // YYYY-MM-DD
-  const [time, setTime] = useState(''); // HH:MM
+  const [datePart, setDatePart] = useState<Date>(defaultDate);
+  const [timePart, setTimePart] = useState<Date>(defaultTime);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [capacity, setCapacity] = useState('');
@@ -53,24 +63,18 @@ export default function CreateEventScreen() {
     };
   }, []);
 
-  const parseStartsAt = (): string | null => {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) return null;
-    if (!/^\d{1,2}:\d{2}$/.test(time.trim())) return null;
-    const combined = new Date(`${date.trim()}T${time.trim()}`);
-    if (Number.isNaN(combined.getTime())) return null;
-    return combined.toISOString();
-  };
-
   const handleCreate = async () => {
     if (!buildingId) {
       setError('Could not find your building. Please try again.');
       return;
     }
-    const startsAt = parseStartsAt();
-    if (!startsAt) {
-      setError('Please enter a valid date (YYYY-MM-DD) and time (HH:MM).');
-      return;
-    }
+    const startsAt = new Date(
+      datePart.getFullYear(),
+      datePart.getMonth(),
+      datePart.getDate(),
+      timePart.getHours(),
+      timePart.getMinutes(),
+    ).toISOString();
 
     let capacityValue: number | null = null;
     if (capacity.trim().length > 0) {
@@ -157,29 +161,11 @@ export default function CreateEventScreen() {
           multiline
         />
 
-        <View style={styles.row}>
-          <View style={styles.rowItem}>
-            <Text style={styles.label}>Date</Text>
-            <TextInput
-              value={date}
-              onChangeText={setDate}
-              placeholder="2026-08-01"
-              placeholderTextColor="#9B8CAF"
-              style={styles.input}
-              autoCapitalize="none"
-            />
-          </View>
-          <View style={styles.rowItem}>
-            <Text style={styles.label}>Time</Text>
-            <TextInput
-              value={time}
-              onChangeText={setTime}
-              placeholder="19:00"
-              placeholderTextColor="#9B8CAF"
-              style={styles.input}
-            />
-          </View>
-        </View>
+        <Text style={styles.label}>Date</Text>
+        <DateTimeField mode="date" value={datePart} onChange={setDatePart} />
+
+        <Text style={styles.label}>Time</Text>
+        <DateTimeField mode="time" value={timePart} onChange={setTimePart} />
 
         <Text style={styles.label}>Location</Text>
         <TextInput
