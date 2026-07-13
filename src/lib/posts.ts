@@ -8,6 +8,7 @@ export type Post = {
   createdAt: string;
   authorName: string;
   authorAvatar: string | null;
+  imageUrl: string | null;
   replyCount: number;
   likeCount: number;
   likedByMe: boolean;
@@ -38,7 +39,7 @@ export async function fetchBuildingPosts(
   let query = supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
+      'id, author_id, body, channel, created_at, image_url, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
     )
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
@@ -61,7 +62,7 @@ export async function fetchPost(postId: string): Promise<Post | null> {
   const { data, error } = await supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
+      'id, author_id, body, channel, created_at, image_url, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
     )
     .eq('id', postId)
     .maybeSingle();
@@ -177,6 +178,7 @@ export async function createPost(
   buildingId: string,
   channel: string,
   body: string,
+  imageUrl: string | null = null,
 ): Promise<{ error?: string }> {
   const {
     data: { user },
@@ -188,6 +190,7 @@ export async function createPost(
     author_id: user.id,
     channel,
     body: body.trim(),
+    image_url: imageUrl,
   });
 
   return error ? { error: error.message } : {};
@@ -214,6 +217,7 @@ function toPost(row: RawPost): Post {
     createdAt: row.created_at,
     authorName: row.profiles?.display_name ?? 'Neighbor',
     authorAvatar: row.profiles?.avatar_url ?? null,
+    imageUrl: row.image_url,
     replyCount: row.replies?.[0]?.count ?? 0,
     likeCount: row.post_likes?.[0]?.count ?? 0,
     likedByMe: false,
@@ -228,6 +232,7 @@ type RawPost = {
   body: string;
   channel: string;
   created_at: string;
+  image_url: string | null;
   profiles: RawProfile | null;
   replies: { count: number }[] | null;
   post_likes: { count: number }[] | null;

@@ -6,6 +6,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -142,7 +143,12 @@ export default function ChannelDetailScreen() {
                   </Text>
                 </View>
               </View>
-              <Text style={styles.postBody}>{post.body}</Text>
+              {post.body ? (
+                <Text style={styles.postBody}>{post.body}</Text>
+              ) : null}
+              {post.imageUrl ? (
+                <Image source={{ uri: post.imageUrl }} style={styles.postImage} />
+              ) : null}
               <View style={styles.postFooter}>
                 <Pressable
                   style={styles.footerAction}
@@ -270,6 +276,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#2C2340',
     lineHeight: 22,
+  },
+  postImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginTop: 12,
   },
   postFooter: {
     flexDirection: 'row',

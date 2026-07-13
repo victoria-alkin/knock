@@ -17,3 +17,12 @@ export async function pickAndUploadListingPhoto() {
       `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`,
   });
 }
+
+/** Pick and upload a photo to attach to a post. Returns the public URL. */
+export async function pickAndUploadPostPhoto() {
+  return pickAndUploadImage({
+    bucket: 'post-photos',
+    pathFor: (userId) =>
+      `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`,
+  });
+}

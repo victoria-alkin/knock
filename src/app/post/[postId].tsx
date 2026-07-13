@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -168,7 +169,12 @@ export default function PostDetailScreen() {
                   </Text>
                 </View>
               </View>
-              <Text style={styles.postBody}>{post.body}</Text>
+              {post.body ? (
+                <Text style={styles.postBody}>{post.body}</Text>
+              ) : null}
+              {post.imageUrl ? (
+                <Image source={{ uri: post.imageUrl }} style={styles.postImage} />
+              ) : null}
 
               <Pressable style={styles.likeRow} onPress={handleToggleLike}>
                 <Text style={styles.heart}>
@@ -345,6 +351,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#2C2340',
     lineHeight: 23,
+  },
+  postImage: {
+    width: '100%',
+    height: 240,
+    borderRadius: 14,
+    marginTop: 14,
   },
   likeRow: {
     flexDirection: 'row',

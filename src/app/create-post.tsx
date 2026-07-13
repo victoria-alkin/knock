@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { pickAndUploadPostPhoto } from '@/lib/avatar';
 import { CHANNELS } from '@/constants/channels';
 import { getMyBuilding } from '@/lib/membership';
 import { createPost } from '@/lib/posts';
@@ -23,8 +25,19 @@ export default function CreatePostScreen() {
   const [buildingName, setBuildingName] = useState<string>('your building');
   const [channel, setChannel] = useState<string>(params.channel ?? 'general');
   const [body, setBody] = useState('');
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handlePickPhoto = async () => {
+    setUploadingImage(true);
+    setError(null);
+    const { url, error: uploadError } = await pickAndUploadPostPhoto();
+    if (url) setImageUrl(url);
+    else if (uploadError) setError(uploadError);
+    setUploadingImage(false);
+  };
 
   useEffect(() => {
     let active = true;
@@ -40,7 +53,10 @@ export default function CreatePostScreen() {
     };
   }, []);
 
-  const canPost = buildingId !== null && body.trim().length > 0 && !posting;
+  const canPost =
+    buildingId !== null &&
+    (body.trim().length > 0 || imageUrl !== null) &&
+    !posting;
 
   const handlePost = async () => {
     if (!buildingId) {
@@ -50,7 +66,12 @@ export default function CreatePostScreen() {
     setPosting(true);
     setError(null);
 
-    const { error: postError } = await createPost(buildingId, channel, body);
+    const { error: postError } = await createPost(
+      buildingId,
+      channel,
+      body,
+      imageUrl,
+    );
     if (postError) {
       setError(postError);
       setPosting(false);
@@ -116,6 +137,28 @@ export default function CreatePostScreen() {
           autoFocus
           maxLength={4000}
         />
+
+        {imageUrl ? (
+          <View style={styles.photoWrap}>
+            <Image source={{ uri: imageUrl }} style={styles.photo} />
+            <Pressable
+              style={styles.removePhoto}
+              onPress={() => setImageUrl(null)}
+            >
+              <Text style={styles.removePhotoText}>Remove photo</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <Pressable
+            style={styles.addPhoto}
+            onPress={handlePickPhoto}
+            disabled={uploadingImage}
+          >
+            <Text style={styles.addPhotoText}>
+              {uploadingImage ? 'Uploading…' : '📷  Add a photo'}
+            </Text>
+          </Pressable>
+        )}
 
         {error && <Text style={styles.errorText}>{error}</Text>}
       </ScrollView>
@@ -208,6 +251,23 @@ const styles = StyleSheet.create({
     minHeight: 160,
     textAlignVertical: 'top',
   },
+  addPhoto: {
+    backgroundColor: '#F1ECFA',
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  addPhotoText: { fontSize: 15, color: '#6D28D9', fontWeight: '700' },
+  photoWrap: { marginTop: 4 },
+  photo: {
+    width: '100%',
+    height: 200,
+    borderRadius: 14,
+    marginBottom: 10,
+  },
+  removePhoto: { alignSelf: 'flex-start' },
+  removePhotoText: { fontSize: 14, color: '#B4243F', fontWeight: '700' },
   errorText: {
     fontSize: 15,
     color: '#B4243F',
