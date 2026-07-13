@@ -115,6 +115,70 @@ export async function createEvent(fields: {
   return { id: (data as { id: string }).id };
 }
 
+export type EventComment = {
+  id: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar: string | null;
+  body: string;
+  createdAt: string;
+};
+
+export async function fetchEventComments(
+  eventId: string,
+): Promise<EventComment[]> {
+  const { data, error } = await supabase
+    .from('event_comments')
+    .select('id, author_id, body, created_at, profiles ( display_name, avatar_url )')
+    .eq('event_id', eventId)
+    .order('created_at', { ascending: true });
+
+  if (error || !data) return [];
+  return (
+    data as unknown as {
+      id: string;
+      author_id: string;
+      body: string;
+      created_at: string;
+      profiles: { display_name: string | null; avatar_url: string | null } | null;
+    }[]
+  ).map((row) => ({
+    id: row.id,
+    authorId: row.author_id,
+    authorName: row.profiles?.display_name ?? 'Neighbor',
+    authorAvatar: row.profiles?.avatar_url ?? null,
+    body: row.body,
+    createdAt: row.created_at,
+  }));
+}
+
+export async function createEventComment(
+  eventId: string,
+  body: string,
+): Promise<{ error?: string }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: 'You are not signed in.' };
+
+  const { error } = await supabase.from('event_comments').insert({
+    event_id: eventId,
+    author_id: user.id,
+    body: body.trim(),
+  });
+  return error ? { error: error.message } : {};
+}
+
+export async function deleteEventComment(
+  commentId: string,
+): Promise<{ error?: string }> {
+  const { error } = await supabase
+    .from('event_comments')
+    .delete()
+    .eq('id', commentId);
+  return error ? { error: error.message } : {};
+}
+
 export async function setRsvp(
   eventId: string,
   status: RsvpStatus,
