@@ -125,7 +125,7 @@ export default function MarketplaceScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F7F2FF' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: { paddingHorizontal: 20, paddingVertical: 12 },
   back: { fontSize: 16, color: '#6D28D9', fontWeight: '700' },
   content: { paddingHorizontal: 20, paddingBottom: 32 },

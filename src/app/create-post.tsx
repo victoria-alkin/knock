@@ -283,7 +283,7 @@ export default function CreatePostScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F2FF',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',

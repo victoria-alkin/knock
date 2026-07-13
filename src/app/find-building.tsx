@@ -183,7 +183,7 @@ export default function FindBuildingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F2FF',
+    backgroundColor: '#FFFFFF',
   },
   content: {
     flex: 1,

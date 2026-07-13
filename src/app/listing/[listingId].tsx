@@ -171,7 +171,7 @@ export default function ListingDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F7F2FF' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   centered: { alignItems: 'center', justifyContent: 'center' },
   header: { paddingHorizontal: 20, paddingVertical: 12 },
   back: { fontSize: 16, color: '#6D28D9', fontWeight: '700' },

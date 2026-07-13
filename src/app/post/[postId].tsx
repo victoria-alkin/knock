@@ -302,7 +302,7 @@ export default function PostDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F2FF',
+    backgroundColor: '#FFFFFF',
   },
   flex: {
     flex: 1,

@@ -178,7 +178,7 @@ export default function ChannelDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F2FF',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     paddingHorizontal: 20,

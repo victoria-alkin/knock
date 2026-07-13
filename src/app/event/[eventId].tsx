@@ -271,7 +271,7 @@ export default function EventDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F7F2FF' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   flex: { flex: 1 },
   centered: { alignItems: 'center', justifyContent: 'center' },
   header: { paddingHorizontal: 20, paddingVertical: 12 },
