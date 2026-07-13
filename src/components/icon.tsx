@@ -14,7 +14,9 @@ export function Icon({
     <Image
       source={source}
       resizeMode="contain"
-      style={[{ width: size, height: size }, color ? { tintColor: color } : null]}
+      // Pass as a prop (not style) — react-native-web 0.21 ignores style.tintColor.
+      tintColor={color}
+      style={{ width: size, height: size }}
     />
   );
 }

@@ -223,6 +223,8 @@ export default function CreatePostScreen() {
             value={allowReplies}
             onValueChange={setAllowReplies}
             trackColor={{ true: '#6D28D9', false: '#D8CEE9' }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor="#D8CEE9"
           />
         </View>
 
@@ -235,6 +237,8 @@ export default function CreatePostScreen() {
             value={allowDms}
             onValueChange={setAllowDms}
             trackColor={{ true: '#6D28D9', false: '#D8CEE9' }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor="#D8CEE9"
           />
         </View>
 
@@ -248,6 +252,8 @@ export default function CreatePostScreen() {
             value={isAnonymous}
             onValueChange={setIsAnonymous}
             trackColor={{ true: '#6D28D9', false: '#D8CEE9' }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor="#D8CEE9"
           />
         </View>
 
