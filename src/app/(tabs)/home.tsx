@@ -98,6 +98,58 @@ export default function HomeScreen() {
     }
   };
 
+  const renderPost = (post: Post) => {
+    const channel = CHANNEL_BY_KEY[post.channel];
+    return (
+      <Pressable
+        key={post.id}
+        style={styles.postCard}
+        onPress={() =>
+          router.push({
+            pathname: '/post/[postId]',
+            params: { postId: post.id },
+          })
+        }
+      >
+        <View style={styles.postHeader}>
+          <Avatar name={post.authorName} url={post.authorAvatar} size={38} />
+          <View style={styles.postMeta}>
+            <Text style={styles.postAuthor}>{post.authorName}</Text>
+            <Text style={styles.postChannel}>
+              {channel ? `${channel.emoji} ${channel.name}` : post.channel}
+              {' · '}
+              {relativeTime(post.createdAt)}
+            </Text>
+          </View>
+          <UrgencyBadge urgency={post.urgency} />
+        </View>
+        {post.body ? <Text style={styles.postBody}>{post.body}</Text> : null}
+        {post.imageUrl ? (
+          <Image source={{ uri: post.imageUrl }} style={styles.postImage} />
+        ) : null}
+        <View style={styles.postFooter}>
+          <Pressable style={styles.footerAction} onPress={() => toggleLike(post)}>
+            <Icon
+              source={post.likedByMe ? likeIcons.filled : likeIcons.outline}
+              size={17}
+              color={post.likedByMe ? '#E23E57' : '#8A7BA3'}
+            />
+            <Text style={styles.footerCount}>{post.likeCount}</Text>
+          </Pressable>
+          <Text style={styles.footerReplies}>
+            {post.replyCount === 0
+              ? 'Reply'
+              : `${post.replyCount} ${post.replyCount === 1 ? 'reply' : 'replies'}`}
+          </Text>
+        </View>
+      </Pressable>
+    );
+  };
+
+  const pinned = posts.filter((p) => p.pinned);
+  const help = posts.filter((p) => p.channel === 'help').slice(0, 3);
+  const recent = posts.filter((p) => !p.pinned);
+
   if (loading) {
     return (
       <SafeAreaView style={[styles.container, styles.centered]}>
@@ -198,6 +250,34 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
+        {pinned.length > 0 ? (
+          <>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Pinned</Text>
+            </View>
+            {pinned.map(renderPost)}
+          </>
+        ) : null}
+
+        {help.length > 0 ? (
+          <>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Help requests</Text>
+              <Pressable
+                onPress={() =>
+                  router.push({
+                    pathname: '/channel/[channelKey]',
+                    params: { channelKey: 'help' },
+                  })
+                }
+              >
+                <Text style={styles.seeAll}>See all</Text>
+              </Pressable>
+            </View>
+            {help.map(renderPost)}
+          </>
+        ) : null}
+
         <View style={styles.feedHeader}>
           <Text style={styles.sectionTitle}>Recent activity</Text>
           <Pressable
@@ -223,67 +303,7 @@ export default function HomeScreen() {
             </Pressable>
           </View>
         ) : (
-          posts.map((post) => {
-            const channel = CHANNEL_BY_KEY[post.channel];
-            return (
-              <Pressable
-                key={post.id}
-                style={styles.postCard}
-                onPress={() =>
-                  router.push({
-                    pathname: '/post/[postId]',
-                    params: { postId: post.id },
-                  })
-                }
-              >
-                <View style={styles.postHeader}>
-                  <Avatar
-                    name={post.authorName}
-                    url={post.authorAvatar}
-                    size={38}
-                  />
-                  <View style={styles.postMeta}>
-                    <Text style={styles.postAuthor}>{post.authorName}</Text>
-                    <Text style={styles.postChannel}>
-                      {channel
-                        ? `${channel.emoji} ${channel.name}`
-                        : post.channel}
-                      {' · '}
-                      {relativeTime(post.createdAt)}
-                    </Text>
-                  </View>
-                  <UrgencyBadge urgency={post.urgency} />
-                </View>
-                {post.body ? (
-                  <Text style={styles.postBody}>{post.body}</Text>
-                ) : null}
-                {post.imageUrl ? (
-                  <Image
-                    source={{ uri: post.imageUrl }}
-                    style={styles.postImage}
-                  />
-                ) : null}
-                <View style={styles.postFooter}>
-                  <Pressable
-                    style={styles.footerAction}
-                    onPress={() => toggleLike(post)}
-                  >
-                    <Icon
-                      source={post.likedByMe ? likeIcons.filled : likeIcons.outline}
-                      size={17}
-                      color={post.likedByMe ? '#E23E57' : '#8A7BA3'}
-                    />
-                    <Text style={styles.footerCount}>{post.likeCount}</Text>
-                  </Pressable>
-                  <Text style={styles.footerReplies}>
-                    {post.replyCount === 0
-                      ? 'Reply'
-                      : `${post.replyCount} ${post.replyCount === 1 ? 'reply' : 'replies'}`}
-                  </Text>
-                </View>
-              </Pressable>
-            );
-          })
+          recent.map(renderPost)
         )}
       </ScrollView>
     </SafeAreaView>
@@ -399,6 +419,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#4A3D63',
     textAlign: 'center',
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  seeAll: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#6D28D9',
+    marginBottom: 12,
   },
   feedHeader: {
     flexDirection: 'row',

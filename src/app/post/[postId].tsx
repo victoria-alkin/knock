@@ -32,6 +32,7 @@ import {
   relativeTime,
   Reply,
   setPostLike,
+  setPostPinned,
 } from '@/lib/posts';
 
 const CHANNEL_BY_KEY = Object.fromEntries(CHANNELS.map((c) => [c.key, c]));
@@ -95,6 +96,16 @@ export default function PostDetailScreen() {
           ? { ...p, likedByMe: !nextLiked, likeCount: p.likeCount - delta }
           : p,
       );
+    }
+  };
+
+  const handleTogglePin = async () => {
+    if (!post) return;
+    const next = !post.pinned;
+    setPost({ ...post, pinned: next });
+    const { error: pinError } = await setPostPinned(post.id, next);
+    if (pinError) {
+      setPost((p) => (p ? { ...p, pinned: !next } : p));
     }
   };
 
@@ -203,9 +214,16 @@ export default function PostDetailScreen() {
                     </Pressable>
                   </View>
                 ) : (
-                  <Pressable onPress={() => setConfirmingPostDelete(true)}>
-                    <Text style={styles.deleteLink}>Delete post</Text>
-                  </Pressable>
+                  <View style={styles.ownerRow}>
+                    <Pressable onPress={handleTogglePin}>
+                      <Text style={styles.pinLink}>
+                        {post.pinned ? 'Unpin' : 'Pin to top'}
+                      </Text>
+                    </Pressable>
+                    <Pressable onPress={() => setConfirmingPostDelete(true)}>
+                      <Text style={styles.deleteLink}>Delete post</Text>
+                    </Pressable>
+                  </View>
                 )
               ) : post.allowDms && !post.isAnonymous ? (
                 <Pressable
@@ -422,6 +440,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#2C2340',
     lineHeight: 21,
+  },
+  ownerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+  },
+  pinLink: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#6D28D9',
+    marginTop: 12,
   },
   deleteLink: {
     fontSize: 13,

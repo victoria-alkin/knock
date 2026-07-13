@@ -23,6 +23,7 @@ export type Post = {
   allowReplies: boolean;
   allowDms: boolean;
   isAnonymous: boolean;
+  pinned: boolean;
   replyCount: number;
   likeCount: number;
   likedByMe: boolean;
@@ -53,7 +54,7 @@ export async function fetchBuildingPosts(
   let query = supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, image_url, urgency, allow_replies, allow_dms, is_anonymous, profiles!posts_author_id_fkey ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
+      'id, author_id, body, channel, created_at, image_url, urgency, allow_replies, allow_dms, is_anonymous, pinned, profiles!posts_author_id_fkey ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
     )
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
@@ -79,7 +80,7 @@ export async function fetchPost(postId: string): Promise<Post | null> {
   const { data, error } = await supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, image_url, urgency, allow_replies, allow_dms, is_anonymous, profiles!posts_author_id_fkey ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
+      'id, author_id, body, channel, created_at, image_url, urgency, allow_replies, allow_dms, is_anonymous, pinned, profiles!posts_author_id_fkey ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
     )
     .eq('id', postId)
     .maybeSingle();
@@ -159,6 +160,18 @@ export async function fetchReplies(postId: string): Promise<Reply[]> {
     authorName: row.profiles?.display_name ?? 'Neighbor',
     authorAvatar: row.profiles?.avatar_url ?? null,
   }));
+}
+
+/** Pin or unpin a post (RLS restricts this to your own). */
+export async function setPostPinned(
+  postId: string,
+  pinned: boolean,
+): Promise<{ error?: string }> {
+  const { error } = await supabase
+    .from('posts')
+    .update({ pinned })
+    .eq('id', postId);
+  return error ? { error: error.message } : {};
 }
 
 /** Delete a post (RLS restricts this to your own). Cascades its replies. */
@@ -251,6 +264,7 @@ function toPost(row: RawPost): Post {
     allowReplies: row.allow_replies ?? true,
     allowDms: row.allow_dms ?? true,
     isAnonymous: anonymous,
+    pinned: row.pinned ?? false,
     replyCount: row.replies?.[0]?.count ?? 0,
     likeCount: row.post_likes?.[0]?.count ?? 0,
     likedByMe: false,
@@ -270,6 +284,7 @@ type RawPost = {
   allow_replies: boolean | null;
   allow_dms: boolean | null;
   is_anonymous: boolean | null;
+  pinned: boolean | null;
   profiles: RawProfile | null;
   replies: { count: number }[] | null;
   post_likes: { count: number }[] | null;
