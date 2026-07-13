@@ -19,7 +19,7 @@ import { Avatar } from '@/components/avatar';
 import { Icon } from '@/components/icon';
 import { UrgencyBadge } from '@/components/urgency-badge';
 import { CHANNELS } from '@/constants/channels';
-import { likeIcons } from '@/constants/icons';
+import { channelIcons, likeIcons } from '@/constants/icons';
 import { getMyBuilding } from '@/lib/membership';
 import {
   fetchBuildingPosts,
@@ -97,7 +97,21 @@ export default function ChannelDetailScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.titleRow}>
-          <Text style={styles.emoji}>{channel?.emoji ?? '💬'}</Text>
+          {channel ? (
+            <View
+              style={[styles.iconTile, { backgroundColor: channel.color }]}
+            >
+              {channelIcons[channel.key] ? (
+                <Icon
+                  source={channelIcons[channel.key]}
+                  size={26}
+                  color={channel.accent}
+                />
+              ) : (
+                <Text style={styles.emoji}>{channel.emoji}</Text>
+              )}
+            </View>
+          ) : null}
           <Text style={styles.title}>{channel?.name ?? 'Channel'}</Text>
         </View>
         {channel?.description ? (
@@ -203,8 +217,15 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 6,
   },
+  iconTile: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emoji: {
-    fontSize: 28,
+    fontSize: 26,
   },
   title: {
     fontSize: 30,
