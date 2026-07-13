@@ -9,6 +9,8 @@ export type Post = {
   authorName: string;
   authorAvatar: string | null;
   replyCount: number;
+  likeCount: number;
+  likedByMe: boolean;
 };
 
 export type Reply = {
@@ -36,7 +38,7 @@ export async function fetchBuildingPosts(
   let query = supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, profiles ( display_name, avatar_url ), replies ( count )',
+      'id, author_id, body, channel, created_at, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
     )
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
@@ -49,7 +51,9 @@ export async function fetchBuildingPosts(
   const { data, error } = await query;
   if (error || !data) return [];
 
-  return (data as unknown as RawPost[]).map(toPost);
+  const posts = (data as unknown as RawPost[]).map(toPost);
+  await attachMyLikes(posts);
+  return posts;
 }
 
 /** A single post by id (null if not accessible). */
@@ -57,13 +61,66 @@ export async function fetchPost(postId: string): Promise<Post | null> {
   const { data, error } = await supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, profiles ( display_name, avatar_url ), replies ( count )',
+      'id, author_id, body, channel, created_at, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
     )
     .eq('id', postId)
     .maybeSingle();
 
   if (error || !data) return null;
-  return toPost(data as unknown as RawPost);
+  const post = toPost(data as unknown as RawPost);
+  await attachMyLikes([post]);
+  return post;
+}
+
+/** Fill in likedByMe for a set of posts based on the current user's likes. */
+async function attachMyLikes(posts: Post[]): Promise<void> {
+  if (posts.length === 0) return;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data } = await supabase
+    .from('post_likes')
+    .select('post_id')
+    .eq('user_id', user.id)
+    .in(
+      'post_id',
+      posts.map((p) => p.id),
+    );
+
+  const liked = new Set((data ?? []).map((r) => (r as { post_id: string }).post_id));
+  for (const post of posts) {
+    post.likedByMe = liked.has(post.id);
+  }
+}
+
+/** Like or unlike a post. */
+export async function setPostLike(
+  postId: string,
+  liked: boolean,
+): Promise<{ error?: string }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: 'You are not signed in.' };
+
+  if (liked) {
+    const { error } = await supabase
+      .from('post_likes')
+      .upsert(
+        { post_id: postId, user_id: user.id },
+        { onConflict: 'post_id,user_id' },
+      );
+    return error ? { error: error.message } : {};
+  }
+
+  const { error } = await supabase
+    .from('post_likes')
+    .delete()
+    .eq('post_id', postId)
+    .eq('user_id', user.id);
+  return error ? { error: error.message } : {};
 }
 
 /** Replies to a post, oldest first. */
@@ -158,6 +215,8 @@ function toPost(row: RawPost): Post {
     authorName: row.profiles?.display_name ?? 'Neighbor',
     authorAvatar: row.profiles?.avatar_url ?? null,
     replyCount: row.replies?.[0]?.count ?? 0,
+    likeCount: row.post_likes?.[0]?.count ?? 0,
+    likedByMe: false,
   };
 }
 
@@ -171,6 +230,7 @@ type RawPost = {
   created_at: string;
   profiles: RawProfile | null;
   replies: { count: number }[] | null;
+  post_likes: { count: number }[] | null;
 };
 
 type RawReply = {

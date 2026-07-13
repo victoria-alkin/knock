@@ -14,7 +14,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar } from '@/components/avatar';
 import { CHANNELS } from '@/constants/channels';
 import { getMyBuilding, MyBuilding } from '@/lib/membership';
-import { fetchBuildingPosts, Post, relativeTime } from '@/lib/posts';
+import {
+  fetchBuildingPosts,
+  Post,
+  relativeTime,
+  setPostLike,
+} from '@/lib/posts';
 
 const CHANNEL_BY_KEY = Object.fromEntries(CHANNELS.map((c) => [c.key, c]));
 
@@ -52,6 +57,28 @@ export default function HomeScreen() {
       };
     }, [building]),
   );
+
+  const toggleLike = async (post: Post) => {
+    const nextLiked = !post.likedByMe;
+    const delta = nextLiked ? 1 : -1;
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === post.id
+          ? { ...p, likedByMe: nextLiked, likeCount: p.likeCount + delta }
+          : p,
+      ),
+    );
+    const { error } = await setPostLike(post.id, nextLiked);
+    if (error) {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === post.id
+            ? { ...p, likedByMe: !nextLiked, likeCount: p.likeCount - delta }
+            : p,
+        ),
+      );
+    }
+  };
 
   if (loading) {
     return (
@@ -177,11 +204,22 @@ export default function HomeScreen() {
                   </View>
                 </View>
                 <Text style={styles.postBody}>{post.body}</Text>
-                <Text style={styles.postReplies}>
-                  {post.replyCount === 0
-                    ? 'Reply'
-                    : `${post.replyCount} ${post.replyCount === 1 ? 'reply' : 'replies'}`}
-                </Text>
+                <View style={styles.postFooter}>
+                  <Pressable
+                    style={styles.footerAction}
+                    onPress={() => toggleLike(post)}
+                  >
+                    <Text style={styles.heart}>
+                      {post.likedByMe ? '❤️' : '🤍'}
+                    </Text>
+                    <Text style={styles.footerCount}>{post.likeCount}</Text>
+                  </Pressable>
+                  <Text style={styles.footerReplies}>
+                    {post.replyCount === 0
+                      ? 'Reply'
+                      : `${post.replyCount} ${post.replyCount === 1 ? 'reply' : 'replies'}`}
+                  </Text>
+                </View>
               </Pressable>
             );
           })
@@ -354,10 +392,28 @@ const styles = StyleSheet.create({
     color: '#2C2340',
     lineHeight: 22,
   },
-  postReplies: {
+  postFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 18,
+    marginTop: 14,
+  },
+  footerAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  heart: {
+    fontSize: 16,
+  },
+  footerCount: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#4A3D63',
+  },
+  footerReplies: {
     fontSize: 13,
     fontWeight: '700',
     color: '#6D28D9',
-    marginTop: 12,
   },
 });

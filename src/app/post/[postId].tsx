@@ -27,6 +27,7 @@ import {
   Post,
   relativeTime,
   Reply,
+  setPostLike,
 } from '@/lib/posts';
 
 const CHANNEL_BY_KEY = Object.fromEntries(CHANNELS.map((c) => [c.key, c]));
@@ -76,6 +77,21 @@ export default function PostDetailScreen() {
     }
     setConfirmingReplyId(null);
     await load();
+  };
+
+  const handleToggleLike = async () => {
+    if (!post) return;
+    const nextLiked = !post.likedByMe;
+    const delta = nextLiked ? 1 : -1;
+    setPost({ ...post, likedByMe: nextLiked, likeCount: post.likeCount + delta });
+    const { error: likeError } = await setPostLike(post.id, nextLiked);
+    if (likeError) {
+      setPost((p) =>
+        p
+          ? { ...p, likedByMe: !nextLiked, likeCount: p.likeCount - delta }
+          : p,
+      );
+    }
   };
 
   const handleMessageAuthor = async () => {
@@ -153,6 +169,15 @@ export default function PostDetailScreen() {
                 </View>
               </View>
               <Text style={styles.postBody}>{post.body}</Text>
+
+              <Pressable style={styles.likeRow} onPress={handleToggleLike}>
+                <Text style={styles.heart}>
+                  {post.likedByMe ? '❤️' : '🤍'}
+                </Text>
+                <Text style={styles.likeCount}>
+                  {post.likeCount} {post.likeCount === 1 ? 'like' : 'likes'}
+                </Text>
+              </Pressable>
 
               {post.authorId === currentUserId ? (
                 confirmingPostDelete ? (
@@ -320,6 +345,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#2C2340',
     lineHeight: 23,
+  },
+  likeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 14,
+  },
+  heart: {
+    fontSize: 18,
+  },
+  likeCount: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#4A3D63',
   },
   repliesTitle: {
     fontSize: 15,
