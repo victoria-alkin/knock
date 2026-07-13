@@ -5,6 +5,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -26,6 +27,9 @@ export default function CreateEventScreen() {
   const [time, setTime] = useState(''); // HH:MM
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [capacity, setCapacity] = useState('');
+  const [rsvpRequired, setRsvpRequired] = useState(false);
+  const [allowComments, setAllowComments] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,6 +72,16 @@ export default function CreateEventScreen() {
       return;
     }
 
+    let capacityValue: number | null = null;
+    if (capacity.trim().length > 0) {
+      const parsed = Number(capacity.trim());
+      if (!Number.isInteger(parsed) || parsed <= 0) {
+        setError('Capacity must be a whole number, or leave it blank.');
+        return;
+      }
+      capacityValue = parsed;
+    }
+
     setSaving(true);
     setError(null);
     const { error: createError, id } = await createEvent({
@@ -77,6 +91,9 @@ export default function CreateEventScreen() {
       location,
       startsAt,
       imageUrl,
+      capacity: capacityValue,
+      rsvpRequired,
+      allowComments,
     });
     if (createError || !id) {
       setError(createError ?? 'Could not create the event.');
@@ -172,6 +189,47 @@ export default function CreateEventScreen() {
           style={styles.input}
         />
 
+        <Text style={styles.sectionLabel}>Settings</Text>
+
+        <Text style={styles.label}>Capacity</Text>
+        <TextInput
+          value={capacity}
+          onChangeText={setCapacity}
+          placeholder="Leave blank for unlimited"
+          placeholderTextColor="#9B8CAF"
+          style={styles.input}
+          keyboardType="number-pad"
+          inputMode="numeric"
+        />
+
+        <View style={styles.optionRow}>
+          <View style={styles.optionText}>
+            <Text style={styles.optionTitle}>RSVP required</Text>
+            <Text style={styles.optionSub}>People must RSVP to attend</Text>
+          </View>
+          <Switch
+            value={rsvpRequired}
+            onValueChange={setRsvpRequired}
+            trackColor={{ true: '#6D28D9', false: '#D8CEE9' }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor="#D8CEE9"
+          />
+        </View>
+
+        <View style={styles.optionRow}>
+          <View style={styles.optionText}>
+            <Text style={styles.optionTitle}>Allow comments</Text>
+            <Text style={styles.optionSub}>People can comment and ask questions</Text>
+          </View>
+          <Switch
+            value={allowComments}
+            onValueChange={setAllowComments}
+            trackColor={{ true: '#6D28D9', false: '#D8CEE9' }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor="#D8CEE9"
+          />
+        </View>
+
         {error && <Text style={styles.errorText}>{error}</Text>}
       </ScrollView>
     </SafeAreaView>
@@ -227,5 +285,23 @@ const styles = StyleSheet.create({
   },
   cover: { width: '100%', height: '100%' },
   coverHint: { fontSize: 15, color: '#6D28D9', fontWeight: '700' },
-  errorText: { fontSize: 15, color: '#B4243F', marginTop: 4 },
+  sectionLabel: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1F1438',
+    marginTop: 8,
+    marginBottom: 14,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE8F8',
+  },
+  optionText: { flex: 1, paddingRight: 12 },
+  optionTitle: { fontSize: 15, fontWeight: '700', color: '#1F1438' },
+  optionSub: { fontSize: 13, color: '#76698C', marginTop: 2 },
+  errorText: { fontSize: 15, color: '#B4243F', marginTop: 16 },
 });

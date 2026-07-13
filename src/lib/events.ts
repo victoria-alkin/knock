@@ -10,6 +10,8 @@ export type EventSummary = {
   startsAt: string;
   hostName: string;
   imageUrl: string | null;
+  capacity: number | null;
+  rsvpRequired: boolean;
   goingCount: number;
   myStatus: RsvpStatus | null;
 };
@@ -17,6 +19,7 @@ export type EventSummary = {
 export type EventDetail = EventSummary & {
   description: string | null;
   hostId: string;
+  allowComments: boolean;
   maybeCount: number;
   notGoingCount: number;
   going: { name: string; avatar: string | null }[];
@@ -30,6 +33,9 @@ type RawEvent = {
   starts_at: string;
   host_id: string;
   image_url: string | null;
+  capacity: number | null;
+  rsvp_required: boolean | null;
+  allow_comments: boolean | null;
   profiles: { display_name: string | null } | null;
   event_rsvps: {
     status: RsvpStatus;
@@ -39,7 +45,7 @@ type RawEvent = {
 };
 
 const EVENT_SELECT =
-  'id, title, description, location, starts_at, host_id, image_url, profiles ( display_name ), event_rsvps ( status, user_id, profiles ( display_name, avatar_url ) )';
+  'id, title, description, location, starts_at, host_id, image_url, capacity, rsvp_required, allow_comments, profiles ( display_name ), event_rsvps ( status, user_id, profiles ( display_name, avatar_url ) )';
 
 /** Upcoming events for a building, soonest first. */
 export async function fetchEvents(buildingId: string): Promise<EventSummary[]> {
@@ -72,6 +78,7 @@ export async function fetchEvent(eventId: string): Promise<EventDetail | null> {
     ...summary,
     description: row.description,
     hostId: row.host_id,
+    allowComments: row.allow_comments ?? true,
     maybeCount: row.event_rsvps.filter((r) => r.status === 'maybe').length,
     notGoingCount: row.event_rsvps.filter((r) => r.status === 'not_going')
       .length,
@@ -91,6 +98,9 @@ export async function createEvent(fields: {
   location: string;
   startsAt: string;
   imageUrl: string | null;
+  capacity: number | null;
+  rsvpRequired: boolean;
+  allowComments: boolean;
 }): Promise<{ error?: string; id?: string }> {
   const {
     data: { user },
@@ -107,6 +117,9 @@ export async function createEvent(fields: {
       location: fields.location.trim() || null,
       starts_at: fields.startsAt,
       image_url: fields.imageUrl,
+      capacity: fields.capacity,
+      rsvp_required: fields.rsvpRequired,
+      allow_comments: fields.allowComments,
     })
     .select('id')
     .single();
@@ -206,6 +219,8 @@ function toSummary(row: RawEvent, myId: string | null): EventSummary {
     startsAt: row.starts_at,
     hostName: row.profiles?.display_name ?? 'Neighbor',
     imageUrl: row.image_url,
+    capacity: row.capacity,
+    rsvpRequired: row.rsvp_required ?? false,
     goingCount: row.event_rsvps.filter((r) => r.status === 'going').length,
     myStatus: row.event_rsvps.find((r) => r.user_id === myId)?.status ?? null,
   };

@@ -49,6 +49,7 @@ export default function EventDetailScreen() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [rsvpError, setRsvpError] = useState<string | null>(null);
   const [commentBody, setCommentBody] = useState('');
   const [sending, setSending] = useState(false);
   const [confirmingCommentId, setConfirmingCommentId] = useState<string | null>(
@@ -83,7 +84,13 @@ export default function EventDetailScreen() {
   const handleRsvp = async (status: RsvpStatus) => {
     if (!eventId) return;
     setUpdating(true);
-    await setRsvp(eventId, status);
+    setRsvpError(null);
+    const { error } = await setRsvp(eventId, status);
+    if (error) {
+      setRsvpError(
+        error.includes('full') ? 'This event is full.' : error,
+      );
+    }
     await load();
     setUpdating(false);
   };
@@ -119,6 +126,9 @@ export default function EventDetailScreen() {
     );
   }
 
+  const isFull =
+    event.capacity != null && event.goingCount >= event.capacity;
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -146,6 +156,21 @@ export default function EventDetailScreen() {
             <Text style={styles.description}>{event.description}</Text>
           ) : null}
 
+          {event.rsvpRequired || event.capacity != null ? (
+            <View style={styles.badgeRow}>
+              {event.rsvpRequired ? (
+                <Text style={styles.metaBadge}>RSVP required</Text>
+              ) : null}
+              {event.capacity != null ? (
+                <Text
+                  style={[styles.metaBadge, isFull && styles.metaBadgeFull]}
+                >
+                  {isFull ? 'Full' : `${event.goingCount}/${event.capacity} spots`}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+
           <Text style={styles.counts}>
             {event.goingCount} going · {event.maybeCount} maybe ·{' '}
             {event.notGoingCount} not going
@@ -155,11 +180,17 @@ export default function EventDetailScreen() {
           <View style={styles.rsvpRow}>
             {OPTIONS.map((option) => {
               const selected = event.myStatus === option.status;
+              const blocked =
+                option.status === 'going' && isFull && !selected;
               return (
                 <Pressable
                   key={option.status}
-                  style={[styles.rsvpButton, selected && styles.rsvpButtonOn]}
-                  disabled={updating}
+                  style={[
+                    styles.rsvpButton,
+                    selected && styles.rsvpButtonOn,
+                    blocked && styles.rsvpButtonDisabled,
+                  ]}
+                  disabled={updating || blocked}
                   onPress={() => handleRsvp(option.status)}
                 >
                   <Icon
@@ -176,6 +207,9 @@ export default function EventDetailScreen() {
               );
             })}
           </View>
+          {rsvpError ? (
+            <Text style={styles.rsvpError}>{rsvpError}</Text>
+          ) : null}
 
           {event.going.length > 0 ? (
             <>
@@ -243,28 +277,36 @@ export default function EventDetailScreen() {
           )}
         </ScrollView>
 
-        <View style={styles.composer}>
-          <TextInput
-            value={commentBody}
-            onChangeText={setCommentBody}
-            placeholder="Add a comment…"
-            placeholderTextColor="#9B8CAF"
-            style={styles.composerInput}
-            multiline
-            maxLength={4000}
-          />
-          <Pressable
-            style={[
-              styles.sendButton,
-              (commentBody.trim().length === 0 || sending) &&
-                styles.sendDisabled,
-            ]}
-            disabled={commentBody.trim().length === 0 || sending}
-            onPress={handleSendComment}
-          >
-            <Text style={styles.sendText}>{sending ? '…' : 'Send'}</Text>
-          </Pressable>
-        </View>
+        {event.allowComments ? (
+          <View style={styles.composer}>
+            <TextInput
+              value={commentBody}
+              onChangeText={setCommentBody}
+              placeholder="Add a comment…"
+              placeholderTextColor="#9B8CAF"
+              style={styles.composerInput}
+              multiline
+              maxLength={4000}
+            />
+            <Pressable
+              style={[
+                styles.sendButton,
+                (commentBody.trim().length === 0 || sending) &&
+                  styles.sendDisabled,
+              ]}
+              disabled={commentBody.trim().length === 0 || sending}
+              onPress={handleSendComment}
+            >
+              <Text style={styles.sendText}>{sending ? '…' : 'Send'}</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.commentsOff}>
+            <Text style={styles.commentsOffText}>
+              Comments are turned off for this event.
+            </Text>
+          </View>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -298,11 +340,42 @@ const styles = StyleSheet.create({
     lineHeight: 23,
     marginBottom: 16,
   },
+  badgeRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  metaBadge: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#6D28D9',
+    backgroundColor: '#F1ECFA',
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  metaBadgeFull: { color: '#B4243F', backgroundColor: '#FDE7EC' },
   counts: {
     fontSize: 14,
     color: '#4A3D63',
     fontWeight: '700',
     marginBottom: 22,
+  },
+  rsvpButtonDisabled: { opacity: 0.4 },
+  rsvpError: {
+    fontSize: 14,
+    color: '#B4243F',
+    fontWeight: '600',
+    marginTop: -12,
+    marginBottom: 20,
+  },
+  commentsOff: {
+    borderTopWidth: 1,
+    borderTopColor: '#E7DFF5',
+    padding: 16,
+    backgroundColor: '#FDFCFF',
+  },
+  commentsOffText: {
+    fontSize: 14,
+    color: '#76698C',
+    textAlign: 'center',
   },
   sectionLabel: {
     fontSize: 15,
