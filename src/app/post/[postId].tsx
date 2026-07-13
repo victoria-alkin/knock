@@ -203,7 +203,7 @@ export default function PostDetailScreen() {
                     <Text style={styles.deleteLink}>Delete post</Text>
                   </Pressable>
                 )
-              ) : (
+              ) : post.allowDms && !post.isAnonymous ? (
                 <Pressable
                   style={styles.messageButton}
                   onPress={handleMessageAuthor}
@@ -212,7 +212,7 @@ export default function PostDetailScreen() {
                     Message {post.authorName}
                   </Text>
                 </Pressable>
-              )}
+              ) : null}
             </View>
 
             <Text style={styles.repliesTitle}>
@@ -259,7 +259,7 @@ export default function PostDetailScreen() {
           </ScrollView>
         )}
 
-        {post && (
+        {post && post.allowReplies ? (
           <View style={styles.composer}>
             {error && <Text style={styles.errorText}>{error}</Text>}
             <View style={styles.composerRow}>
@@ -287,7 +287,13 @@ export default function PostDetailScreen() {
               </Pressable>
             </View>
           </View>
-        )}
+        ) : post ? (
+          <View style={styles.repliesOff}>
+            <Text style={styles.repliesOffText}>
+              Replies are turned off for this post.
+            </Text>
+          </View>
+        ) : null}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -460,6 +466,17 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 12,
     backgroundColor: '#FDFCFF',
+  },
+  repliesOff: {
+    borderTopWidth: 1,
+    borderTopColor: '#E7DFF5',
+    padding: 16,
+    backgroundColor: '#FDFCFF',
+  },
+  repliesOffText: {
+    fontSize: 14,
+    color: '#76698C',
+    textAlign: 'center',
   },
   composerRow: {
     flexDirection: 'row',

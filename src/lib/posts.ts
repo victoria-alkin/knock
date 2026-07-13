@@ -20,6 +20,9 @@ export type Post = {
   authorAvatar: string | null;
   imageUrl: string | null;
   urgency: PostUrgency;
+  allowReplies: boolean;
+  allowDms: boolean;
+  isAnonymous: boolean;
   replyCount: number;
   likeCount: number;
   likedByMe: boolean;
@@ -50,7 +53,7 @@ export async function fetchBuildingPosts(
   let query = supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, image_url, urgency, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
+      'id, author_id, body, channel, created_at, image_url, urgency, allow_replies, allow_dms, is_anonymous, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
     )
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
@@ -59,6 +62,9 @@ export async function fetchBuildingPosts(
   if (channel) {
     query = query.eq('channel', channel);
   }
+
+  // Hide expired posts.
+  query = query.or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
 
   const { data, error } = await query;
   if (error || !data) return [];
@@ -73,7 +79,7 @@ export async function fetchPost(postId: string): Promise<Post | null> {
   const { data, error } = await supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, image_url, urgency, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
+      'id, author_id, body, channel, created_at, image_url, urgency, allow_replies, allow_dms, is_anonymous, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
     )
     .eq('id', postId)
     .maybeSingle();
@@ -185,25 +191,33 @@ export async function createReply(
   return error ? { error: error.message } : {};
 }
 
-export async function createPost(
-  buildingId: string,
-  channel: string,
-  body: string,
-  imageUrl: string | null = null,
-  urgency: PostUrgency = 'normal',
-): Promise<{ error?: string }> {
+export async function createPost(input: {
+  buildingId: string;
+  channel: string;
+  body: string;
+  imageUrl?: string | null;
+  urgency?: PostUrgency;
+  allowReplies?: boolean;
+  allowDms?: boolean;
+  isAnonymous?: boolean;
+  expiresAt?: string | null;
+}): Promise<{ error?: string }> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: 'You are not signed in.' };
 
   const { error } = await supabase.from('posts').insert({
-    building_id: buildingId,
+    building_id: input.buildingId,
     author_id: user.id,
-    channel,
-    body: body.trim(),
-    image_url: imageUrl,
-    urgency,
+    channel: input.channel,
+    body: input.body.trim(),
+    image_url: input.imageUrl ?? null,
+    urgency: input.urgency ?? 'normal',
+    allow_replies: input.allowReplies ?? true,
+    allow_dms: input.allowDms ?? true,
+    is_anonymous: input.isAnonymous ?? false,
+    expires_at: input.expiresAt ?? null,
   });
 
   return error ? { error: error.message } : {};
@@ -222,16 +236,21 @@ export function relativeTime(iso: string): string {
 }
 
 function toPost(row: RawPost): Post {
+  const anonymous = row.is_anonymous ?? false;
   return {
     id: row.id,
     authorId: row.author_id,
     body: row.body,
     channel: row.channel,
     createdAt: row.created_at,
-    authorName: row.profiles?.display_name ?? 'Neighbor',
-    authorAvatar: row.profiles?.avatar_url ?? null,
+    // Anonymous posts hide the author's name/avatar in the UI.
+    authorName: anonymous ? 'Anonymous' : row.profiles?.display_name ?? 'Neighbor',
+    authorAvatar: anonymous ? null : row.profiles?.avatar_url ?? null,
     imageUrl: row.image_url,
     urgency: row.urgency ?? 'normal',
+    allowReplies: row.allow_replies ?? true,
+    allowDms: row.allow_dms ?? true,
+    isAnonymous: anonymous,
     replyCount: row.replies?.[0]?.count ?? 0,
     likeCount: row.post_likes?.[0]?.count ?? 0,
     likedByMe: false,
@@ -248,6 +267,9 @@ type RawPost = {
   created_at: string;
   image_url: string | null;
   urgency: PostUrgency | null;
+  allow_replies: boolean | null;
+  allow_dms: boolean | null;
+  is_anonymous: boolean | null;
   profiles: RawProfile | null;
   replies: { count: number }[] | null;
   post_likes: { count: number }[] | null;

@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -23,6 +24,13 @@ const URGENCY_OPTIONS: { value: PostUrgency; label: string }[] = [
   { value: 'asap', label: 'ASAP' },
 ];
 
+const EXPIRY_OPTIONS: { label: string; days: number | null }[] = [
+  { label: 'Never', days: null },
+  { label: '1 day', days: 1 },
+  { label: '7 days', days: 7 },
+  { label: '30 days', days: 30 },
+];
+
 export default function CreatePostScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ channel?: string }>();
@@ -32,6 +40,10 @@ export default function CreatePostScreen() {
   const [channel, setChannel] = useState<string>(params.channel ?? 'general');
   const [body, setBody] = useState('');
   const [urgency, setUrgency] = useState<PostUrgency>('normal');
+  const [allowReplies, setAllowReplies] = useState(true);
+  const [allowDms, setAllowDms] = useState(true);
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [expiryDays, setExpiryDays] = useState<number | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [posting, setPosting] = useState(false);
@@ -73,13 +85,21 @@ export default function CreatePostScreen() {
     setPosting(true);
     setError(null);
 
-    const { error: postError } = await createPost(
+    const expiresAt = expiryDays
+      ? new Date(Date.now() + expiryDays * 86400000).toISOString()
+      : null;
+
+    const { error: postError } = await createPost({
       buildingId,
       channel,
       body,
       imageUrl,
       urgency,
-    );
+      allowReplies,
+      allowDms,
+      isAnonymous,
+      expiresAt,
+    });
     if (postError) {
       setError(postError);
       setPosting(false);
@@ -177,6 +197,65 @@ export default function CreatePostScreen() {
                 key={option.value}
                 style={[styles.urgencyChip, selected && styles.urgencyChipOn]}
                 onPress={() => setUrgency(option.value)}
+              >
+                <Text
+                  style={[
+                    styles.urgencyText,
+                    selected && styles.urgencyTextOn,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <View style={styles.optionRow}>
+          <View style={styles.optionText}>
+            <Text style={styles.optionTitle}>Allow replies</Text>
+            <Text style={styles.optionSub}>Anyone in the building can reply</Text>
+          </View>
+          <Switch
+            value={allowReplies}
+            onValueChange={setAllowReplies}
+            trackColor={{ true: '#6D28D9', false: '#D8CEE9' }}
+          />
+        </View>
+
+        <View style={styles.optionRow}>
+          <View style={styles.optionText}>
+            <Text style={styles.optionTitle}>Allow direct messages</Text>
+            <Text style={styles.optionSub}>People can message you about this</Text>
+          </View>
+          <Switch
+            value={allowDms}
+            onValueChange={setAllowDms}
+            trackColor={{ true: '#6D28D9', false: '#D8CEE9' }}
+          />
+        </View>
+
+        <View style={styles.optionRow}>
+          <View style={styles.optionText}>
+            <Text style={styles.optionTitle}>Post anonymously</Text>
+            <Text style={styles.optionSub}>Your name won&apos;t be shown</Text>
+          </View>
+          <Switch
+            value={isAnonymous}
+            onValueChange={setIsAnonymous}
+            trackColor={{ true: '#6D28D9', false: '#D8CEE9' }}
+          />
+        </View>
+
+        <Text style={styles.urgencyLabel}>Expires</Text>
+        <View style={styles.urgencyRow}>
+          {EXPIRY_OPTIONS.map((option) => {
+            const selected = option.days === expiryDays;
+            return (
+              <Pressable
+                key={option.label}
+                style={[styles.urgencyChip, selected && styles.urgencyChipOn]}
+                onPress={() => setExpiryDays(option.days)}
               >
                 <Text
                   style={[
@@ -319,6 +398,18 @@ const styles = StyleSheet.create({
   urgencyChipOn: { backgroundColor: '#6D28D9', borderColor: '#6D28D9' },
   urgencyText: { fontSize: 14, fontWeight: '800', color: '#4A3D63' },
   urgencyTextOn: { color: '#FFFFFF' },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE8F8',
+    marginTop: 8,
+  },
+  optionText: { flex: 1, paddingRight: 12 },
+  optionTitle: { fontSize: 15, fontWeight: '700', color: '#1F1438' },
+  optionSub: { fontSize: 13, color: '#76698C', marginTop: 2 },
   errorText: {
     fontSize: 15,
     color: '#B4243F',
