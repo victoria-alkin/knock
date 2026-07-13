@@ -6,6 +6,7 @@ import {
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -89,6 +90,9 @@ export default function EventDetailScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
+        {event.imageUrl ? (
+          <Image source={{ uri: event.imageUrl }} style={styles.cover} />
+        ) : null}
         <Text style={styles.time}>{formatEventTime(event.startsAt)}</Text>
         <Text style={styles.title}>{event.title}</Text>
         <Text style={styles.host}>Hosted by {event.hostName}</Text>
@@ -151,6 +155,12 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingVertical: 12 },
   back: { fontSize: 16, color: '#6D28D9', fontWeight: '700' },
   content: { paddingHorizontal: 20, paddingBottom: 32 },
+  cover: {
+    width: '100%',
+    height: 200,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
   time: {
     fontSize: 14,
     fontWeight: '800',

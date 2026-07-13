@@ -9,6 +9,7 @@ export type EventSummary = {
   location: string | null;
   startsAt: string;
   hostName: string;
+  imageUrl: string | null;
   goingCount: number;
   myStatus: RsvpStatus | null;
 };
@@ -28,6 +29,7 @@ type RawEvent = {
   location: string | null;
   starts_at: string;
   host_id: string;
+  image_url: string | null;
   profiles: { display_name: string | null } | null;
   event_rsvps: {
     status: RsvpStatus;
@@ -37,7 +39,7 @@ type RawEvent = {
 };
 
 const EVENT_SELECT =
-  'id, title, description, location, starts_at, host_id, profiles ( display_name ), event_rsvps ( status, user_id, profiles ( display_name, avatar_url ) )';
+  'id, title, description, location, starts_at, host_id, image_url, profiles ( display_name ), event_rsvps ( status, user_id, profiles ( display_name, avatar_url ) )';
 
 /** Upcoming events for a building, soonest first. */
 export async function fetchEvents(buildingId: string): Promise<EventSummary[]> {
@@ -88,6 +90,7 @@ export async function createEvent(fields: {
   description: string;
   location: string;
   startsAt: string;
+  imageUrl: string | null;
 }): Promise<{ error?: string; id?: string }> {
   const {
     data: { user },
@@ -103,6 +106,7 @@ export async function createEvent(fields: {
       description: fields.description.trim() || null,
       location: fields.location.trim() || null,
       starts_at: fields.startsAt,
+      image_url: fields.imageUrl,
     })
     .select('id')
     .single();
@@ -137,6 +141,7 @@ function toSummary(row: RawEvent, myId: string | null): EventSummary {
     location: row.location,
     startsAt: row.starts_at,
     hostName: row.profiles?.display_name ?? 'Neighbor',
+    imageUrl: row.image_url,
     goingCount: row.event_rsvps.filter((r) => r.status === 'going').length,
     myStatus: row.event_rsvps.find((r) => r.user_id === myId)?.status ?? null,
   };

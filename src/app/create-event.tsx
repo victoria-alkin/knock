@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { pickAndUploadEventPhoto } from '@/lib/avatar';
 import { createEvent } from '@/lib/events';
 import { getMyBuilding } from '@/lib/membership';
 
@@ -22,8 +24,19 @@ export default function CreateEventScreen() {
   const [location, setLocation] = useState('');
   const [date, setDate] = useState(''); // YYYY-MM-DD
   const [time, setTime] = useState(''); // HH:MM
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handlePickPhoto = async () => {
+    setUploadingImage(true);
+    setError(null);
+    const { url, error: uploadError } = await pickAndUploadEventPhoto();
+    if (url) setImageUrl(url);
+    else if (uploadError) setError(uploadError);
+    setUploadingImage(false);
+  };
 
   useEffect(() => {
     let active = true;
@@ -63,6 +76,7 @@ export default function CreateEventScreen() {
       description,
       location,
       startsAt,
+      imageUrl,
     });
     if (createError || !id) {
       setError(createError ?? 'Could not create the event.');
@@ -92,6 +106,20 @@ export default function CreateEventScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
+        <Pressable
+          style={styles.coverPicker}
+          onPress={handlePickPhoto}
+          disabled={uploadingImage}
+        >
+          {imageUrl ? (
+            <Image source={{ uri: imageUrl }} style={styles.cover} />
+          ) : (
+            <Text style={styles.coverHint}>
+              {uploadingImage ? 'Uploading…' : '📷  Add a cover photo'}
+            </Text>
+          )}
+        </Pressable>
+
         <Text style={styles.label}>Event title</Text>
         <TextInput
           value={title}
@@ -186,5 +214,18 @@ const styles = StyleSheet.create({
   multiline: { minHeight: 90, textAlignVertical: 'top' },
   row: { flexDirection: 'row', gap: 12 },
   rowItem: { flex: 1 },
+  coverPicker: {
+    height: 170,
+    borderRadius: 16,
+    backgroundColor: '#F1ECFA',
+    borderWidth: 1,
+    borderColor: '#E5DDF5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  cover: { width: '100%', height: '100%' },
+  coverHint: { fontSize: 15, color: '#6D28D9', fontWeight: '700' },
   errorText: { fontSize: 15, color: '#B4243F', marginTop: 4 },
 });

@@ -26,3 +26,13 @@ export async function pickAndUploadPostPhoto() {
       `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`,
   });
 }
+
+/** Pick and upload an event cover photo. Returns the public URL. */
+export async function pickAndUploadEventPhoto() {
+  return pickAndUploadImage({
+    bucket: 'event-photos',
+    pathFor: (userId) =>
+      `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`,
+    aspect: [16, 9],
+  });
+}

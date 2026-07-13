@@ -2,6 +2,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -92,6 +93,9 @@ export default function EventsScreen() {
                 })
               }
             >
+              {event.imageUrl ? (
+                <Image source={{ uri: event.imageUrl }} style={styles.eventImage} />
+              ) : null}
               <Text style={styles.eventTime}>
                 {formatEventTime(event.startsAt)}
               </Text>
@@ -168,6 +172,12 @@ const styles = StyleSheet.create({
     padding: 18,
     borderWidth: 1,
     borderColor: '#E7DFF5',
+    marginBottom: 12,
+  },
+  eventImage: {
+    width: '100%',
+    height: 150,
+    borderRadius: 12,
     marginBottom: 12,
   },
   eventTime: {
