@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -35,6 +36,22 @@ export default function HomeScreen() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    const b = (await getMyBuilding()) ?? building;
+    setBuilding(b);
+    if (b) {
+      const [rows, n] = await Promise.all([
+        fetchBuildingPosts(b.id),
+        getUnreadCount(),
+      ]);
+      setPosts(rows);
+      setUnread(n);
+    }
+    setRefreshing(false);
+  }, [building]);
 
   useEffect(() => {
     let active = true;
@@ -162,7 +179,18 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.content}>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#6D28D9"
+            colors={['#6D28D9']}
+          />
+        }
+      >
         <View style={styles.topBar}>
           <Pressable
             onPress={() => router.push('/invite')}

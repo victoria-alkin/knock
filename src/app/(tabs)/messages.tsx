@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -19,6 +20,13 @@ export default function MessagesScreen() {
   const scrollRef = useScrollToTop();
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    setConversations(await fetchConversations());
+    setRefreshing(false);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -52,7 +60,17 @@ export default function MessagesScreen() {
             </Text>
           </View>
         ) : (
-          <ScrollView ref={scrollRef}>
+          <ScrollView
+            ref={scrollRef}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#6D28D9"
+                colors={['#6D28D9']}
+              />
+            }
+          >
             {conversations.map((c) => (
               <Pressable
                 key={c.id}

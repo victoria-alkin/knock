@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -29,6 +30,14 @@ export default function MarketplaceScreen() {
   const [buildingId, setBuildingId] = useState<string | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    if (!buildingId) return;
+    setRefreshing(true);
+    setListings(await fetchListings(buildingId));
+    setRefreshing(false);
+  }, [buildingId]);
 
   useEffect(() => {
     let active = true;
@@ -66,7 +75,17 @@ export default function MarketplaceScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#6D28D9"
+            colors={['#6D28D9']}
+          />
+        }
+      >
         <View style={styles.titleRow}>
           <View
             style={[styles.iconTile, { backgroundColor: MARKETPLACE?.color }]}

@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,6 +25,14 @@ export default function EventsScreen() {
   const [buildingId, setBuildingId] = useState<string | null>(null);
   const [events, setEvents] = useState<EventSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    if (!buildingId) return;
+    setRefreshing(true);
+    setEvents(await fetchEvents(buildingId));
+    setRefreshing(false);
+  }, [buildingId]);
 
   useEffect(() => {
     let active = true;
@@ -61,7 +70,17 @@ export default function EventsScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#6D28D9"
+            colors={['#6D28D9']}
+          />
+        }
+      >
         <View style={styles.titleRow}>
           <View style={[styles.iconTile, { backgroundColor: EVENTS?.color }]}>
             <Icon

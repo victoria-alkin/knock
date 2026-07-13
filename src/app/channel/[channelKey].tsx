@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -36,6 +37,14 @@ export default function ChannelDetailScreen() {
   const [buildingId, setBuildingId] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    if (!buildingId || !channelKey) return;
+    setRefreshing(true);
+    setPosts(await fetchBuildingPosts(buildingId, channelKey));
+    setRefreshing(false);
+  }, [buildingId, channelKey]);
 
   useEffect(() => {
     let active = true;
@@ -95,7 +104,17 @@ export default function ChannelDetailScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#6D28D9"
+            colors={['#6D28D9']}
+          />
+        }
+      >
         <View style={styles.titleRow}>
           {channel ? (
             <View
