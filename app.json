@@ -34,7 +34,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Knock needs access to your photos so you can set a profile picture."
+          "photosPermission": "Knock uses your photos so you can add a profile picture, share posts, and list items for your neighbors."
         }
       ],
       [

@@ -17,7 +17,7 @@ export async function pickAndUploadImage(opts: {
   if (!permission.granted) {
     return {
       error:
-        'Photo access is needed to add a photo. Enable it for Expo Go in Settings.',
+        'To add a photo, allow photo access in Settings, then try again.',
     };
   }
 
