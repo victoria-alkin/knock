@@ -1,3 +1,4 @@
+import { Asset } from 'expo-asset';
 import { ColorValue, Image, ImageSourcePropType } from 'react-native';
 
 /**
@@ -14,7 +15,12 @@ export function Icon({
   size?: number;
   color?: ColorValue;
 }) {
-  const uri = Image.resolveAssetSource(source)?.uri;
+  let uri: string | undefined;
+  try {
+    uri = Asset.fromModule(source as number).uri;
+  } catch {
+    uri = undefined;
+  }
 
   if (!color || !uri) {
     return (
