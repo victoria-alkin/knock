@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CHANNELS } from '@/constants/channels';
 import { Avatar } from '@/components/avatar';
+import { UrgencyBadge } from '@/components/urgency-badge';
 import { startConversation } from '@/lib/dms';
 import {
   createReply,
@@ -168,6 +169,7 @@ export default function PostDetailScreen() {
                     {relativeTime(post.createdAt)}
                   </Text>
                 </View>
+                <UrgencyBadge urgency={post.urgency} />
               </View>
               {post.body ? (
                 <Text style={styles.postBody}>{post.body}</Text>

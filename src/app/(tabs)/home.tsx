@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
+import { UrgencyBadge } from '@/components/urgency-badge';
 import { CHANNELS } from '@/constants/channels';
 import { getMyBuilding, MyBuilding } from '@/lib/membership';
 import {
@@ -202,6 +203,7 @@ export default function HomeScreen() {
                       {relativeTime(post.createdAt)}
                     </Text>
                   </View>
+                  <UrgencyBadge urgency={post.urgency} />
                 </View>
                 {post.body ? (
                   <Text style={styles.postBody}>{post.body}</Text>

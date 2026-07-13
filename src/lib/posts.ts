@@ -1,5 +1,15 @@
 import { supabase } from './supabase';
 
+export type PostUrgency = 'normal' | 'this_week' | 'asap';
+
+export const URGENCY_META: Record<
+  Exclude<PostUrgency, 'normal'>,
+  { label: string; color: string; bg: string }
+> = {
+  asap: { label: 'ASAP', color: '#B4243F', bg: '#FDE7EC' },
+  this_week: { label: 'This week', color: '#9A6A15', bg: '#FBF3DA' },
+};
+
 export type Post = {
   id: string;
   authorId: string;
@@ -9,6 +19,7 @@ export type Post = {
   authorName: string;
   authorAvatar: string | null;
   imageUrl: string | null;
+  urgency: PostUrgency;
   replyCount: number;
   likeCount: number;
   likedByMe: boolean;
@@ -39,7 +50,7 @@ export async function fetchBuildingPosts(
   let query = supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, image_url, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
+      'id, author_id, body, channel, created_at, image_url, urgency, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
     )
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
@@ -62,7 +73,7 @@ export async function fetchPost(postId: string): Promise<Post | null> {
   const { data, error } = await supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, image_url, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
+      'id, author_id, body, channel, created_at, image_url, urgency, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
     )
     .eq('id', postId)
     .maybeSingle();
@@ -179,6 +190,7 @@ export async function createPost(
   channel: string,
   body: string,
   imageUrl: string | null = null,
+  urgency: PostUrgency = 'normal',
 ): Promise<{ error?: string }> {
   const {
     data: { user },
@@ -191,6 +203,7 @@ export async function createPost(
     channel,
     body: body.trim(),
     image_url: imageUrl,
+    urgency,
   });
 
   return error ? { error: error.message } : {};
@@ -218,6 +231,7 @@ function toPost(row: RawPost): Post {
     authorName: row.profiles?.display_name ?? 'Neighbor',
     authorAvatar: row.profiles?.avatar_url ?? null,
     imageUrl: row.image_url,
+    urgency: row.urgency ?? 'normal',
     replyCount: row.replies?.[0]?.count ?? 0,
     likeCount: row.post_likes?.[0]?.count ?? 0,
     likedByMe: false,
@@ -233,6 +247,7 @@ type RawPost = {
   channel: string;
   created_at: string;
   image_url: string | null;
+  urgency: PostUrgency | null;
   profiles: RawProfile | null;
   replies: { count: number }[] | null;
   post_likes: { count: number }[] | null;

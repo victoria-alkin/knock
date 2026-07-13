@@ -15,7 +15,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { pickAndUploadPostPhoto } from '@/lib/avatar';
 import { CHANNELS } from '@/constants/channels';
 import { getMyBuilding } from '@/lib/membership';
-import { createPost } from '@/lib/posts';
+import { createPost, PostUrgency } from '@/lib/posts';
+
+const URGENCY_OPTIONS: { value: PostUrgency; label: string }[] = [
+  { value: 'normal', label: 'Normal' },
+  { value: 'this_week', label: 'This week' },
+  { value: 'asap', label: 'ASAP' },
+];
 
 export default function CreatePostScreen() {
   const router = useRouter();
@@ -25,6 +31,7 @@ export default function CreatePostScreen() {
   const [buildingName, setBuildingName] = useState<string>('your building');
   const [channel, setChannel] = useState<string>(params.channel ?? 'general');
   const [body, setBody] = useState('');
+  const [urgency, setUrgency] = useState<PostUrgency>('normal');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [posting, setPosting] = useState(false);
@@ -71,6 +78,7 @@ export default function CreatePostScreen() {
       channel,
       body,
       imageUrl,
+      urgency,
     );
     if (postError) {
       setError(postError);
@@ -159,6 +167,29 @@ export default function CreatePostScreen() {
             </Text>
           </Pressable>
         )}
+
+        <Text style={styles.urgencyLabel}>Urgency</Text>
+        <View style={styles.urgencyRow}>
+          {URGENCY_OPTIONS.map((option) => {
+            const selected = option.value === urgency;
+            return (
+              <Pressable
+                key={option.value}
+                style={[styles.urgencyChip, selected && styles.urgencyChipOn]}
+                onPress={() => setUrgency(option.value)}
+              >
+                <Text
+                  style={[
+                    styles.urgencyText,
+                    selected && styles.urgencyTextOn,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
 
         {error && <Text style={styles.errorText}>{error}</Text>}
       </ScrollView>
@@ -268,6 +299,26 @@ const styles = StyleSheet.create({
   },
   removePhoto: { alignSelf: 'flex-start' },
   removePhotoText: { fontSize: 14, color: '#B4243F', fontWeight: '700' },
+  urgencyLabel: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1F1438',
+    marginTop: 22,
+    marginBottom: 10,
+  },
+  urgencyRow: { flexDirection: 'row', gap: 8 },
+  urgencyChip: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#E7DFF5',
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  urgencyChipOn: { backgroundColor: '#6D28D9', borderColor: '#6D28D9' },
+  urgencyText: { fontSize: 14, fontWeight: '800', color: '#4A3D63' },
+  urgencyTextOn: { color: '#FFFFFF' },
   errorText: {
     fontSize: 15,
     color: '#B4243F',
