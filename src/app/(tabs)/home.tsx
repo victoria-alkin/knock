@@ -1,5 +1,5 @@
-import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -29,10 +29,20 @@ const CHANNEL_BY_KEY = Object.fromEntries(CHANNELS.map((c) => [c.key, c]));
 
 export default function HomeScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
+  const scrollRef = useRef<ScrollView>(null);
   const [building, setBuilding] = useState<MyBuilding | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  // Tapping the Home tab scrolls the feed back to the top.
+  useEffect(() => {
+    const unsub = navigation.addListener('tabPress' as never, () => {
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
+    });
+    return unsub;
+  }, [navigation]);
 
   useEffect(() => {
     let active = true;
@@ -160,7 +170,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.content}>
         <View style={styles.topBar}>
           <Pressable
             onPress={() => router.push('/invite')}
