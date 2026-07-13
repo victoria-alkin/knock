@@ -13,8 +13,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Icon } from '@/components/icon';
 import { pickAndUploadPostPhoto } from '@/lib/avatar';
 import { CHANNELS } from '@/constants/channels';
+import { postIcons } from '@/constants/icons';
 import { getMyBuilding } from '@/lib/membership';
 import { createPost, PostUrgency } from '@/lib/posts';
 
@@ -182,8 +184,9 @@ export default function CreatePostScreen() {
             onPress={handlePickPhoto}
             disabled={uploadingImage}
           >
+            <Icon source={postIcons.photo} size={20} color="#6D28D9" />
             <Text style={styles.addPhotoText}>
-              {uploadingImage ? 'Uploading…' : '📷  Add a photo'}
+              {uploadingImage ? 'Uploading…' : 'Add a photo'}
             </Text>
           </Pressable>
         )}
@@ -236,7 +239,8 @@ export default function CreatePostScreen() {
         </View>
 
         <View style={styles.optionRow}>
-          <View style={styles.optionText}>
+          <Icon source={postIcons.anonymous} size={22} color="#6D28D9" />
+          <View style={[styles.optionText, styles.optionTextWithIcon]}>
             <Text style={styles.optionTitle}>Post anonymously</Text>
             <Text style={styles.optionSub}>Your name won&apos;t be shown</Text>
           </View>
@@ -365,7 +369,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1ECFA',
     borderRadius: 14,
     paddingVertical: 14,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     marginTop: 4,
   },
   addPhotoText: { fontSize: 15, color: '#6D28D9', fontWeight: '700' },
@@ -408,6 +415,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   optionText: { flex: 1, paddingRight: 12 },
+  optionTextWithIcon: { marginLeft: 12 },
   optionTitle: { fontSize: 15, fontWeight: '700', color: '#1F1438' },
   optionSub: { fontSize: 13, color: '#76698C', marginTop: 2 },
   errorText: {

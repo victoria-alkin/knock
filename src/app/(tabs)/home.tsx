@@ -12,8 +12,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
+import { Icon } from '@/components/icon';
 import { UrgencyBadge } from '@/components/urgency-badge';
 import { CHANNELS } from '@/constants/channels';
+import { channelIcons } from '@/constants/icons';
 import { getMyBuilding, MyBuilding } from '@/lib/membership';
 import {
   fetchBuildingPosts,
@@ -148,7 +150,15 @@ export default function HomeScreen() {
               <View
                 style={[styles.channelIcon, { backgroundColor: channel.color }]}
               >
-                <Text style={styles.channelEmoji}>{channel.emoji}</Text>
+                {channelIcons[channel.key] ? (
+                  <Icon
+                    source={channelIcons[channel.key]}
+                    size={28}
+                    color={channel.accent}
+                  />
+                ) : (
+                  <Text style={styles.channelEmoji}>{channel.emoji}</Text>
+                )}
               </View>
               <Text style={styles.channelName}>{channel.name}</Text>
             </Pressable>

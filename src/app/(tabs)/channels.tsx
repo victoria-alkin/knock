@@ -2,7 +2,9 @@ import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Icon } from '@/components/icon';
 import { CHANNELS } from '@/constants/channels';
+import { channelIcons } from '@/constants/icons';
 
 export default function ChannelsScreen() {
   const router = useRouter();
@@ -32,7 +34,15 @@ export default function ChannelsScreen() {
             }
           >
             <View style={[styles.iconWrap, { backgroundColor: channel.color }]}>
-              <Text style={styles.icon}>{channel.emoji}</Text>
+              {channelIcons[channel.key] ? (
+                <Icon
+                  source={channelIcons[channel.key]}
+                  size={24}
+                  color={channel.accent}
+                />
+              ) : (
+                <Text style={styles.icon}>{channel.emoji}</Text>
+              )}
             </View>
             <View style={styles.channelInfo}>
               <Text style={styles.channelName}>{channel.name}</Text>

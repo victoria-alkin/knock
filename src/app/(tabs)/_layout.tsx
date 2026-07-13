@@ -1,9 +1,8 @@
 import { Tabs, useRouter } from 'expo-router';
-import { ColorValue, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-function TabEmoji({ emoji, color }: { emoji: string; color: ColorValue }) {
-  return <Text style={{ fontSize: 20, color }}>{emoji}</Text>;
-}
+import { Icon } from '@/components/icon';
+import { tabIcons } from '@/constants/icons';
 
 function CreateButton() {
   const router = useRouter();
@@ -13,7 +12,7 @@ function CreateButton() {
       onPress={() => router.push('/create-post')}
     >
       <View style={styles.createCircle}>
-        <Text style={styles.createPlus}>+</Text>
+        <Icon source={tabIcons.plus} size={24} color="#FFFFFF" />
       </View>
     </Pressable>
   );
@@ -32,14 +31,18 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <TabEmoji emoji="🏠" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Icon source={tabIcons.home} size={24} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="channels"
         options={{
           title: 'Channels',
-          tabBarIcon: ({ color }) => <TabEmoji emoji="🗂️" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Icon source={tabIcons.channels} size={24} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -53,14 +56,18 @@ export default function TabsLayout() {
         name="messages"
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color }) => <TabEmoji emoji="💌" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Icon source={tabIcons.messages} size={24} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <TabEmoji emoji="👤" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Icon source={tabIcons.profile} size={24} color={color} />
+          ),
         }}
       />
     </Tabs>

@@ -19,6 +19,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
+import { Icon } from '@/components/icon';
+import { rsvpIcons } from '@/constants/icons';
 import {
   createEventComment,
   deleteEventComment,
@@ -160,6 +162,11 @@ export default function EventDetailScreen() {
                   disabled={updating}
                   onPress={() => handleRsvp(option.status)}
                 >
+                  <Icon
+                    source={rsvpIcons[option.status]}
+                    size={22}
+                    color={selected ? '#FFFFFF' : '#6D28D9'}
+                  />
                   <Text
                     style={[styles.rsvpText, selected && styles.rsvpTextOn]}
                   >
@@ -310,8 +317,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E7DFF5',
-    paddingVertical: 14,
+    paddingVertical: 12,
     alignItems: 'center',
+    gap: 6,
   },
   rsvpButtonOn: { backgroundColor: '#6D28D9', borderColor: '#6D28D9' },
   rsvpText: { fontSize: 15, fontWeight: '800', color: '#4A3D63' },
