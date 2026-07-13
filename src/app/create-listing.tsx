@@ -106,6 +106,7 @@ export default function CreateListingScreen() {
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
         <Text style={styles.label}>Type</Text>
         <View style={styles.kindRow}>

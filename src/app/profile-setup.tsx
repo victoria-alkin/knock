@@ -127,6 +127,7 @@ export default function ProfileSetupScreen() {
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
         <Text style={styles.eyebrow}>Your profile</Text>
         <Text style={styles.title}>Set up your profile</Text>

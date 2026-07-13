@@ -12,13 +12,27 @@ export async function pickAndUploadImage(opts: {
   pathFor: (userId: string) => string;
   aspect?: [number, number];
 }): Promise<{ url?: string; error?: string; canceled?: boolean }> {
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: 'images',
-    allowsEditing: true,
-    aspect: opts.aspect,
-    quality: 0.6,
-    base64: true,
-  });
+  // Ask for photo-library access first (required on iOS).
+  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (!permission.granted) {
+    return {
+      error:
+        'Photo access is needed to add a photo. Enable it for Expo Go in Settings.',
+    };
+  }
+
+  let result;
+  try {
+    result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: opts.aspect,
+      quality: 0.6,
+      base64: true,
+    });
+  } catch {
+    return { error: 'Could not open the photo library.' };
+  }
 
   if (result.canceled) return { canceled: true };
   const asset = result.assets[0];

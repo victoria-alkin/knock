@@ -101,6 +101,7 @@ export default function EditProfileScreen() {
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
         <View style={styles.avatarSection}>
           <Pressable

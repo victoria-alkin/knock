@@ -122,6 +122,7 @@ export default function CreateEventScreen() {
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
         <Pressable
           style={styles.coverPicker}

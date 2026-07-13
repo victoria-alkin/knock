@@ -127,6 +127,7 @@ export default function CreatePostScreen() {
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
         <Text style={styles.label}>Channel</Text>
         <ScrollView
