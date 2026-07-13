@@ -46,6 +46,29 @@ export async function getCurrentUserId(): Promise<string | null> {
   return user?.id ?? null;
 }
 
+const POST_SELECT =
+  'id, author_id, body, channel, created_at, image_url, urgency, allow_replies, allow_dms, is_anonymous, pinned, profiles!posts_author_id_fkey ( display_name, avatar_url ), replies ( count ), post_likes ( count )';
+
+/** The current user's own posts, newest first. */
+export async function fetchMyPosts(): Promise<Post[]> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from('posts')
+    .select(POST_SELECT)
+    .eq('author_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  if (error || !data) return [];
+  const posts = (data as unknown as RawPost[]).map(toPost);
+  await attachMyLikes(posts);
+  return posts;
+}
+
 /** Recent posts for a building, newest first. Optionally filtered to a channel. */
 export async function fetchBuildingPosts(
   buildingId: string,

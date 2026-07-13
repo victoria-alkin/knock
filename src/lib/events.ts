@@ -64,6 +64,24 @@ export async function fetchEvents(buildingId: string): Promise<EventSummary[]> {
   return (data as unknown as RawEvent[]).map((row) => toSummary(row, myId));
 }
 
+/** Events hosted by the current user, most recent first. */
+export async function fetchMyEvents(): Promise<EventSummary[]> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from('events')
+    .select(EVENT_SELECT)
+    .eq('host_id', user.id)
+    .order('starts_at', { ascending: false })
+    .limit(100);
+
+  if (error || !data) return [];
+  return (data as unknown as RawEvent[]).map((row) => toSummary(row, user.id));
+}
+
 export async function fetchEvent(eventId: string): Promise<EventDetail | null> {
   const [{ data, error }, myId] = await Promise.all([
     supabase.from('events').select(EVENT_SELECT).eq('id', eventId).maybeSingle(),

@@ -83,8 +83,12 @@ export default function ProfileScreen() {
     .toLowerCase();
 
   const menu: MenuItem[] = [
-    { icon: '📝', label: 'My Posts', onPress: () => comingSoon('My Posts') },
-    { icon: '📅', label: 'My Events', onPress: () => comingSoon('My Events') },
+    { icon: '📝', label: 'My Posts', onPress: () => router.push('/my-posts') },
+    {
+      icon: '📅',
+      label: 'My Events',
+      onPress: () => router.push('/my-events'),
+    },
     {
       icon: '✏️',
       label: 'Edit Profile',
