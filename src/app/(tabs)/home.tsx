@@ -17,6 +17,7 @@ import { UrgencyBadge } from '@/components/urgency-badge';
 import { CHANNELS } from '@/constants/channels';
 import { channelIcons, likeIcons, topBarIcons } from '@/constants/icons';
 import { getMyBuilding, MyBuilding } from '@/lib/membership';
+import { getUnreadCount } from '@/lib/notifications';
 import {
   fetchBuildingPosts,
   Post,
@@ -30,6 +31,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [building, setBuilding] = useState<MyBuilding | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,6 +47,19 @@ export default function HomeScreen() {
       active = false;
     };
   }, []);
+
+  // Refresh the unread badge whenever the screen regains focus.
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      getUnreadCount().then((n) => {
+        if (active) setUnread(n);
+      });
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
 
   // Refresh the feed whenever the screen regains focus (e.g. after posting).
   useFocusEffect(
@@ -107,7 +122,15 @@ export default function HomeScreen() {
             style={styles.logo}
             resizeMode="contain"
           />
-          <View style={styles.topBarSpacer} />
+          <Pressable
+            onPress={() => router.push('/notifications')}
+            hitSlop={12}
+            style={styles.bellWrap}
+            accessibilityLabel="Notifications"
+          >
+            <Icon source={topBarIcons.notification} size={24} color="#6D28D9" />
+            {unread > 0 ? <View style={styles.bellBadge} /> : null}
+          </Pressable>
         </View>
 
         <View style={styles.buildingCard}>
@@ -288,6 +311,18 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   topBarSpacer: { width: 24 },
+  bellWrap: { width: 24, height: 24 },
+  bellBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 999,
+    backgroundColor: '#E23E57',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
   logo: {
     width: 130,
     height: 48,
