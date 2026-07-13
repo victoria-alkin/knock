@@ -17,7 +17,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CHANNELS } from '@/constants/channels';
 import { Avatar } from '@/components/avatar';
+import { Icon } from '@/components/icon';
 import { UrgencyBadge } from '@/components/urgency-badge';
+import { likeIcons } from '@/constants/icons';
 import { startConversation } from '@/lib/dms';
 import {
   createReply,
@@ -179,9 +181,11 @@ export default function PostDetailScreen() {
               ) : null}
 
               <Pressable style={styles.likeRow} onPress={handleToggleLike}>
-                <Text style={styles.heart}>
-                  {post.likedByMe ? '❤️' : '🤍'}
-                </Text>
+                <Icon
+                  source={post.likedByMe ? likeIcons.filled : likeIcons.outline}
+                  size={20}
+                  color={post.likedByMe ? '#E23E57' : '#8A7BA3'}
+                />
                 <Text style={styles.likeCount}>
                   {post.likeCount} {post.likeCount === 1 ? 'like' : 'likes'}
                 </Text>

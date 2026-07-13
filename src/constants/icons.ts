@@ -39,3 +39,8 @@ export const topBarIcons = {
   addUser: require('@/assets/images/elements/icons/add user.png'),
   notification: require('@/assets/images/elements/icons/notification.png'),
 };
+
+export const likeIcons = {
+  outline: require('@/assets/images/elements/icons/likes/heart.png'),
+  filled: require('@/assets/images/elements/icons/likes/heart_filled.png'),
+};

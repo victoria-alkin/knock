@@ -16,8 +16,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
+import { Icon } from '@/components/icon';
 import { UrgencyBadge } from '@/components/urgency-badge';
 import { CHANNELS } from '@/constants/channels';
+import { likeIcons } from '@/constants/icons';
 import { getMyBuilding } from '@/lib/membership';
 import {
   fetchBuildingPosts,
@@ -156,9 +158,11 @@ export default function ChannelDetailScreen() {
                   style={styles.footerAction}
                   onPress={() => toggleLike(post)}
                 >
-                  <Text style={styles.heart}>
-                    {post.likedByMe ? '❤️' : '🤍'}
-                  </Text>
+                  <Icon
+                    source={post.likedByMe ? likeIcons.filled : likeIcons.outline}
+                    size={17}
+                    color={post.likedByMe ? '#E23E57' : '#8A7BA3'}
+                  />
                   <Text style={styles.footerCount}>{post.likeCount}</Text>
                 </Pressable>
                 <Text style={styles.footerReplies}>
