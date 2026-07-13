@@ -1,5 +1,5 @@
-import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -17,6 +17,7 @@ import { UrgencyBadge } from '@/components/urgency-badge';
 import { CHANNELS } from '@/constants/channels';
 import { channelIcons, likeIcons, topBarIcons } from '@/constants/icons';
 import { getMyBuilding, MyBuilding } from '@/lib/membership';
+import { useScrollToTop } from '@/hooks/use-scroll-to-top';
 import { getUnreadCount } from '@/lib/notifications';
 import {
   fetchBuildingPosts,
@@ -29,20 +30,11 @@ const CHANNEL_BY_KEY = Object.fromEntries(CHANNELS.map((c) => [c.key, c]));
 
 export default function HomeScreen() {
   const router = useRouter();
-  const navigation = useNavigation();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useScrollToTop();
   const [building, setBuilding] = useState<MyBuilding | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(true);
-
-  // Tapping the Home tab scrolls the feed back to the top.
-  useEffect(() => {
-    const unsub = navigation.addListener('tabPress' as never, () => {
-      scrollRef.current?.scrollTo({ y: 0, animated: true });
-    });
-    return unsub;
-  }, [navigation]);
 
   useEffect(() => {
     let active = true;

@@ -11,10 +11,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
+import { useScrollToTop } from '@/hooks/use-scroll-to-top';
 import { ConversationSummary, fetchConversations } from '@/lib/dms';
 
 export default function MessagesScreen() {
   const router = useRouter();
+  const scrollRef = useScrollToTop();
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,7 +52,7 @@ export default function MessagesScreen() {
             </Text>
           </View>
         ) : (
-          <ScrollView>
+          <ScrollView ref={scrollRef}>
             {conversations.map((c) => (
               <Pressable
                 key={c.id}

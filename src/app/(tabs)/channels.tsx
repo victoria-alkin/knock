@@ -5,13 +5,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Icon } from '@/components/icon';
 import { CHANNELS } from '@/constants/channels';
 import { channelIcons } from '@/constants/icons';
+import { useScrollToTop } from '@/hooks/use-scroll-to-top';
 
 export default function ChannelsScreen() {
   const router = useRouter();
+  const scrollRef = useScrollToTop();
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.content}>
         <Text style={styles.title}>Channels</Text>
         <Text style={styles.subtitle}>
           Conversations organized by topic. Choose a channel to join the
