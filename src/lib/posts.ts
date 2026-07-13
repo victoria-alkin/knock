@@ -53,7 +53,7 @@ export async function fetchBuildingPosts(
   let query = supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, image_url, urgency, allow_replies, allow_dms, is_anonymous, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
+      'id, author_id, body, channel, created_at, image_url, urgency, allow_replies, allow_dms, is_anonymous, profiles!posts_author_id_fkey ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
     )
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
@@ -79,7 +79,7 @@ export async function fetchPost(postId: string): Promise<Post | null> {
   const { data, error } = await supabase
     .from('posts')
     .select(
-      'id, author_id, body, channel, created_at, image_url, urgency, allow_replies, allow_dms, is_anonymous, profiles ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
+      'id, author_id, body, channel, created_at, image_url, urgency, allow_replies, allow_dms, is_anonymous, profiles!posts_author_id_fkey ( display_name, avatar_url ), replies ( count ), post_likes ( count )',
     )
     .eq('id', postId)
     .maybeSingle();
