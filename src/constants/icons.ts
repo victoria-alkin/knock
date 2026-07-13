@@ -11,8 +11,8 @@ export const channelIcons: Record<string, number> = {
   sports: require('@/assets/images/elements/icons/Channels/Sports.png'),
   'building-issues': require('@/assets/images/elements/icons/Channels/building issues.png'),
   recommendations: require('@/assets/images/elements/icons/Channels/building recomendations.png'),
-  'lost-found': require('@/assets/images/elements/icons/Channels/lostandfound.png'),
-  announcements: require('@/assets/images/elements/icons/Channels/announcements.png'),
+  'lost-found': require('@/assets/images/elements/icons/Channels/lostandfound2.png'),
+  announcements: require('@/assets/images/elements/icons/Channels/announcements2.png'),
 };
 
 export const tabIcons = {
