@@ -11,7 +11,8 @@ export const channelIcons: Record<string, number> = {
   sports: require('@/assets/images/elements/icons/Channels/Sports.png'),
   'building-issues': require('@/assets/images/elements/icons/Channels/building issues.png'),
   recommendations: require('@/assets/images/elements/icons/Channels/building recomendations.png'),
-  // lost-found and announcements have no icon yet → screens fall back to emoji.
+  'lost-found': require('@/assets/images/elements/icons/Channels/lostandfound.png'),
+  announcements: require('@/assets/images/elements/icons/Channels/announcements.png'),
 };
 
 export const tabIcons = {
