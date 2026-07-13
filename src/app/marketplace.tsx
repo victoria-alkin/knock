@@ -11,6 +11,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Icon } from '@/components/icon';
+import { CHANNELS } from '@/constants/channels';
+import { channelIcons } from '@/constants/icons';
 import {
   fetchListings,
   KIND_LABEL,
@@ -18,6 +21,8 @@ import {
   listingPriceLabel,
 } from '@/lib/marketplace';
 import { getMyBuilding } from '@/lib/membership';
+
+const MARKETPLACE = CHANNELS.find((c) => c.key === 'marketplace');
 
 export default function MarketplaceScreen() {
   const router = useRouter();
@@ -63,7 +68,15 @@ export default function MarketplaceScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.titleRow}>
-          <Text style={styles.emoji}>🛍️</Text>
+          <View
+            style={[styles.iconTile, { backgroundColor: MARKETPLACE?.color }]}
+          >
+            <Icon
+              source={channelIcons.marketplace}
+              size={26}
+              color={MARKETPLACE?.accent}
+            />
+          </View>
           <Text style={styles.title}>Marketplace</Text>
         </View>
         <Text style={styles.subtitle}>
@@ -135,7 +148,13 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 6,
   },
-  emoji: { fontSize: 28 },
+  iconTile: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: { fontSize: 30, fontWeight: '900', color: '#1F1438' },
   subtitle: { fontSize: 15, color: '#67597F', marginBottom: 20, lineHeight: 21 },
   createButton: {

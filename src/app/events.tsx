@@ -11,8 +11,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Icon } from '@/components/icon';
+import { CHANNELS } from '@/constants/channels';
+import { channelIcons } from '@/constants/icons';
 import { EventSummary, fetchEvents, formatEventTime } from '@/lib/events';
 import { getMyBuilding } from '@/lib/membership';
+
+const EVENTS = CHANNELS.find((c) => c.key === 'events');
 
 export default function EventsScreen() {
   const router = useRouter();
@@ -58,7 +63,13 @@ export default function EventsScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.titleRow}>
-          <Text style={styles.emoji}>📅</Text>
+          <View style={[styles.iconTile, { backgroundColor: EVENTS?.color }]}>
+            <Icon
+              source={channelIcons.events}
+              size={26}
+              color={EVENTS?.accent}
+            />
+          </View>
           <Text style={styles.title}>Events</Text>
         </View>
         <Text style={styles.subtitle}>
@@ -130,7 +141,13 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 6,
   },
-  emoji: { fontSize: 28 },
+  iconTile: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: { fontSize: 30, fontWeight: '900', color: '#1F1438' },
   subtitle: {
     fontSize: 15,
