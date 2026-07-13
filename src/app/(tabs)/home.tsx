@@ -15,7 +15,7 @@ import { Avatar } from '@/components/avatar';
 import { Icon } from '@/components/icon';
 import { UrgencyBadge } from '@/components/urgency-badge';
 import { CHANNELS } from '@/constants/channels';
-import { channelIcons } from '@/constants/icons';
+import { channelIcons, topBarIcons } from '@/constants/icons';
 import { getMyBuilding, MyBuilding } from '@/lib/membership';
 import {
   fetchBuildingPosts,
@@ -94,11 +94,21 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Image
-          source={require('@/assets/images/knock-logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <View style={styles.topBar}>
+          <Pressable
+            onPress={() => router.push('/invite')}
+            hitSlop={12}
+            accessibilityLabel="Invite neighbors"
+          >
+            <Icon source={topBarIcons.addUser} size={24} color="#6D28D9" />
+          </Pressable>
+          <Image
+            source={require('@/assets/images/knock-logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <View style={styles.topBarSpacer} />
+        </View>
 
         <View style={styles.buildingCard}>
           <Text style={styles.buildingName}>
@@ -177,11 +187,17 @@ export default function HomeScreen() {
 
         {posts.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>No posts yet</Text>
+            <Text style={styles.emptyTitle}>You&apos;re one of the first here</Text>
             <Text style={styles.emptyText}>
-              Be the first to post in {building?.name ?? 'your building'}. Say
-              hi, ask for help, or start an event.
+              Be the first to post in {building?.name ?? 'your building'}, or
+              invite your neighbors to join.
             </Text>
+            <Pressable
+              style={styles.inviteButton}
+              onPress={() => router.push('/invite')}
+            >
+              <Text style={styles.inviteButtonText}>Invite neighbors</Text>
+            </Pressable>
           </View>
         ) : (
           posts.map((post) => {
@@ -263,11 +279,16 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 32,
   },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 18,
+  },
+  topBarSpacer: { width: 24 },
   logo: {
     width: 130,
     height: 48,
-    alignSelf: 'center',
-    marginBottom: 18,
   },
   buildingCard: {
     backgroundColor: '#FFFFFF',
@@ -380,6 +401,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
   },
+  inviteButton: {
+    backgroundColor: '#6D28D9',
+    borderRadius: 999,
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    marginTop: 16,
+  },
+  inviteButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
   postCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
