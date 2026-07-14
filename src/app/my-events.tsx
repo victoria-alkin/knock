@@ -12,11 +12,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { EventSummary, fetchMyEvents, formatEventTime } from '@/lib/events';
+import { fetchMyEvents, formatEventTime, MyEvent } from '@/lib/events';
 
 export default function MyEventsScreen() {
   const router = useRouter();
-  const [events, setEvents] = useState<EventSummary[]>([]);
+  const [events, setEvents] = useState<MyEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -71,7 +71,7 @@ export default function MyEventsScreen() {
           <View style={styles.emptyCard}>
             <Text style={styles.emptyTitle}>No events yet</Text>
             <Text style={styles.emptyText}>
-              Events you host will show up here.
+              Events you host or RSVP to will show up here.
             </Text>
           </View>
         ) : (
@@ -98,7 +98,19 @@ export default function MyEventsScreen() {
                   <Text style={styles.eventTime}>
                     {formatEventTime(event.startsAt)}
                   </Text>
-                  {past ? <Text style={styles.pastBadge}>Past</Text> : null}
+                  <View style={styles.badges}>
+                    <Text
+                      style={[
+                        styles.flag,
+                        event.relation === 'hosted'
+                          ? styles.flagHosted
+                          : styles.flagAttended,
+                      ]}
+                    >
+                      {event.relation === 'hosted' ? 'Hosted' : 'Attended'}
+                    </Text>
+                    {past ? <Text style={styles.pastBadge}>Past</Text> : null}
+                  </View>
                 </View>
                 <Text style={styles.eventTitle}>{event.title}</Text>
                 {event.location ? (
@@ -167,6 +179,17 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   eventTime: { fontSize: 13, fontWeight: '800', color: '#6D28D9' },
+  badges: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  flag: {
+    fontSize: 12,
+    fontWeight: '800',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  flagHosted: { color: '#6D28D9', backgroundColor: '#F1ECFA' },
+  flagAttended: { color: '#1B873F', backgroundColor: '#E4F6EA' },
   pastBadge: {
     fontSize: 12,
     fontWeight: '800',

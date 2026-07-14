@@ -64,22 +64,55 @@ export async function fetchEvents(buildingId: string): Promise<EventSummary[]> {
   return (data as unknown as RawEvent[]).map((row) => toSummary(row, myId));
 }
 
-/** Events hosted by the current user, most recent first. */
-export async function fetchMyEvents(): Promise<EventSummary[]> {
+export type MyEventRelation = 'hosted' | 'attended';
+export type MyEvent = EventSummary & { relation: MyEventRelation };
+
+/**
+ * Events the current user is involved in — both the ones they host and the
+ * ones they've RSVP'd "going" to — tagged with which, most recent first.
+ */
+export async function fetchMyEvents(): Promise<MyEvent[]> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data, error } = await supabase
-    .from('events')
-    .select(EVENT_SELECT)
-    .eq('host_id', user.id)
-    .order('starts_at', { ascending: false })
-    .limit(100);
+  const [hosted, rsvps] = await Promise.all([
+    supabase
+      .from('events')
+      .select(EVENT_SELECT)
+      .eq('host_id', user.id)
+      .limit(200),
+    supabase
+      .from('event_rsvps')
+      .select('event_id')
+      .eq('user_id', user.id)
+      .eq('status', 'going'),
+  ]);
 
-  if (error || !data) return [];
-  return (data as unknown as RawEvent[]).map((row) => toSummary(row, user.id));
+  // Hosting takes precedence over attending for the same event.
+  const byId = new Map<string, MyEvent>();
+  for (const row of (hosted.data ?? []) as unknown as RawEvent[]) {
+    byId.set(row.id, { ...toSummary(row, user.id), relation: 'hosted' });
+  }
+
+  const attendedIds = (rsvps.data ?? [])
+    .map((r) => (r as { event_id: string }).event_id)
+    .filter((id) => !byId.has(id));
+
+  if (attendedIds.length > 0) {
+    const { data } = await supabase
+      .from('events')
+      .select(EVENT_SELECT)
+      .in('id', attendedIds);
+    for (const row of (data ?? []) as unknown as RawEvent[]) {
+      byId.set(row.id, { ...toSummary(row, user.id), relation: 'attended' });
+    }
+  }
+
+  return [...byId.values()].sort(
+    (a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime(),
+  );
 }
 
 export async function fetchEvent(eventId: string): Promise<EventDetail | null> {
