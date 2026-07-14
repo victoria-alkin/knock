@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
@@ -25,7 +26,7 @@ import {
 import { getUnreadCount } from '@/lib/notifications';
 
 type MenuItem = {
-  icon: string;
+  icon: keyof typeof Feather.glyphMap;
   label: string;
   onPress: () => void;
 };
@@ -83,28 +84,32 @@ export default function ProfileScreen() {
     .toLowerCase();
 
   const menu: MenuItem[] = [
-    { icon: '📝', label: 'My Posts', onPress: () => router.push('/my-posts') },
     {
-      icon: '📅',
+      icon: 'file-text',
+      label: 'My Posts',
+      onPress: () => router.push('/my-posts'),
+    },
+    {
+      icon: 'calendar',
       label: 'My Events',
       onPress: () => router.push('/my-events'),
     },
     {
-      icon: '✏️',
+      icon: 'edit-3',
       label: 'Edit Profile',
       onPress: () => router.push('/edit-profile'),
     },
     {
-      icon: '👥',
+      icon: 'users',
       label: 'Neighbor Directory',
       onPress: () => comingSoon('The neighbor directory'),
     },
     {
-      icon: '💬',
+      icon: 'help-circle',
       label: 'Help & Support',
       onPress: () => comingSoon('Help & Support'),
     },
-    { icon: '⚙️', label: 'Settings', onPress: () => comingSoon('Settings') },
+    { icon: 'settings', label: 'Settings', onPress: () => comingSoon('Settings') },
   ];
 
   return (
@@ -119,14 +124,22 @@ export default function ProfileScreen() {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Pressable
-            onPress={() => router.push('/notifications')}
-            hitSlop={12}
-            style={styles.bellWrap}
-          >
-            <Icon source={topBarIcons.notification} size={24} color="#6D28D9" />
-            {unread > 0 ? <View style={styles.bellBadge} /> : null}
-          </Pressable>
+          <View style={styles.topBarRight}>
+            <Pressable
+              onPress={() => comingSoon('Search')}
+              hitSlop={12}
+            >
+              <Feather name="search" size={22} color="#6D28D9" />
+            </Pressable>
+            <Pressable
+              onPress={() => router.push('/notifications')}
+              hitSlop={12}
+              style={styles.bellWrap}
+            >
+              <Icon source={topBarIcons.notification} size={24} color="#6D28D9" />
+              {unread > 0 ? <View style={styles.bellBadge} /> : null}
+            </Pressable>
+          </View>
         </View>
 
         <Text style={styles.title}>Profile</Text>
@@ -155,9 +168,14 @@ export default function ProfileScreen() {
               style={[styles.menuRow, i < menu.length - 1 && styles.menuDivider]}
               onPress={item.onPress}
             >
-              <Text style={styles.menuIcon}>{item.icon}</Text>
+              <Feather
+                name={item.icon}
+                size={20}
+                color="#4A3D63"
+                style={styles.menuIcon}
+              />
               <Text style={styles.menuLabel}>{item.label}</Text>
-              <Text style={styles.chevron}>›</Text>
+              <Feather name="chevron-right" size={20} color="#B9A9D4" />
             </Pressable>
           ))}
         </View>
@@ -185,7 +203,8 @@ export default function ProfileScreen() {
             style={styles.logoutRow}
             onPress={() => setConfirmingSignOut(true)}
           >
-            <Text style={styles.logoutText}>⎋ Log Out</Text>
+            <Feather name="log-out" size={18} color="#E23E57" />
+            <Text style={styles.logoutText}>Log Out</Text>
           </Pressable>
         )}
       </ScrollView>
@@ -204,6 +223,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   logo: { width: 120, height: 44 },
+  topBarRight: { flexDirection: 'row', alignItems: 'center', gap: 18 },
   bellWrap: { width: 24, height: 24 },
   bellBadge: {
     position: 'absolute',
@@ -261,17 +281,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   menuDivider: { borderBottomWidth: 1, borderBottomColor: '#F0EBF9' },
-  menuIcon: { fontSize: 18, width: 30 },
+  menuIcon: { width: 32 },
   menuLabel: { flex: 1, fontSize: 16, fontWeight: '600', color: '#1F1438' },
-  chevron: { fontSize: 24, color: '#B9A9D4' },
   notice: {
     fontSize: 14,
     color: '#6D28D9',
     textAlign: 'center',
     marginTop: 16,
   },
-  logoutRow: { alignItems: 'center', paddingVertical: 20, marginTop: 8 },
-  logoutText: { fontSize: 16, fontWeight: '800', color: '#B4243F' },
+  logoutRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 20,
+    marginTop: 8,
+  },
+  logoutText: { fontSize: 16, fontWeight: '800', color: '#E23E57' },
   confirmBox: {
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
