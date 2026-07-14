@@ -34,13 +34,6 @@ const URGENCY_OPTIONS: { value: PostUrgency; label: string }[] = [
   { value: 'asap', label: 'ASAP' },
 ];
 
-const EXPIRY_OPTIONS: { label: string; days: number | null }[] = [
-  { label: 'Never', days: null },
-  { label: '1 day', days: 1 },
-  { label: '7 days', days: 7 },
-  { label: '30 days', days: 30 },
-];
-
 function defaultDate() {
   return new Date();
 }
@@ -66,7 +59,6 @@ export default function CreatePostScreen() {
   const [allowReplies, setAllowReplies] = useState(true);
   const [allowDms, setAllowDms] = useState(true);
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [expiryDays, setExpiryDays] = useState<number | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -133,10 +125,6 @@ export default function CreatePostScreen() {
     setSubmitting(true);
     setError(null);
 
-    const expiresAt = expiryDays
-      ? new Date(Date.now() + expiryDays * 86400000).toISOString()
-      : null;
-
     const { error: postError } = await createPost({
       buildingId,
       channel,
@@ -147,7 +135,6 @@ export default function CreatePostScreen() {
       allowReplies,
       allowDms,
       isAnonymous,
-      expiresAt,
     });
     if (postError) {
       setError(postError);
@@ -461,29 +448,6 @@ export default function CreatePostScreen() {
                 thumbColor="#FFFFFF"
                 ios_backgroundColor="#D8CEE9"
               />
-            </View>
-
-            <Text style={styles.urgencyLabel}>Expires</Text>
-            <View style={styles.urgencyRow}>
-              {EXPIRY_OPTIONS.map((option) => {
-                const selected = option.days === expiryDays;
-                return (
-                  <Pressable
-                    key={option.label}
-                    style={[styles.urgencyChip, selected && styles.urgencyChipOn]}
-                    onPress={() => setExpiryDays(option.days)}
-                  >
-                    <Text
-                      style={[
-                        styles.urgencyText,
-                        selected && styles.urgencyTextOn,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
             </View>
           </>
         )}
