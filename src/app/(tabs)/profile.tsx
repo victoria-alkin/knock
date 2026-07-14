@@ -239,10 +239,10 @@ const styles = StyleSheet.create({
     gap: 16,
     backgroundColor: '#6D28D9',
     borderRadius: 20,
-    paddingTop: 24,
+    paddingTop: 28,
     paddingHorizontal: 18,
     // Extra purple below the content for the menu card to overlap into.
-    paddingBottom: 44,
+    paddingBottom: 56,
     marginBottom: 0,
   },
   profileText: { flex: 1 },
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 14,
     // Pull the card up so it overlaps the bottom of the purple card,
     // with a soft shadow so it reads as a layer on top.
-    marginTop: -20,
+    marginTop: -34,
     zIndex: 1,
     shadowColor: '#1F1438',
     shadowOpacity: 0.08,
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   menuRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 15,
+    paddingVertical: 18,
     paddingHorizontal: 16,
   },
   menuDivider: { borderBottomWidth: 1, borderBottomColor: '#F0EBF9' },
