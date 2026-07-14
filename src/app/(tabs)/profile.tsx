@@ -148,7 +148,7 @@ export default function ProfileScreen() {
           <Avatar
             name={profile?.display_name ?? '?'}
             url={profile?.avatar_url}
-            size={64}
+            size={56}
           />
           <View style={styles.profileText}>
             <Text style={styles.profileName}>{fullName}</Text>
@@ -237,36 +237,39 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   title: {
-    fontSize: 26,
-    fontWeight: '900',
+    fontSize: 22,
+    fontWeight: '800',
     color: '#1F1438',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
     backgroundColor: '#6D28D9',
-    borderRadius: 22,
-    padding: 20,
-    marginBottom: 20,
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 18,
   },
   profileText: { flex: 1 },
-  profileName: { fontSize: 20, fontWeight: '900', color: '#FFFFFF' },
+  profileName: { fontSize: 19, fontWeight: '800', color: '#FFFFFF' },
   profileHandle: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#E4D9FB',
     marginTop: 2,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   buildingBadge: {
     alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     backgroundColor: '#FFFFFF',
     borderRadius: 999,
     paddingVertical: 6,
     paddingHorizontal: 12,
   },
-  buildingBadgeText: { fontSize: 13, fontWeight: '800', color: '#6D28D9' },
+  buildingBadgeText: { fontSize: 13, fontWeight: '700', color: '#6D28D9' },
   menuCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -277,12 +280,12 @@ const styles = StyleSheet.create({
   menuRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 15,
     paddingHorizontal: 16,
   },
   menuDivider: { borderBottomWidth: 1, borderBottomColor: '#F0EBF9' },
-  menuIcon: { width: 32 },
-  menuLabel: { flex: 1, fontSize: 16, fontWeight: '600', color: '#1F1438' },
+  menuIcon: { width: 34 },
+  menuLabel: { flex: 1, fontSize: 16, fontWeight: '600', color: '#2A1F42' },
   notice: {
     fontSize: 14,
     color: '#6D28D9',
