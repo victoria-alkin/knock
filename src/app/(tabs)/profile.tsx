@@ -124,22 +124,14 @@ export default function ProfileScreen() {
             style={styles.logo}
             resizeMode="contain"
           />
-          <View style={styles.topBarRight}>
-            <Pressable
-              onPress={() => comingSoon('Search')}
-              hitSlop={12}
-            >
-              <Feather name="search" size={22} color="#6D28D9" />
-            </Pressable>
-            <Pressable
-              onPress={() => router.push('/notifications')}
-              hitSlop={12}
-              style={styles.bellWrap}
-            >
-              <Icon source={topBarIcons.notification} size={24} color="#6D28D9" />
-              {unread > 0 ? <View style={styles.bellBadge} /> : null}
-            </Pressable>
-          </View>
+          <Pressable
+            onPress={() => router.push('/notifications')}
+            hitSlop={12}
+            style={styles.bellWrap}
+          >
+            <Icon source={topBarIcons.notification} size={24} color="#6D28D9" />
+            {unread > 0 ? <View style={styles.bellBadge} /> : null}
+          </Pressable>
         </View>
 
         <Text style={styles.title}>Profile</Text>
@@ -215,7 +207,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   centered: { alignItems: 'center', justifyContent: 'center' },
-  content: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 32 },
+  content: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 32 },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -223,7 +215,6 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   logo: { width: 120, height: 44 },
-  topBarRight: { flexDirection: 'row', alignItems: 'center', gap: 18 },
   bellWrap: { width: 24, height: 24 },
   bellBadge: {
     position: 'absolute',
