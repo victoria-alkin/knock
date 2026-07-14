@@ -16,10 +16,17 @@ import { DateTimeField } from '@/components/date-time-field';
 import { Icon } from '@/components/icon';
 import { CHANNELS } from '@/constants/channels';
 import { postIcons } from '@/constants/icons';
-import { pickAndUploadEventPhoto, pickAndUploadPostPhoto } from '@/lib/avatar';
+import {
+  pickAndUploadEventPhoto,
+  pickAndUploadListingPhoto,
+  pickAndUploadPostPhoto,
+} from '@/lib/avatar';
 import { createEvent } from '@/lib/events';
+import { createListing, KIND_LABEL, ListingKind } from '@/lib/marketplace';
 import { getMyBuilding } from '@/lib/membership';
 import { createPost, PostUrgency } from '@/lib/posts';
+
+const LISTING_KINDS: ListingKind[] = ['for_sale', 'giving_away', 'looking_for'];
 
 const URGENCY_OPTIONS: { value: PostUrgency; label: string }[] = [
   { value: 'normal', label: 'Normal' },
@@ -75,7 +82,16 @@ export default function CreatePostScreen() {
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
 
+  // Listing fields
+  const [listingKind, setListingKind] = useState<ListingKind>('for_sale');
+  const [listingTitle, setListingTitle] = useState('');
+  const [listingDescription, setListingDescription] = useState('');
+  const [listingPrice, setListingPrice] = useState('');
+  const [listingImageUrl, setListingImageUrl] = useState<string | null>(null);
+  const [uploadingListing, setUploadingListing] = useState(false);
+
   const isEvent = channel === 'events';
+  const isListing = channel === 'marketplace';
 
   useEffect(() => {
     let active = true;
@@ -184,11 +200,59 @@ export default function CreatePostScreen() {
     router.replace({ pathname: '/event/[eventId]', params: { eventId: id } });
   };
 
+  const handlePickListingPhoto = async () => {
+    setUploadingListing(true);
+    setError(null);
+    const { url, error: uploadError } = await pickAndUploadListingPhoto();
+    if (url) setListingImageUrl(url);
+    else if (uploadError) setError(uploadError);
+    setUploadingListing(false);
+  };
+
+  const handleCreateListing = async () => {
+    if (!buildingId) {
+      setError('Could not find your building. Please try again.');
+      return;
+    }
+
+    let priceCents: number | null = null;
+    if (listingKind === 'for_sale' && listingPrice.trim().length > 0) {
+      const dollars = Number(listingPrice.trim());
+      if (Number.isNaN(dollars) || dollars < 0) {
+        setError('Please enter a valid price.');
+        return;
+      }
+      priceCents = Math.round(dollars * 100);
+    }
+
+    setSubmitting(true);
+    setError(null);
+    const { error: createError, id } = await createListing({
+      buildingId,
+      kind: listingKind,
+      title: listingTitle,
+      description: listingDescription,
+      priceCents,
+      imageUrl: listingImageUrl,
+    });
+    if (createError || !id) {
+      setError(createError ?? 'Could not create the listing.');
+      setSubmitting(false);
+      return;
+    }
+    router.replace({
+      pathname: '/listing/[listingId]',
+      params: { listingId: id },
+    });
+  };
+
   const canSubmit = isEvent
     ? buildingId !== null && title.trim().length > 0 && !submitting
-    : buildingId !== null &&
-      (body.trim().length > 0 || imageUrl !== null) &&
-      !submitting;
+    : isListing
+      ? buildingId !== null && listingTitle.trim().length > 0 && !submitting
+      : buildingId !== null &&
+        (body.trim().length > 0 || imageUrl !== null) &&
+        !submitting;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -197,10 +261,16 @@ export default function CreatePostScreen() {
           <Text style={styles.cancel}>Cancel</Text>
         </Pressable>
         <Text style={styles.headerTitle}>
-          {isEvent ? 'New event' : 'New post'}
+          {isEvent ? 'New event' : isListing ? 'New listing' : 'New post'}
         </Text>
         <Pressable
-          onPress={isEvent ? handleCreateEvent : handlePost}
+          onPress={
+            isEvent
+              ? handleCreateEvent
+              : isListing
+                ? handleCreateListing
+                : handlePost
+          }
           disabled={!canSubmit}
         >
           <Text style={[styles.post, !canSubmit && styles.postDisabled]}>
@@ -263,6 +333,20 @@ export default function CreatePostScreen() {
             coverUrl={coverUrl}
             uploadingCover={uploadingCover}
             onPickCover={handlePickCover}
+          />
+        ) : isListing ? (
+          <ListingForm
+            kind={listingKind}
+            setKind={setListingKind}
+            title={listingTitle}
+            setTitle={setListingTitle}
+            description={listingDescription}
+            setDescription={setListingDescription}
+            price={listingPrice}
+            setPrice={setListingPrice}
+            imageUrl={listingImageUrl}
+            uploadingImage={uploadingListing}
+            onPickPhoto={handlePickListingPhoto}
           />
         ) : (
           <>
@@ -521,6 +605,93 @@ function EventForm(props: EventFormProps) {
   );
 }
 
+type ListingFormProps = {
+  kind: ListingKind;
+  setKind: (k: ListingKind) => void;
+  title: string;
+  setTitle: (v: string) => void;
+  description: string;
+  setDescription: (v: string) => void;
+  price: string;
+  setPrice: (v: string) => void;
+  imageUrl: string | null;
+  uploadingImage: boolean;
+  onPickPhoto: () => void;
+};
+
+function ListingForm(props: ListingFormProps) {
+  return (
+    <>
+      <Text style={styles.label}>Type</Text>
+      <View style={styles.kindRow}>
+        {LISTING_KINDS.map((k) => {
+          const selected = k === props.kind;
+          return (
+            <Pressable
+              key={k}
+              style={[styles.kindChip, selected && styles.kindChipOn]}
+              onPress={() => props.setKind(k)}
+            >
+              <Text style={[styles.kindText, selected && styles.kindTextOn]}>
+                {KIND_LABEL[k]}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      <Text style={styles.label}>Photo</Text>
+      <Pressable
+        style={styles.coverPicker}
+        onPress={props.onPickPhoto}
+        disabled={props.uploadingImage}
+      >
+        {props.imageUrl ? (
+          <Image source={{ uri: props.imageUrl }} style={styles.cover} />
+        ) : (
+          <Text style={styles.coverHint}>
+            {props.uploadingImage ? 'Uploading…' : '+ Add a photo'}
+          </Text>
+        )}
+      </Pressable>
+
+      <Text style={styles.label}>Title</Text>
+      <TextInput
+        value={props.title}
+        onChangeText={props.setTitle}
+        placeholder="Desk, TV, couch…"
+        placeholderTextColor="#9B8CAF"
+        style={styles.evInput}
+      />
+
+      {props.kind === 'for_sale' ? (
+        <>
+          <Text style={styles.label}>Price (USD)</Text>
+          <TextInput
+            value={props.price}
+            onChangeText={props.setPrice}
+            placeholder="25"
+            placeholderTextColor="#9B8CAF"
+            style={styles.evInput}
+            keyboardType="decimal-pad"
+            inputMode="decimal"
+          />
+        </>
+      ) : null}
+
+      <Text style={styles.label}>Description</Text>
+      <TextInput
+        value={props.description}
+        onChangeText={props.setDescription}
+        placeholder="Condition, pickup details, etc."
+        placeholderTextColor="#9B8CAF"
+        style={[styles.evInput, styles.evMultiline]}
+        multiline
+      />
+    </>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -618,6 +789,19 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   evMultiline: { minHeight: 90, textAlignVertical: 'top' },
+  kindRow: { flexDirection: 'row', gap: 8, marginBottom: 20 },
+  kindChip: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#E7DFF5',
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  kindChipOn: { backgroundColor: '#6D28D9', borderColor: '#6D28D9' },
+  kindText: { fontSize: 13, fontWeight: '800', color: '#4A3D63' },
+  kindTextOn: { color: '#FFFFFF' },
   coverPicker: {
     height: 170,
     borderRadius: 16,
