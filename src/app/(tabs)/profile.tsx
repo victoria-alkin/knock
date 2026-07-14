@@ -212,9 +212,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 14,
+    // Cards sit at a 16px inset, but match the home header's 20px button inset.
+    marginHorizontal: 4,
+    marginBottom: 18,
   },
-  logo: { width: 120, height: 44 },
+  logo: { width: 130, height: 48 },
   bellWrap: { width: 24, height: 24 },
   bellBadge: {
     position: 'absolute',
