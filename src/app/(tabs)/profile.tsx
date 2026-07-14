@@ -239,10 +239,10 @@ const styles = StyleSheet.create({
     gap: 16,
     backgroundColor: '#6D28D9',
     borderRadius: 20,
-    paddingTop: 18,
+    paddingTop: 24,
     paddingHorizontal: 18,
     // Extra purple below the content for the menu card to overlap into.
-    paddingBottom: 36,
+    paddingBottom: 44,
     marginBottom: 0,
   },
   profileText: { flex: 1 },
