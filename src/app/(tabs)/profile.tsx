@@ -269,6 +269,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#E7DFF5',
+    // Narrower than the purple card so it sits inset within it.
+    marginHorizontal: 14,
     // Pull the card up so it overlaps the bottom of the purple card,
     // with a soft shadow so it reads as a layer on top.
     marginTop: -20,
