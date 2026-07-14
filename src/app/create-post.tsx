@@ -74,6 +74,14 @@ export default function CreatePostScreen() {
     };
   }, []);
 
+  // Events aren't plain posts — they use their own composer. If the screen is
+  // opened already pointed at the events channel, switch to that layout.
+  useEffect(() => {
+    if (params.channel === 'events') {
+      router.replace('/create-event');
+    }
+  }, [params.channel, router]);
+
   const canPost =
     buildingId !== null &&
     (body.trim().length > 0 || imageUrl !== null) &&
@@ -110,6 +118,15 @@ export default function CreatePostScreen() {
     router.back();
   };
 
+  // Avoid flashing the post composer while redirecting to the event composer.
+  if (params.channel === 'events') {
+    return (
+      <SafeAreaView style={[styles.container, styles.redirecting]}>
+        <ActivityIndicator color="#6D28D9" />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -141,7 +158,13 @@ export default function CreatePostScreen() {
               <Pressable
                 key={c.key}
                 style={[styles.channelChip, selected && styles.channelChipOn]}
-                onPress={() => setChannel(c.key)}
+                onPress={() => {
+                  if (c.key === 'events') {
+                    router.replace('/create-event');
+                    return;
+                  }
+                  setChannel(c.key);
+                }}
               >
                 <Text style={styles.channelChipEmoji}>{c.emoji}</Text>
                 <Text
@@ -292,6 +315,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  redirecting: { alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
