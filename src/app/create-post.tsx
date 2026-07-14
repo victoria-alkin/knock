@@ -142,7 +142,8 @@ export default function CreatePostScreen() {
       channel,
       body,
       imageUrl,
-      urgency,
+      // Urgency only applies to the Help channel.
+      urgency: channel === 'help' ? urgency : 'normal',
       allowReplies,
       allowDms,
       isAnonymous,
@@ -385,28 +386,35 @@ export default function CreatePostScreen() {
               </Pressable>
             )}
 
-            <Text style={styles.urgencyLabel}>Urgency</Text>
-            <View style={styles.urgencyRow}>
-              {URGENCY_OPTIONS.map((option) => {
-                const selected = option.value === urgency;
-                return (
-                  <Pressable
-                    key={option.value}
-                    style={[styles.urgencyChip, selected && styles.urgencyChipOn]}
-                    onPress={() => setUrgency(option.value)}
-                  >
-                    <Text
-                      style={[
-                        styles.urgencyText,
-                        selected && styles.urgencyTextOn,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+            {channel === 'help' ? (
+              <>
+                <Text style={styles.urgencyLabel}>Urgency</Text>
+                <View style={styles.urgencyRow}>
+                  {URGENCY_OPTIONS.map((option) => {
+                    const selected = option.value === urgency;
+                    return (
+                      <Pressable
+                        key={option.value}
+                        style={[
+                          styles.urgencyChip,
+                          selected && styles.urgencyChipOn,
+                        ]}
+                        onPress={() => setUrgency(option.value)}
+                      >
+                        <Text
+                          style={[
+                            styles.urgencyText,
+                            selected && styles.urgencyTextOn,
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </>
+            ) : null}
 
             <View style={styles.optionRow}>
               <View style={styles.optionText}>
