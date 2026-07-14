@@ -107,7 +107,11 @@ export default function MyEventsScreen() {
                           : styles.flagAttended,
                       ]}
                     >
-                      {event.relation === 'hosted' ? 'Hosted' : 'Attended'}
+                      {event.relation === 'hosted'
+                        ? 'Hosted'
+                        : past
+                          ? 'Attended'
+                          : 'Attending'}
                     </Text>
                     {past ? <Text style={styles.pastBadge}>Past</Text> : null}
                   </View>
