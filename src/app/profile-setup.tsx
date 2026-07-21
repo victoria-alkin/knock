@@ -38,7 +38,8 @@ export default function ProfileSetupScreen() {
       longitude?: string;
     }>();
 
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -69,7 +70,7 @@ export default function ProfileSetupScreen() {
   };
 
   const canSubmit =
-    fullName.trim().length > 0 &&
+    firstName.trim().length > 0 &&
     displayName.trim().length > 0 &&
     phone.trim().length > 0;
 
@@ -102,7 +103,9 @@ export default function ProfileSetupScreen() {
       //    owner-only table so other residents can never read it.
       const { error: profileError } = await supabase.from('profiles').upsert({
         id: user.id,
-        full_name: fullName.trim(),
+        full_name: [firstName.trim(), lastName.trim()]
+          .filter(Boolean)
+          .join(' '),
         display_name: displayName.trim(),
         avatar_url: avatarUrl,
         in_directory: inDirectory,
@@ -174,15 +177,30 @@ export default function ProfileSetupScreen() {
           </Text>
         </View>
 
-        <Text style={styles.label}>Full name</Text>
-        <TextInput
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder="Jane Resident"
-          placeholderTextColor="#9B8CAF"
-          style={styles.input}
-          autoCapitalize="words"
-        />
+        <View style={styles.nameRow}>
+          <View style={styles.nameCol}>
+            <Text style={styles.label}>First name</Text>
+            <TextInput
+              value={firstName}
+              onChangeText={setFirstName}
+              placeholder="Jane"
+              placeholderTextColor="#9B8CAF"
+              style={styles.input}
+              autoCapitalize="words"
+            />
+          </View>
+          <View style={styles.nameCol}>
+            <Text style={styles.label}>Last name</Text>
+            <TextInput
+              value={lastName}
+              onChangeText={setLastName}
+              placeholder="Resident"
+              placeholderTextColor="#9B8CAF"
+              style={styles.input}
+              autoCapitalize="words"
+            />
+          </View>
+        </View>
 
         <Text style={styles.label}>Display name</Text>
         <TextInput
@@ -338,6 +356,8 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 20,
   },
+  nameRow: { flexDirection: 'row', gap: 12 },
+  nameCol: { flex: 1 },
   toggleText: { flex: 1 },
   toggleTitle: { fontSize: 15, fontWeight: '800', color: '#1F1438' },
   toggleSub: { fontSize: 13, color: '#76698C', marginTop: 3, lineHeight: 18 },
