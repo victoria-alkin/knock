@@ -50,6 +50,9 @@ export default function PostDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [confirmingPostDelete, setConfirmingPostDelete] = useState(false);
   const [confirmingReplyId, setConfirmingReplyId] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(
+    null,
+  );
 
   const load = useCallback(async () => {
     if (!postId) return;
@@ -138,18 +141,87 @@ export default function PostDetailScreen() {
     if (!postId || body.trim().length === 0) return;
     setSending(true);
     setError(null);
-    const { error: replyError } = await createReply(postId, body);
+    const { error: replyError } = await createReply(
+      postId,
+      body,
+      replyingTo?.id ?? null,
+    );
     if (replyError) {
       setError(replyError);
       setSending(false);
       return;
     }
     setBody('');
+    setReplyingTo(null);
     setSending(false);
     await load();
   };
 
   const channel = post ? CHANNEL_BY_KEY[post.channel] : undefined;
+
+  // Group replies into threads: top-level comments and their nested replies.
+  const childrenByParent = new Map<string, Reply[]>();
+  for (const r of replies) {
+    if (r.parentReplyId) {
+      const arr = childrenByParent.get(r.parentReplyId) ?? [];
+      arr.push(r);
+      childrenByParent.set(r.parentReplyId, arr);
+    }
+  }
+  const topLevelReplies = replies.filter((r) => !r.parentReplyId);
+
+  const renderReply = (reply: Reply, depth: number) => {
+    const children = childrenByParent.get(reply.id) ?? [];
+    const mine = reply.authorId === currentUserId;
+    return (
+      <View key={reply.id}>
+        <View style={[styles.replyCard, depth > 0 && styles.replyNested]}>
+          <View style={styles.replyMeta}>
+            <View style={styles.replyAuthorRow}>
+              <Avatar
+                name={reply.authorName}
+                url={reply.authorAvatar}
+                size={28}
+              />
+              <Text style={styles.replyAuthor}>{reply.authorName}</Text>
+            </View>
+            <Text style={styles.replyTime}>{relativeTime(reply.createdAt)}</Text>
+          </View>
+          <Text style={styles.replyBody}>{reply.body}</Text>
+
+          {confirmingReplyId === reply.id ? (
+            <View style={styles.confirmRow}>
+              <Text style={styles.confirmText}>Delete?</Text>
+              <Pressable onPress={() => handleDeleteReply(reply.id)}>
+                <Text style={styles.confirmYes}>Delete</Text>
+              </Pressable>
+              <Pressable onPress={() => setConfirmingReplyId(null)}>
+                <Text style={styles.confirmCancel}>Cancel</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View style={styles.replyActions}>
+              {post?.allowReplies ? (
+                <Pressable
+                  onPress={() =>
+                    setReplyingTo({ id: reply.id, name: reply.authorName })
+                  }
+                >
+                  <Text style={styles.replyLink}>Reply</Text>
+                </Pressable>
+              ) : null}
+              {mine ? (
+                <Pressable onPress={() => setConfirmingReplyId(reply.id)}>
+                  <Text style={styles.replyDelete}>Delete</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          )}
+        </View>
+        {children.map((child) => renderReply(child, depth + 1))}
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -243,52 +315,30 @@ export default function PostDetailScreen() {
                 : `${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}`}
             </Text>
 
-            {replies.map((reply) => (
-              <View key={reply.id} style={styles.replyCard}>
-                <View style={styles.replyMeta}>
-                  <View style={styles.replyAuthorRow}>
-                    <Avatar
-                      name={reply.authorName}
-                      url={reply.authorAvatar}
-                      size={28}
-                    />
-                    <Text style={styles.replyAuthor}>{reply.authorName}</Text>
-                  </View>
-                  <Text style={styles.replyTime}>
-                    {relativeTime(reply.createdAt)}
-                  </Text>
-                </View>
-                <Text style={styles.replyBody}>{reply.body}</Text>
-
-                {reply.authorId === currentUserId &&
-                  (confirmingReplyId === reply.id ? (
-                    <View style={styles.confirmRow}>
-                      <Text style={styles.confirmText}>Delete?</Text>
-                      <Pressable onPress={() => handleDeleteReply(reply.id)}>
-                        <Text style={styles.confirmYes}>Delete</Text>
-                      </Pressable>
-                      <Pressable onPress={() => setConfirmingReplyId(null)}>
-                        <Text style={styles.confirmCancel}>Cancel</Text>
-                      </Pressable>
-                    </View>
-                  ) : (
-                    <Pressable onPress={() => setConfirmingReplyId(reply.id)}>
-                      <Text style={styles.deleteLink}>Delete</Text>
-                    </Pressable>
-                  ))}
-              </View>
-            ))}
+            {topLevelReplies.map((reply) => renderReply(reply, 0))}
           </ScrollView>
         )}
 
         {post && post.allowReplies ? (
           <View style={styles.composer}>
             {error && <Text style={styles.errorText}>{error}</Text>}
+            {replyingTo ? (
+              <View style={styles.replyingBanner}>
+                <Text style={styles.replyingText}>
+                  Replying to {replyingTo.name}
+                </Text>
+                <Pressable onPress={() => setReplyingTo(null)} hitSlop={8}>
+                  <Text style={styles.replyingCancel}>✕</Text>
+                </Pressable>
+              </View>
+            ) : null}
             <View style={styles.composerRow}>
               <TextInput
                 value={body}
                 onChangeText={setBody}
-                placeholder="Write a reply…"
+                placeholder={
+                  replyingTo ? `Reply to ${replyingTo.name}…` : 'Write a reply…'
+                }
                 placeholderTextColor="#9B8CAF"
                 style={styles.input}
                 multiline
@@ -416,6 +466,27 @@ const styles = StyleSheet.create({
     borderColor: '#E7DFF5',
     marginBottom: 10,
   },
+  replyNested: { marginLeft: 24 },
+  replyActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 18,
+    marginTop: 10,
+  },
+  replyLink: { fontSize: 13, fontWeight: '700', color: '#6D28D9' },
+  replyDelete: { fontSize: 13, fontWeight: '700', color: '#B4243F' },
+  replyingBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F3F1F8',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+  replyingText: { fontSize: 13, fontWeight: '700', color: '#4A3D63' },
+  replyingCancel: { fontSize: 14, fontWeight: '800', color: '#8A7BA3' },
   replyMeta: {
     flexDirection: 'row',
     justifyContent: 'space-between',

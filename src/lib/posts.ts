@@ -36,6 +36,7 @@ export type Reply = {
   createdAt: string;
   authorName: string;
   authorAvatar: string | null;
+  parentReplyId: string | null;
 };
 
 /** The current user's id, or null. */
@@ -169,7 +170,9 @@ export async function setPostLike(
 export async function fetchReplies(postId: string): Promise<Reply[]> {
   const { data, error } = await supabase
     .from('replies')
-    .select('id, author_id, body, created_at, profiles ( display_name, avatar_url )')
+    .select(
+      'id, author_id, body, created_at, parent_reply_id, profiles ( display_name, avatar_url )',
+    )
     .eq('post_id', postId)
     .order('created_at', { ascending: true });
 
@@ -182,6 +185,7 @@ export async function fetchReplies(postId: string): Promise<Reply[]> {
     createdAt: row.created_at,
     authorName: row.profiles?.display_name ?? 'Neighbor',
     authorAvatar: row.profiles?.avatar_url ?? null,
+    parentReplyId: row.parent_reply_id ?? null,
   }));
 }
 
@@ -212,6 +216,7 @@ export async function deleteReply(replyId: string): Promise<{ error?: string }> 
 export async function createReply(
   postId: string,
   body: string,
+  parentReplyId?: string | null,
 ): Promise<{ error?: string }> {
   const {
     data: { user },
@@ -222,6 +227,7 @@ export async function createReply(
     post_id: postId,
     author_id: user.id,
     body: body.trim(),
+    parent_reply_id: parentReplyId ?? null,
   });
 
   return error ? { error: error.message } : {};
@@ -318,5 +324,6 @@ type RawReply = {
   author_id: string;
   body: string;
   created_at: string;
+  parent_reply_id: string | null;
   profiles: RawProfile | null;
 };
