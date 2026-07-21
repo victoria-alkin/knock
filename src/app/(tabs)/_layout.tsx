@@ -1,30 +1,10 @@
 import { BlurView } from 'expo-blur';
 import { Tabs, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 
-import { Avatar } from '@/components/avatar';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { tabIcons } from '@/constants/icons';
-import { getMyProfile, MyProfile } from '@/lib/membership';
-
-// Instagram-style profile tab: the user's avatar, ringed when active.
-function ProfileTabIcon({ focused }: { focused: boolean }) {
-  const [profile, setProfile] = useState<MyProfile | null>(null);
-  useEffect(() => {
-    getMyProfile().then(setProfile);
-  }, []);
-  return (
-    <View style={[styles.avatarRing, focused && styles.avatarRingActive]}>
-      <Avatar
-        name={profile?.display_name ?? '?'}
-        url={profile?.avatar_url}
-        size={26}
-      />
-    </View>
-  );
-}
 
 // Frosted "liquid glass" backdrop for the tab bar — content scrolls behind it.
 function GlassTabBarBackground() {
@@ -63,7 +43,6 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: '#6D28D9',
         tabBarInactiveTintColor: '#9B8CAF',
-        tabBarShowLabel: false,
         tabBarStyle: styles.tabBar,
         tabBarBackground: () => <GlassTabBarBackground />,
       }}
@@ -106,7 +85,9 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ focused }) => <ProfileTabIcon focused={focused} />,
+          tabBarIcon: ({ color }) => (
+            <Icon source={tabIcons.profile} size={24} color={color} />
+          ),
         }}
       />
     </Tabs>
@@ -124,15 +105,6 @@ const styles = StyleSheet.create({
   glassOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(255, 255, 255, 0.55)',
-  },
-  avatarRing: {
-    borderRadius: 999,
-    padding: 2,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  avatarRingActive: {
-    borderColor: '#6D28D9',
   },
   createButton: {
     flex: 1,
