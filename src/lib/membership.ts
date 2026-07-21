@@ -12,7 +12,23 @@ export type MyProfile = {
   display_name: string | null;
   phone: string | null;
   avatar_url: string | null;
+  in_directory: boolean;
 };
+
+export type Neighbor = {
+  id: string;
+  firstName: string;
+  avatarUrl: string | null;
+};
+
+/** Opted-in neighbors in your building (first names only). */
+export async function getNeighborDirectory(): Promise<Neighbor[]> {
+  const { data, error } = await supabase.rpc('get_neighbor_directory');
+  if (error || !data) return [];
+  return (data as { id: string; first_name: string; avatar_url: string | null }[]).map(
+    (r) => ({ id: r.id, firstName: r.first_name, avatarUrl: r.avatar_url }),
+  );
+}
 
 /**
  * Whether the user has finished onboarding: a restored session AND a building
@@ -65,6 +81,7 @@ export async function updateProfile(fields: {
   display_name: string;
   phone: string;
   avatar_url: string | null;
+  in_directory?: boolean;
 }): Promise<{ error?: string }> {
   const {
     data: { user },
@@ -77,6 +94,9 @@ export async function updateProfile(fields: {
       full_name: fields.full_name.trim(),
       display_name: fields.display_name.trim(),
       avatar_url: fields.avatar_url,
+      ...(fields.in_directory !== undefined
+        ? { in_directory: fields.in_directory }
+        : {}),
     })
     .eq('id', user.id);
   if (profileError) return { error: profileError.message };
@@ -104,7 +124,7 @@ export async function getMyProfile(): Promise<MyProfile | null> {
   const [profileRes, contactRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('full_name, display_name, avatar_url')
+      .select('full_name, display_name, avatar_url, in_directory')
       .eq('id', user.id)
       .maybeSingle(),
     supabase
@@ -120,6 +140,7 @@ export async function getMyProfile(): Promise<MyProfile | null> {
     full_name: string | null;
     display_name: string | null;
     avatar_url: string | null;
+    in_directory: boolean | null;
   };
   const contact = contactRes.data as { phone: string | null } | null;
 
@@ -128,5 +149,6 @@ export async function getMyProfile(): Promise<MyProfile | null> {
     display_name: prof.display_name,
     phone: contact?.phone ?? null,
     avatar_url: prof.avatar_url,
+    in_directory: prof.in_directory ?? true,
   };
 }

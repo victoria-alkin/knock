@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -42,6 +43,7 @@ export default function ProfileSetupScreen() {
   const [phone, setPhone] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [inDirectory, setInDirectory] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -103,6 +105,7 @@ export default function ProfileSetupScreen() {
         full_name: fullName.trim(),
         display_name: displayName.trim(),
         avatar_url: avatarUrl,
+        in_directory: inDirectory,
       });
       if (profileError) {
         setError(profileError.message);
@@ -202,6 +205,23 @@ export default function ProfileSetupScreen() {
           inputMode="tel"
         />
         <Text style={styles.hint}>Private — only you can see this.</Text>
+
+        <View style={styles.toggleRow}>
+          <View style={styles.toggleText}>
+            <Text style={styles.toggleTitle}>Neighbor directory</Text>
+            <Text style={styles.toggleSub}>
+              List me so neighbors can find me. Shows your first name and photo
+              only — never your last name or unit.
+            </Text>
+          </View>
+          <Switch
+            value={inDirectory}
+            onValueChange={setInDirectory}
+            trackColor={{ true: '#6D28D9', false: '#D8CEE9' }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor="#D8CEE9"
+          />
+        </View>
 
         {error && <Text style={styles.errorText}>{error}</Text>}
 
@@ -313,6 +333,20 @@ const styles = StyleSheet.create({
     marginTop: -8,
     marginBottom: 20,
   },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E7DFF5',
+    padding: 16,
+    marginBottom: 20,
+  },
+  toggleText: { flex: 1 },
+  toggleTitle: { fontSize: 15, fontWeight: '800', color: '#1F1438' },
+  toggleSub: { fontSize: 13, color: '#76698C', marginTop: 3, lineHeight: 18 },
   errorText: {
     fontSize: 15,
     color: '#B4243F',

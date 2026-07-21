@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -24,6 +25,7 @@ export default function EditProfileScreen() {
   const [phone, setPhone] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [inDirectory, setInDirectory] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,6 +38,7 @@ export default function EditProfileScreen() {
         setDisplayName(profile?.display_name ?? '');
         setPhone(profile?.phone ?? '');
         setAvatarUrl(profile?.avatar_url ?? null);
+        setInDirectory(profile?.in_directory ?? true);
         setLoading(false);
       }
     })();
@@ -67,6 +70,7 @@ export default function EditProfileScreen() {
       display_name: displayName,
       phone,
       avatar_url: avatarUrl,
+      in_directory: inDirectory,
     });
     if (saveError) {
       setError(saveError);
@@ -153,6 +157,23 @@ export default function EditProfileScreen() {
           inputMode="tel"
         />
 
+        <View style={styles.toggleRow}>
+          <View style={styles.toggleText}>
+            <Text style={styles.toggleTitle}>Neighbor directory</Text>
+            <Text style={styles.toggleSub}>
+              List me so neighbors can find me. Shows your first name and photo
+              only.
+            </Text>
+          </View>
+          <Switch
+            value={inDirectory}
+            onValueChange={setInDirectory}
+            trackColor={{ true: '#6D28D9', false: '#D8CEE9' }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor="#D8CEE9"
+          />
+        </View>
+
         {error && <Text style={styles.errorText}>{error}</Text>}
       </ScrollView>
     </SafeAreaView>
@@ -238,4 +259,18 @@ const styles = StyleSheet.create({
     color: '#B4243F',
     marginTop: 8,
   },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E7DFF5',
+    padding: 16,
+    marginBottom: 6,
+  },
+  toggleText: { flex: 1 },
+  toggleTitle: { fontSize: 15, fontWeight: '800', color: '#1F1438' },
+  toggleSub: { fontSize: 13, color: '#76698C', marginTop: 3, lineHeight: 18 },
 });

@@ -104,7 +104,7 @@ export default function ProfileScreen() {
     {
       icon: 'users',
       label: 'Neighbor Directory',
-      onPress: () => comingSoon('The neighbor directory'),
+      onPress: () => router.push('/neighbor-directory'),
     },
     {
       icon: 'help-circle',
