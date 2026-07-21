@@ -114,6 +114,11 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
     inputRange: [0, 1],
     outputRange: [1, 0.95],
   });
+  // Cancels the row's scale on the active bubble so it never changes size.
+  const bubbleCounterScale = tabBarCompact.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1 / 0.95],
+  });
 
   return (
     <Animated.View
@@ -132,13 +137,22 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
           <View style={styles.fill} />
           <View style={styles.topHighlight} />
 
-          <View style={styles.row} onLayout={onRowLayout}>
+          <Animated.View
+            style={[styles.row, { transform: [{ scale: contentScale }] }]}
+            onLayout={onRowLayout}
+          >
             {slotWidth > 0 && activeSlot >= 0 ? (
               <Animated.View
                 pointerEvents="none"
                 style={[
                   styles.bubble,
-                  { transform: [{ translateX }, { scaleX }] },
+                  {
+                    transform: [
+                      { translateX },
+                      { scaleX },
+                      { scale: bubbleCounterScale },
+                    ],
+                  },
                 ]}
               />
             ) : null}
@@ -182,32 +196,22 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
                   onPress={onPress}
                   accessibilityLabel={name}
                 >
-                  <Animated.View
-                    style={[
-                      styles.slotInner,
-                      { transform: [{ scale: contentScale }] },
-                    ]}
+                  <View style={active ? styles.activeIcon : undefined}>
+                    <Icon
+                      source={active ? tabIconsFilled[name] : TAB_ICON[name]}
+                      size={active ? 25 : 23}
+                      color={active ? PURPLE : CHARCOAL}
+                    />
+                  </View>
+                  <Text
+                    style={[styles.label, { color: active ? PURPLE : CHARCOAL }]}
                   >
-                    <View style={active ? styles.activeIcon : undefined}>
-                      <Icon
-                        source={active ? tabIconsFilled[name] : TAB_ICON[name]}
-                        size={active ? 25 : 23}
-                        color={active ? PURPLE : CHARCOAL}
-                      />
-                    </View>
-                    <Text
-                      style={[
-                        styles.label,
-                        { color: active ? PURPLE : CHARCOAL },
-                      ]}
-                    >
-                      {TAB_LABEL[name]}
-                    </Text>
-                  </Animated.View>
+                    {TAB_LABEL[name]}
+                  </Text>
                 </Pressable>
               );
             })}
-          </View>
+          </Animated.View>
         </Animated.View>
       </Animated.View>
     </Animated.View>
@@ -259,9 +263,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  slotInner: {
-    alignItems: 'center',
     gap: 3,
   },
   activeIcon: {
