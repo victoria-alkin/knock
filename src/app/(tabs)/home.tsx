@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
     color: '#6D28D9',
     marginBottom: 12,
   },
-  eventsScroll: { marginBottom: 12 },
+  eventsScroll: { marginBottom: 4 },
   eventsRow: { gap: 12, paddingRight: 8 },
   eventCard: {
     width: 250,
