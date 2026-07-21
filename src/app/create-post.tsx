@@ -516,11 +516,24 @@ function EventForm(props: EventFormProps) {
         multiline
       />
 
-      <Text style={styles.label}>Date</Text>
-      <DateTimeField mode="date" value={props.datePart} onChange={props.setDatePart} />
-
-      <Text style={styles.label}>Time</Text>
-      <DateTimeField mode="time" value={props.timePart} onChange={props.setTimePart} />
+      <View style={styles.dateTimeRow}>
+        <View style={styles.dateTimeCol}>
+          <Text style={styles.label}>Date</Text>
+          <DateTimeField
+            mode="date"
+            value={props.datePart}
+            onChange={props.setDatePart}
+          />
+        </View>
+        <View style={styles.dateTimeCol}>
+          <Text style={styles.label}>Time</Text>
+          <DateTimeField
+            mode="time"
+            value={props.timePart}
+            onChange={props.setTimePart}
+          />
+        </View>
+      </View>
 
       <Text style={styles.label}>Location</Text>
       <TextInput
@@ -761,6 +774,8 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   evMultiline: { minHeight: 90, textAlignVertical: 'top' },
+  dateTimeRow: { flexDirection: 'row', gap: 12 },
+  dateTimeCol: { flex: 1 },
   kindRow: { flexDirection: 'row', gap: 8, marginBottom: 20 },
   kindChip: {
     flex: 1,

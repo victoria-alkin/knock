@@ -161,11 +161,16 @@ export default function CreateEventScreen() {
           multiline
         />
 
-        <Text style={styles.label}>Date</Text>
-        <DateTimeField mode="date" value={datePart} onChange={setDatePart} />
-
-        <Text style={styles.label}>Time</Text>
-        <DateTimeField mode="time" value={timePart} onChange={setTimePart} />
+        <View style={styles.row}>
+          <View style={styles.rowItem}>
+            <Text style={styles.label}>Date</Text>
+            <DateTimeField mode="date" value={datePart} onChange={setDatePart} />
+          </View>
+          <View style={styles.rowItem}>
+            <Text style={styles.label}>Time</Text>
+            <DateTimeField mode="time" value={timePart} onChange={setTimePart} />
+          </View>
+        </View>
 
         <Text style={styles.label}>Location</Text>
         <TextInput
