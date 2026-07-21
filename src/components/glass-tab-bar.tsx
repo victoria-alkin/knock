@@ -106,25 +106,25 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
   // Compress by ~10% when scrolling down; expand back when scrolling up.
   const barHeight = tabBarCompact.interpolate({
     inputRange: [0, 1],
-    outputRange: [76, 71],
+    outputRange: [76, 69],
   });
   const marginH = tabBarCompact.interpolate({
     inputRange: [0, 1],
-    outputRange: [18, 25],
+    outputRange: [18, 27],
   });
   const radius = tabBarCompact.interpolate({
     inputRange: [0, 1],
-    outputRange: [34, 31],
+    outputRange: [34, 30],
   });
   const bottomPad = tabBarCompact.interpolate({
     inputRange: [0, 1],
-    outputRange: [insets.bottom + 12, insets.bottom + 9],
+    outputRange: [insets.bottom + 9, insets.bottom + 6],
   });
   // Icons + labels shrink in place, proportional to the bar. Scaling each slot
   // (not the whole row) avoids the edge icons drifting toward the centre.
   const contentScale = tabBarCompact.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 0.94],
+    outputRange: [1, 0.92],
   });
 
   return (
