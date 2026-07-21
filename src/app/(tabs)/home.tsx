@@ -331,18 +331,24 @@ export default function HomeScreen() {
                       source={{ uri: event.imageUrl }}
                       style={styles.eventImage}
                     />
-                  ) : null}
+                  ) : (
+                    <View style={[styles.eventImage, styles.eventImagePlaceholder]}>
+                      <Icon
+                        source={channelIcons.events}
+                        size={34}
+                        color="#B9A9D4"
+                      />
+                    </View>
+                  )}
                   <Text style={styles.eventTime}>
                     {formatEventTime(event.startsAt)}
                   </Text>
                   <Text style={styles.eventTitle} numberOfLines={2}>
                     {event.title}
                   </Text>
-                  {event.location ? (
-                    <Text style={styles.eventLocation} numberOfLines={1}>
-                      📍 {event.location}
-                    </Text>
-                  ) : null}
+                  <Text style={styles.eventLocation} numberOfLines={1}>
+                    {event.location ? `📍 ${event.location}` : ' '}
+                  </Text>
                   <View style={styles.eventFooter}>
                     <Text style={styles.eventGoing}>
                       {event.goingCount} going
@@ -542,9 +548,14 @@ const styles = StyleSheet.create({
   },
   eventImage: {
     width: '100%',
-    height: 130,
+    height: 120,
     borderRadius: 12,
     marginBottom: 12,
+  },
+  eventImagePlaceholder: {
+    backgroundColor: '#F3F1F8',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   eventTime: {
     fontSize: 13,
@@ -556,9 +567,17 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '800',
     color: '#1F1438',
+    lineHeight: 22,
+    minHeight: 44,
     marginBottom: 6,
   },
-  eventLocation: { fontSize: 14, color: '#76698C', marginBottom: 10 },
+  eventLocation: {
+    fontSize: 14,
+    color: '#76698C',
+    lineHeight: 18,
+    minHeight: 18,
+    marginBottom: 10,
+  },
   eventFooter: {
     flexDirection: 'row',
     alignItems: 'center',
