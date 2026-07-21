@@ -17,6 +17,7 @@ import { Icon } from '@/components/icon';
 import { UrgencyBadge } from '@/components/urgency-badge';
 import { CHANNELS } from '@/constants/channels';
 import { channelIcons, likeIcons, topBarIcons } from '@/constants/icons';
+import { EventSummary, fetchEvents, formatEventTime } from '@/lib/events';
 import { getMyBuilding, MyBuilding } from '@/lib/membership';
 import { useScrollToTop } from '@/hooks/use-scroll-to-top';
 import { getUnreadCount } from '@/lib/notifications';
@@ -34,6 +35,7 @@ export default function HomeScreen() {
   const scrollRef = useScrollToTop();
   const [building, setBuilding] = useState<MyBuilding | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [events, setEvents] = useState<EventSummary[]>([]);
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -43,12 +45,14 @@ export default function HomeScreen() {
     const b = (await getMyBuilding()) ?? building;
     setBuilding(b);
     if (b) {
-      const [rows, n] = await Promise.all([
+      const [rows, n, ev] = await Promise.all([
         fetchBuildingPosts(b.id),
         getUnreadCount(),
+        fetchEvents(b.id),
       ]);
       setPosts(rows);
       setUnread(n);
+      setEvents(ev);
     }
     setRefreshing(false);
   }, [building]);
@@ -86,8 +90,14 @@ export default function HomeScreen() {
       let active = true;
       (async () => {
         if (!building) return;
-        const rows = await fetchBuildingPosts(building.id);
-        if (active) setPosts(rows);
+        const [rows, ev] = await Promise.all([
+          fetchBuildingPosts(building.id),
+          fetchEvents(building.id),
+        ]);
+        if (active) {
+          setPosts(rows);
+          setEvents(ev);
+        }
       })();
       return () => {
         active = false;
@@ -280,6 +290,49 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
+        {events.length > 0 ? (
+          <>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Upcoming events</Text>
+              <Pressable onPress={() => router.push('/events')}>
+                <Text style={styles.seeAll}>See all</Text>
+              </Pressable>
+            </View>
+            {events.slice(0, 3).map((event) => (
+              <Pressable
+                key={event.id}
+                style={styles.eventCard}
+                onPress={() =>
+                  router.push({
+                    pathname: '/event/[eventId]',
+                    params: { eventId: event.id },
+                  })
+                }
+              >
+                {event.imageUrl ? (
+                  <Image
+                    source={{ uri: event.imageUrl }}
+                    style={styles.eventImage}
+                  />
+                ) : null}
+                <Text style={styles.eventTime}>
+                  {formatEventTime(event.startsAt)}
+                </Text>
+                <Text style={styles.eventTitle}>{event.title}</Text>
+                {event.location ? (
+                  <Text style={styles.eventLocation}>📍 {event.location}</Text>
+                ) : null}
+                <View style={styles.eventFooter}>
+                  <Text style={styles.eventGoing}>{event.goingCount} going</Text>
+                  {event.myStatus === 'going' ? (
+                    <Text style={styles.eventYouBadge}>You&apos;re going</Text>
+                  ) : null}
+                </View>
+              </Pressable>
+            ))}
+          </>
+        ) : null}
+
         {pinned.length > 0 ? (
           <>
             <View style={styles.sectionHeaderRow}>
@@ -461,6 +514,48 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#6D28D9',
     marginBottom: 12,
+  },
+  eventCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E7DFF5',
+    marginBottom: 12,
+  },
+  eventImage: {
+    width: '100%',
+    height: 130,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  eventTime: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#6D28D9',
+    marginBottom: 6,
+  },
+  eventTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1F1438',
+    marginBottom: 6,
+  },
+  eventLocation: { fontSize: 14, color: '#76698C', marginBottom: 10 },
+  eventFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  eventGoing: { fontSize: 14, color: '#4A3D63', fontWeight: '700' },
+  eventYouBadge: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#1B873F',
+    backgroundColor: '#E4F6EA',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 999,
   },
   feedHeader: {
     flexDirection: 'row',
