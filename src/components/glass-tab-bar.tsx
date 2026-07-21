@@ -55,12 +55,22 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
   const slotWidth =
     rowWidth > 0 ? (rowWidth - ROW_PAD * 2) / SLOTS.length : 0;
 
+  const lastActiveSlot = useRef(activeSlot);
+
   // Slide the active bubble to the focused tab, stretching into a pill on the
-  // way and settling back to a circle.
+  // way and settling back to a circle. On a bar resize (same tab), just
+  // reposition instantly — no slide or stretch.
   useEffect(() => {
     if (slotWidth === 0 || activeSlot < 0) return;
     const targetX =
       ROW_PAD + activeSlot * slotWidth + (slotWidth - BUBBLE) / 2;
+
+    if (lastActiveSlot.current === activeSlot) {
+      translateX.setValue(targetX);
+      return;
+    }
+    lastActiveSlot.current = activeSlot;
+
     Animated.parallel([
       Animated.timing(translateX, {
         toValue: targetX,
