@@ -16,6 +16,7 @@ import { Avatar } from '@/components/avatar';
 import { Icon } from '@/components/icon';
 import { topBarIcons } from '@/constants/icons';
 import { useScrollToTop } from '@/hooks/use-scroll-to-top';
+import { useTabBarScroll } from '@/hooks/use-tab-bar-scroll';
 import {
   getMyBuilding,
   getMyProfile,
@@ -34,6 +35,7 @@ type MenuItem = {
 export default function ProfileScreen() {
   const router = useRouter();
   const scrollRef = useScrollToTop();
+  const onScroll = useTabBarScroll();
   const [profile, setProfile] = useState<MyProfile | null>(null);
   const [building, setBuilding] = useState<MyBuilding | null>(null);
   const [unread, setUnread] = useState(0);
@@ -114,7 +116,12 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.content}>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.content}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+      >
         <View style={styles.topBar}>
           <Pressable onPress={() => router.push('/invite')} hitSlop={12}>
             <Icon source={topBarIcons.addUser} size={24} color="#6D28D9" />

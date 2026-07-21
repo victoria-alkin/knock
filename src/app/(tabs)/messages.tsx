@@ -19,6 +19,7 @@ import { Avatar } from '@/components/avatar';
 import { Icon } from '@/components/icon';
 import { topBarIcons } from '@/constants/icons';
 import { useScrollToTop } from '@/hooks/use-scroll-to-top';
+import { useTabBarScroll } from '@/hooks/use-tab-bar-scroll';
 import { ConversationSummary, fetchConversations } from '@/lib/dms';
 import { getUnreadCount } from '@/lib/notifications';
 import { relativeTime } from '@/lib/posts';
@@ -26,6 +27,7 @@ import { relativeTime } from '@/lib/posts';
 export default function MessagesScreen() {
   const router = useRouter();
   const scrollRef = useScrollToTop();
+  const onScroll = useTabBarScroll();
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [unread, setUnread] = useState(0);
   const [query, setQuery] = useState('');
@@ -138,6 +140,8 @@ export default function MessagesScreen() {
           contentContainerStyle={styles.list}
           keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="handled"
+          onScroll={onScroll}
+          scrollEventThrottle={16}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

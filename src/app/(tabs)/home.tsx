@@ -22,6 +22,7 @@ import { channelIcons, likeIcons, topBarIcons } from '@/constants/icons';
 import { EventSummary, fetchEvents, formatEventTime } from '@/lib/events';
 import { getMyBuilding, MyBuilding } from '@/lib/membership';
 import { useScrollToTop } from '@/hooks/use-scroll-to-top';
+import { useTabBarScroll } from '@/hooks/use-tab-bar-scroll';
 import { getUnreadCount } from '@/lib/notifications';
 import {
   fetchBuildingPosts,
@@ -35,6 +36,7 @@ const CHANNEL_BY_KEY = Object.fromEntries(CHANNELS.map((c) => [c.key, c]));
 export default function HomeScreen() {
   const router = useRouter();
   const scrollRef = useScrollToTop();
+  const onScroll = useTabBarScroll();
   const [building, setBuilding] = useState<MyBuilding | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [events, setEvents] = useState<EventSummary[]>([]);
@@ -194,6 +196,8 @@ export default function HomeScreen() {
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={styles.content}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

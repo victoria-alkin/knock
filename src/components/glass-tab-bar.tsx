@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { tabIcons, tabIconsFilled } from '@/constants/icons';
+import { setTabBarCompact, tabBarCompact } from '@/lib/tab-bar-compact';
 
 // Slot order across the bar. "create" is the raised center button, not a tab.
 const SLOTS = ['home', 'channels', 'create', 'messages', 'profile'] as const;
@@ -62,7 +63,7 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
     Animated.parallel([
       Animated.spring(translateX, {
         toValue: targetX,
-        useNativeDriver: true,
+        useNativeDriver: false,
         damping: 18,
         stiffness: 170,
         mass: 0.9,
@@ -71,11 +72,11 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
         Animated.timing(scaleX, {
           toValue: 1.5,
           duration: 110,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
         Animated.spring(scaleX, {
           toValue: 1,
-          useNativeDriver: true,
+          useNativeDriver: false,
           damping: 14,
           stiffness: 200,
         }),
@@ -83,16 +84,45 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
     ]).start();
   }, [activeSlot, slotWidth, translateX, scaleX]);
 
+  // Reset to the expanded size whenever the user switches tabs.
+  useEffect(() => {
+    setTabBarCompact(false);
+  }, [state.index]);
+
   const onRowLayout = (e: LayoutChangeEvent) =>
     setRowWidth(e.nativeEvent.layout.width);
 
+  // Compress by ~10% when scrolling down; expand back when scrolling up.
+  const barHeight = tabBarCompact.interpolate({
+    inputRange: [0, 1],
+    outputRange: [76, 68],
+  });
+  const marginH = tabBarCompact.interpolate({
+    inputRange: [0, 1],
+    outputRange: [18, 28],
+  });
+  const radius = tabBarCompact.interpolate({
+    inputRange: [0, 1],
+    outputRange: [34, 30],
+  });
+  const bottomPad = tabBarCompact.interpolate({
+    inputRange: [0, 1],
+    outputRange: [insets.bottom + 12, insets.bottom + 8],
+  });
+  const contentScale = tabBarCompact.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.9],
+  });
+
   return (
-    <View
+    <Animated.View
       pointerEvents="box-none"
-      style={[styles.wrap, { paddingBottom: insets.bottom + 12 }]}
+      style={[styles.wrap, { paddingBottom: bottomPad }]}
     >
-      <View style={styles.shadowWrap}>
-        <View style={styles.bar}>
+      <Animated.View
+        style={[styles.shadowWrap, { marginHorizontal: marginH, borderRadius: radius }]}
+      >
+        <Animated.View style={[styles.bar, { height: barHeight, borderRadius: radius }]}>
           <BlurView
             tint="light"
             intensity={Platform.OS === 'android' ? 30 : 44}
@@ -101,7 +131,10 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
           <View style={styles.fill} />
           <View style={styles.topHighlight} />
 
-          <View style={styles.row} onLayout={onRowLayout}>
+          <Animated.View
+            style={[styles.row, { transform: [{ scale: contentScale }] }]}
+            onLayout={onRowLayout}
+          >
             {slotWidth > 0 && activeSlot >= 0 ? (
               <Animated.View
                 pointerEvents="none"
@@ -166,10 +199,10 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
                 </Pressable>
               );
             })}
-          </View>
-        </View>
-      </View>
-    </View>
+          </Animated.View>
+        </Animated.View>
+      </Animated.View>
+    </Animated.View>
   );
 }
 

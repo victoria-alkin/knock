@@ -14,11 +14,13 @@ import { Icon } from '@/components/icon';
 import { CHANNELS } from '@/constants/channels';
 import { channelIcons, topBarIcons } from '@/constants/icons';
 import { useScrollToTop } from '@/hooks/use-scroll-to-top';
+import { useTabBarScroll } from '@/hooks/use-tab-bar-scroll';
 import { getUnreadCount } from '@/lib/notifications';
 
 export default function ChannelsScreen() {
   const router = useRouter();
   const scrollRef = useScrollToTop();
+  const onScroll = useTabBarScroll();
   const [unread, setUnread] = useState(0);
 
   useFocusEffect(
@@ -35,7 +37,12 @@ export default function ChannelsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.content}>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.content}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+      >
         <View style={styles.topBar}>
           <Pressable onPress={() => router.push('/invite')} hitSlop={12}>
             <Icon source={topBarIcons.addUser} size={24} color="#6D28D9" />
