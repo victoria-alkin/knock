@@ -132,10 +132,7 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
           <View style={styles.fill} />
           <View style={styles.topHighlight} />
 
-          <Animated.View
-            style={[styles.row, { transform: [{ scale: contentScale }] }]}
-            onLayout={onRowLayout}
-          >
+          <View style={styles.row} onLayout={onRowLayout}>
             {slotWidth > 0 && activeSlot >= 0 ? (
               <Animated.View
                 pointerEvents="none"
@@ -185,22 +182,32 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
                   onPress={onPress}
                   accessibilityLabel={name}
                 >
-                  <View style={active ? styles.activeIcon : undefined}>
-                    <Icon
-                      source={active ? tabIconsFilled[name] : TAB_ICON[name]}
-                      size={active ? 25 : 23}
-                      color={active ? PURPLE : CHARCOAL}
-                    />
-                  </View>
-                  <Text
-                    style={[styles.label, { color: active ? PURPLE : CHARCOAL }]}
+                  <Animated.View
+                    style={[
+                      styles.slotInner,
+                      { transform: [{ scale: contentScale }] },
+                    ]}
                   >
-                    {TAB_LABEL[name]}
-                  </Text>
+                    <View style={active ? styles.activeIcon : undefined}>
+                      <Icon
+                        source={active ? tabIconsFilled[name] : TAB_ICON[name]}
+                        size={active ? 25 : 23}
+                        color={active ? PURPLE : CHARCOAL}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        styles.label,
+                        { color: active ? PURPLE : CHARCOAL },
+                      ]}
+                    >
+                      {TAB_LABEL[name]}
+                    </Text>
+                  </Animated.View>
                 </Pressable>
               );
             })}
-          </Animated.View>
+          </View>
         </Animated.View>
       </Animated.View>
     </Animated.View>
@@ -252,6 +259,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  slotInner: {
+    alignItems: 'center',
     gap: 3,
   },
   activeIcon: {
