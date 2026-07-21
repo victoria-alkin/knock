@@ -35,7 +35,7 @@ const TAB_LABEL: Record<Exclude<SlotName, 'create'>, string> = {
   profile: 'Profile',
 };
 
-const BUBBLE = 44;
+const BUBBLE = 40;
 const CHARCOAL = '#2C2340';
 const PURPLE = '#6D28D9';
 
@@ -215,24 +215,19 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    // Leave room for the label pinned at the bottom of the slot.
-    paddingBottom: 18,
+    gap: 3,
   },
   activeIcon: {
-    transform: [{ translateY: -2 }],
+    transform: [{ translateY: -1 }],
   },
   label: {
-    position: 'absolute',
-    bottom: 8,
-    left: 0,
-    right: 0,
-    textAlign: 'center',
     fontSize: 10.5,
+    lineHeight: 13,
     fontWeight: '700',
   },
   bubble: {
     position: 'absolute',
-    top: 7,
+    top: 9,
     left: 0,
     width: BUBBLE,
     height: BUBBLE,
@@ -256,7 +251,7 @@ const styles = StyleSheet.create({
     backgroundColor: PURPLE,
     alignItems: 'center',
     justifyContent: 'center',
-    transform: [{ translateY: -8 }],
+    transform: [{ translateY: -14 }],
     shadowColor: PURPLE,
     shadowOpacity: 0.4,
     shadowRadius: 8,
