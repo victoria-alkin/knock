@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Easing,
   LayoutChangeEvent,
   Platform,
   Pressable,
@@ -61,24 +62,24 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
     const targetX =
       ROW_PAD + activeSlot * slotWidth + (slotWidth - BUBBLE) / 2;
     Animated.parallel([
-      Animated.spring(translateX, {
+      Animated.timing(translateX, {
         toValue: targetX,
+        duration: 280,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: false,
-        damping: 18,
-        stiffness: 170,
-        mass: 0.9,
       }),
       Animated.sequence([
         Animated.timing(scaleX, {
-          toValue: 1.5,
-          duration: 110,
+          toValue: 1.35,
+          duration: 120,
+          easing: Easing.out(Easing.quad),
           useNativeDriver: false,
         }),
-        Animated.spring(scaleX, {
+        Animated.timing(scaleX, {
           toValue: 1,
+          duration: 200,
+          easing: Easing.inOut(Easing.quad),
           useNativeDriver: false,
-          damping: 14,
-          stiffness: 200,
         }),
       ]),
     ]).start();
