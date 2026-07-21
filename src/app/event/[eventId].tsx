@@ -141,7 +141,11 @@ export default function EventDetailScreen() {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
+        >
           {event.imageUrl ? (
             <Image source={{ uri: event.imageUrl }} style={styles.cover} />
           ) : null}
