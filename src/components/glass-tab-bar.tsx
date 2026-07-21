@@ -254,7 +254,6 @@ const styles = StyleSheet.create({
     backgroundColor: PURPLE,
     alignItems: 'center',
     justifyContent: 'center',
-    transform: [{ translateY: -14 }],
     shadowColor: PURPLE,
     shadowOpacity: 0.4,
     shadowRadius: 8,
