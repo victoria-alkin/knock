@@ -200,12 +200,22 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
                       { transform: [{ scale: contentScale }] },
                     ]}
                   >
-                    <View style={active ? styles.activeIcon : undefined}>
-                      <Icon
-                        source={active ? tabIconsFilled[name] : TAB_ICON[name]}
-                        size={active ? 25 : 23}
-                        color={active ? PURPLE : CHARCOAL}
-                      />
+                    <View style={[styles.iconStack, active && styles.activeIcon]}>
+                      <View style={{ opacity: active ? 0 : 1 }}>
+                        <Icon source={TAB_ICON[name]} size={24} color={CHARCOAL} />
+                      </View>
+                      <View
+                        style={[
+                          StyleSheet.absoluteFill,
+                          { opacity: active ? 1 : 0 },
+                        ]}
+                      >
+                        <Icon
+                          source={tabIconsFilled[name]}
+                          size={24}
+                          color={PURPLE}
+                        />
+                      </View>
                     </View>
                     <Text
                       style={[
@@ -275,6 +285,10 @@ const styles = StyleSheet.create({
   slotInner: {
     alignItems: 'center',
     gap: 3,
+  },
+  iconStack: {
+    width: 24,
+    height: 24,
   },
   activeIcon: {
     transform: [{ translateY: -1 }],
