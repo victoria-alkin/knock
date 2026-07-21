@@ -308,38 +308,51 @@ export default function HomeScreen() {
                 <Text style={styles.seeAll}>See all</Text>
               </Pressable>
             </View>
-            {events.slice(0, 3).map((event) => (
-              <Pressable
-                key={event.id}
-                style={styles.eventCard}
-                onPress={() =>
-                  router.push({
-                    pathname: '/event/[eventId]',
-                    params: { eventId: event.id },
-                  })
-                }
-              >
-                {event.imageUrl ? (
-                  <Image
-                    source={{ uri: event.imageUrl }}
-                    style={styles.eventImage}
-                  />
-                ) : null}
-                <Text style={styles.eventTime}>
-                  {formatEventTime(event.startsAt)}
-                </Text>
-                <Text style={styles.eventTitle}>{event.title}</Text>
-                {event.location ? (
-                  <Text style={styles.eventLocation}>📍 {event.location}</Text>
-                ) : null}
-                <View style={styles.eventFooter}>
-                  <Text style={styles.eventGoing}>{event.goingCount} going</Text>
-                  {event.myStatus === 'going' ? (
-                    <Text style={styles.eventYouBadge}>You&apos;re going</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.eventsScroll}
+              contentContainerStyle={styles.eventsRow}
+            >
+              {events.slice(0, 10).map((event) => (
+                <Pressable
+                  key={event.id}
+                  style={styles.eventCard}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/event/[eventId]',
+                      params: { eventId: event.id },
+                    })
+                  }
+                >
+                  {event.imageUrl ? (
+                    <Image
+                      source={{ uri: event.imageUrl }}
+                      style={styles.eventImage}
+                    />
                   ) : null}
-                </View>
-              </Pressable>
-            ))}
+                  <Text style={styles.eventTime}>
+                    {formatEventTime(event.startsAt)}
+                  </Text>
+                  <Text style={styles.eventTitle} numberOfLines={2}>
+                    {event.title}
+                  </Text>
+                  {event.location ? (
+                    <Text style={styles.eventLocation} numberOfLines={1}>
+                      📍 {event.location}
+                    </Text>
+                  ) : null}
+                  <View style={styles.eventFooter}>
+                    <Text style={styles.eventGoing}>
+                      {event.goingCount} going
+                    </Text>
+                    {event.myStatus === 'going' ? (
+                      <Text style={styles.eventYouBadge}>You&apos;re going</Text>
+                    ) : null}
+                  </View>
+                </Pressable>
+              ))}
+            </ScrollView>
           </>
         ) : null}
 
@@ -516,13 +529,15 @@ const styles = StyleSheet.create({
     color: '#6D28D9',
     marginBottom: 12,
   },
+  eventsScroll: { marginBottom: 12 },
+  eventsRow: { gap: 12, paddingRight: 8 },
   eventCard: {
+    width: 250,
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
     borderColor: '#E7DFF5',
-    marginBottom: 12,
   },
   eventImage: {
     width: '100%',
