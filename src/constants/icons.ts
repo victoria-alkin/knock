@@ -23,6 +23,14 @@ export const tabIcons = {
   plus: require('@/assets/images/elements/icons/post plus.png'),
 };
 
+// Solid (filled) versions shown when a tab is active.
+export const tabIconsFilled = {
+  home: require('@/assets/images/elements/icons/Full for bottom bar/Full for bottom bar/home.png'),
+  channels: require('@/assets/images/elements/icons/Full for bottom bar/Full for bottom bar/visualization.png'),
+  messages: require('@/assets/images/elements/icons/Full for bottom bar/Full for bottom bar/typing.png'),
+  profile: require('@/assets/images/elements/icons/Full for bottom bar/Full for bottom bar/account.png'),
+};
+
 export const rsvpIcons: Record<string, number> = {
   going: require('@/assets/images/elements/icons/event rsvp/yes.png'),
   maybe: require('@/assets/images/elements/icons/event rsvp/maybe.png'),

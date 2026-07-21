@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
-import { tabIcons } from '@/constants/icons';
+import { tabIcons, tabIconsFilled } from '@/constants/icons';
 
 // Slot order across the bar. "create" is the raised center button, not a tab.
 const SLOTS = ['home', 'channels', 'create', 'messages', 'profile'] as const;
@@ -153,7 +153,7 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
                 >
                   <View style={active ? styles.activeIcon : undefined}>
                     <Icon
-                      source={TAB_ICON[name]}
+                      source={active ? tabIconsFilled[name] : TAB_ICON[name]}
                       size={active ? 25 : 23}
                       color={active ? PURPLE : CHARCOAL}
                     />
