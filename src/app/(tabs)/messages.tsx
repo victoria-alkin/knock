@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  Keyboard,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -103,7 +104,19 @@ export default function MessagesScreen() {
             style={styles.searchInput}
             returnKeyType="search"
             autoCapitalize="none"
+            onSubmitEditing={() => Keyboard.dismiss()}
           />
+          {query.length > 0 ? (
+            <Pressable
+              onPress={() => {
+                setQuery('');
+                Keyboard.dismiss();
+              }}
+              hitSlop={10}
+            >
+              <Feather name="x" size={18} color="#9B8CAF" />
+            </Pressable>
+          ) : null}
         </View>
       </View>
 
