@@ -1,8 +1,23 @@
+import { BlurView } from 'expo-blur';
 import { Tabs, useRouter } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { Icon } from '@/components/icon';
 import { tabIcons } from '@/constants/icons';
+
+// Frosted "liquid glass" backdrop for the tab bar — content scrolls behind it.
+function GlassTabBarBackground() {
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      <BlurView
+        tint="light"
+        intensity={Platform.OS === 'android' ? 24 : 60}
+        style={StyleSheet.absoluteFill}
+      />
+      <View style={styles.glassOverlay} />
+    </View>
+  );
+}
 
 function CreateButton() {
   const router = useRouter();
@@ -25,6 +40,8 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: '#6D28D9',
         tabBarInactiveTintColor: '#9B8CAF',
+        tabBarStyle: styles.tabBar,
+        tabBarBackground: () => <GlassTabBarBackground />,
       }}
     >
       <Tabs.Screen
@@ -75,6 +92,17 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
+  tabBar: {
+    position: 'absolute',
+    backgroundColor: 'transparent',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(109, 40, 217, 0.15)',
+    elevation: 0,
+  },
+  glassOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.55)',
+  },
   createButton: {
     flex: 1,
     alignItems: 'center',
