@@ -55,6 +55,9 @@ export default function EventDetailScreen() {
   const [confirmingCommentId, setConfirmingCommentId] = useState<string | null>(
     null,
   );
+  const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(
+    null,
+  );
 
   const load = useCallback(async () => {
     if (!eventId) return;
@@ -98,8 +101,9 @@ export default function EventDetailScreen() {
   const handleSendComment = async () => {
     if (!eventId || commentBody.trim().length === 0) return;
     setSending(true);
-    await createEventComment(eventId, commentBody);
+    await createEventComment(eventId, commentBody, replyingTo?.id ?? null);
     setCommentBody('');
+    setReplyingTo(null);
     await load();
     setSending(false);
   };
@@ -128,6 +132,72 @@ export default function EventDetailScreen() {
 
   const isFull =
     event.capacity != null && event.goingCount >= event.capacity;
+
+  // Group comments into threads: top-level comments and their nested replies.
+  const childrenByParent = new Map<string, EventComment[]>();
+  for (const c of comments) {
+    if (c.parentCommentId) {
+      const arr = childrenByParent.get(c.parentCommentId) ?? [];
+      arr.push(c);
+      childrenByParent.set(c.parentCommentId, arr);
+    }
+  }
+  const topLevelComments = comments.filter((c) => !c.parentCommentId);
+
+  const renderComment = (comment: EventComment, depth: number) => {
+    const children = childrenByParent.get(comment.id) ?? [];
+    const mine = comment.authorId === currentUserId;
+    return (
+      <View key={comment.id}>
+        <View style={[styles.commentCard, depth > 0 && styles.commentNested]}>
+          <View style={styles.commentHead}>
+            <View style={styles.commentAuthorRow}>
+              <Avatar
+                name={comment.authorName}
+                url={comment.authorAvatar}
+                size={28}
+              />
+              <Text style={styles.commentAuthor}>{comment.authorName}</Text>
+            </View>
+            <Text style={styles.commentTime}>
+              {relativeTime(comment.createdAt)}
+            </Text>
+          </View>
+          <Text style={styles.commentBody}>{comment.body}</Text>
+
+          {confirmingCommentId === comment.id ? (
+            <View style={styles.confirmRow}>
+              <Text style={styles.confirmText}>Delete?</Text>
+              <Pressable onPress={() => handleDeleteComment(comment.id)}>
+                <Text style={styles.confirmYes}>Delete</Text>
+              </Pressable>
+              <Pressable onPress={() => setConfirmingCommentId(null)}>
+                <Text style={styles.confirmCancel}>Cancel</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View style={styles.commentActions}>
+              {event.allowComments ? (
+                <Pressable
+                  onPress={() =>
+                    setReplyingTo({ id: comment.id, name: comment.authorName })
+                  }
+                >
+                  <Text style={styles.replyLink}>Reply</Text>
+                </Pressable>
+              ) : null}
+              {mine ? (
+                <Pressable onPress={() => setConfirmingCommentId(comment.id)}>
+                  <Text style={styles.commentDelete}>Delete</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          )}
+        </View>
+        {children.map((child) => renderComment(child, depth + 1))}
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -237,61 +307,34 @@ export default function EventDetailScreen() {
               No comments yet — ask a question or say you&apos;re in.
             </Text>
           ) : (
-            comments.map((comment) => (
-              <View key={comment.id} style={styles.commentCard}>
-                <View style={styles.commentHead}>
-                  <View style={styles.commentAuthorRow}>
-                    <Avatar
-                      name={comment.authorName}
-                      url={comment.authorAvatar}
-                      size={28}
-                    />
-                    <Text style={styles.commentAuthor}>
-                      {comment.authorName}
-                    </Text>
-                  </View>
-                  <Text style={styles.commentTime}>
-                    {relativeTime(comment.createdAt)}
-                  </Text>
-                </View>
-                <Text style={styles.commentBody}>{comment.body}</Text>
-                {comment.authorId === currentUserId ? (
-                  confirmingCommentId === comment.id ? (
-                    <View style={styles.confirmRow}>
-                      <Text style={styles.confirmText}>Delete?</Text>
-                      <Pressable
-                        onPress={() => handleDeleteComment(comment.id)}
-                      >
-                        <Text style={styles.confirmYes}>Delete</Text>
-                      </Pressable>
-                      <Pressable onPress={() => setConfirmingCommentId(null)}>
-                        <Text style={styles.confirmCancel}>Cancel</Text>
-                      </Pressable>
-                    </View>
-                  ) : (
-                    <Pressable
-                      onPress={() => setConfirmingCommentId(comment.id)}
-                    >
-                      <Text style={styles.deleteLink}>Delete</Text>
-                    </Pressable>
-                  )
-                ) : null}
-              </View>
-            ))
+            topLevelComments.map((comment) => renderComment(comment, 0))
           )}
         </ScrollView>
 
         {event.allowComments ? (
-          <View style={styles.composer}>
-            <TextInput
-              value={commentBody}
-              onChangeText={setCommentBody}
-              placeholder="Add a comment…"
-              placeholderTextColor="#9B8CAF"
-              style={styles.composerInput}
-              multiline
-              maxLength={4000}
-            />
+          <View style={styles.composerArea}>
+            {replyingTo ? (
+              <View style={styles.replyingBanner}>
+                <Text style={styles.replyingText}>
+                  Replying to {replyingTo.name}
+                </Text>
+                <Pressable onPress={() => setReplyingTo(null)} hitSlop={8}>
+                  <Text style={styles.replyingCancel}>✕</Text>
+                </Pressable>
+              </View>
+            ) : null}
+            <View style={styles.composer}>
+              <TextInput
+                value={commentBody}
+                onChangeText={setCommentBody}
+                placeholder={
+                  replyingTo ? `Reply to ${replyingTo.name}…` : 'Add a comment…'
+                }
+                placeholderTextColor="#9B8CAF"
+                style={styles.composerInput}
+                multiline
+                maxLength={4000}
+              />
             <Pressable
               style={[
                 styles.sendButton,
@@ -303,6 +346,7 @@ export default function EventDetailScreen() {
             >
               <Text style={styles.sendText}>{sending ? '…' : 'Send'}</Text>
             </Pressable>
+            </View>
           </View>
         ) : (
           <View style={styles.commentsOff}>
@@ -452,16 +496,40 @@ const styles = StyleSheet.create({
   confirmText: { fontSize: 13, color: '#67597F', marginRight: 'auto' },
   confirmYes: { fontSize: 13, fontWeight: '800', color: '#B4243F' },
   confirmCancel: { fontSize: 13, fontWeight: '700', color: '#6D28D9' },
+  composerArea: {
+    borderTopWidth: 1,
+    borderTopColor: '#E7DFF5',
+    backgroundColor: '#FDFCFF',
+  },
   composer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 10,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#E7DFF5',
-    backgroundColor: '#FDFCFF',
   },
+  replyingBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F3F1F8',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginHorizontal: 16,
+    marginTop: 10,
+  },
+  replyingText: { fontSize: 13, fontWeight: '700', color: '#4A3D63' },
+  replyingCancel: { fontSize: 14, fontWeight: '800', color: '#8A7BA3' },
+  commentNested: { marginLeft: 24 },
+  commentActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 18,
+    marginTop: 10,
+  },
+  replyLink: { fontSize: 13, fontWeight: '700', color: '#6D28D9' },
+  commentDelete: { fontSize: 13, fontWeight: '700', color: '#B4243F' },
   composerInput: {
     flex: 1,
     backgroundColor: '#FFFFFF',

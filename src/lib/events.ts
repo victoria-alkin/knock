@@ -186,6 +186,7 @@ export type EventComment = {
   authorAvatar: string | null;
   body: string;
   createdAt: string;
+  parentCommentId: string | null;
 };
 
 export async function fetchEventComments(
@@ -193,7 +194,9 @@ export async function fetchEventComments(
 ): Promise<EventComment[]> {
   const { data, error } = await supabase
     .from('event_comments')
-    .select('id, author_id, body, created_at, profiles ( display_name, avatar_url )')
+    .select(
+      'id, author_id, body, created_at, parent_comment_id, profiles ( display_name, avatar_url )',
+    )
     .eq('event_id', eventId)
     .order('created_at', { ascending: true });
 
@@ -204,6 +207,7 @@ export async function fetchEventComments(
       author_id: string;
       body: string;
       created_at: string;
+      parent_comment_id: string | null;
       profiles: { display_name: string | null; avatar_url: string | null } | null;
     }[]
   ).map((row) => ({
@@ -213,12 +217,14 @@ export async function fetchEventComments(
     authorAvatar: row.profiles?.avatar_url ?? null,
     body: row.body,
     createdAt: row.created_at,
+    parentCommentId: row.parent_comment_id ?? null,
   }));
 }
 
 export async function createEventComment(
   eventId: string,
   body: string,
+  parentCommentId?: string | null,
 ): Promise<{ error?: string }> {
   const {
     data: { user },
@@ -229,6 +235,7 @@ export async function createEventComment(
     event_id: eventId,
     author_id: user.id,
     body: body.trim(),
+    parent_comment_id: parentCommentId ?? null,
   });
   return error ? { error: error.message } : {};
 }
