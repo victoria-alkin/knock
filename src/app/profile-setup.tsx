@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -14,6 +14,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { pickAndUploadAvatar } from '@/lib/avatar';
 import { supabase } from '@/lib/supabase';
+
+/** Make sure an (anonymous) session exists before uploading or saving. */
+async function ensureSignedIn(): Promise<{ error?: string }> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (session) return {};
+  const { error } = await supabase.auth.signInAnonymously();
+  if (error) return { error: `Could not start a session: ${error.message}` };
+  return {};
+}
 
 export default function ProfileSetupScreen() {
   const router = useRouter();
@@ -34,9 +45,21 @@ export default function ProfileSetupScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Establish the anonymous session up front so photo upload works before the
+  // profile is finished.
+  useEffect(() => {
+    ensureSignedIn();
+  }, []);
+
   const handlePickAvatar = async () => {
     setUploadingAvatar(true);
     setError(null);
+    const { error: authError } = await ensureSignedIn();
+    if (authError) {
+      setError(authError);
+      setUploadingAvatar(false);
+      return;
+    }
     const { url, error: uploadError } = await pickAndUploadAvatar();
     if (url) setAvatarUrl(url);
     else if (uploadError) setError(uploadError);
@@ -59,16 +82,10 @@ export default function ProfileSetupScreen() {
 
     try {
       // 1. Make sure we have an identity (anonymous — no verification yet).
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        const { error: authError } = await supabase.auth.signInAnonymously();
-        if (authError) {
-          setError(`Could not start a session: ${authError.message}`);
-          return;
-        }
+      const { error: authError } = await ensureSignedIn();
+      if (authError) {
+        setError(authError);
+        return;
       }
 
       const {
