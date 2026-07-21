@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
 import { Icon } from '@/components/icon';
+import { PressableScale } from '@/components/pressable-scale';
 import { UrgencyBadge } from '@/components/urgency-badge';
 import { CHANNELS } from '@/constants/channels';
 import { channelIcons, likeIcons, topBarIcons } from '@/constants/icons';
@@ -131,7 +132,7 @@ export default function HomeScreen() {
   const renderPost = (post: Post) => {
     const channel = CHANNEL_BY_KEY[post.channel];
     return (
-      <Pressable
+      <PressableScale
         key={post.id}
         style={styles.postCard}
         onPress={() =>
@@ -172,7 +173,7 @@ export default function HomeScreen() {
               : `${post.replyCount} ${post.replyCount === 1 ? 'reply' : 'replies'}`}
           </Text>
         </View>
-      </Pressable>
+      </PressableScale>
     );
   };
 
@@ -268,7 +269,7 @@ export default function HomeScreen() {
           contentContainerStyle={styles.channelRow}
         >
           {CHANNELS.map((channel) => (
-            <Pressable
+            <PressableScale
               key={channel.key}
               style={styles.channelChip}
               onPress={() =>
@@ -296,7 +297,7 @@ export default function HomeScreen() {
                 )}
               </View>
               <Text style={styles.channelName}>{channel.name}</Text>
-            </Pressable>
+            </PressableScale>
           ))}
         </ScrollView>
 
@@ -315,7 +316,7 @@ export default function HomeScreen() {
               contentContainerStyle={styles.eventsRow}
             >
               {events.slice(0, 10).map((event) => (
-                <Pressable
+                <PressableScale
                   key={event.id}
                   style={styles.eventCard}
                   onPress={() =>
@@ -350,7 +351,7 @@ export default function HomeScreen() {
                       <Text style={styles.eventYouBadge}>You&apos;re going</Text>
                     ) : null}
                   </View>
-                </Pressable>
+                </PressableScale>
               ))}
             </ScrollView>
           </>

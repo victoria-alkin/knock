@@ -1,8 +1,9 @@
 import { BlurView } from 'expo-blur';
 import { Tabs, useRouter } from 'expo-router';
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { Icon } from '@/components/icon';
+import { PressableScale } from '@/components/pressable-scale';
 import { tabIcons } from '@/constants/icons';
 
 // Frosted "liquid glass" backdrop for the tab bar — content scrolls behind it.
@@ -22,14 +23,16 @@ function GlassTabBarBackground() {
 function CreateButton() {
   const router = useRouter();
   return (
-    <Pressable
-      style={styles.createButton}
+    <PressableScale
+      outerStyle={styles.createButton}
       onPress={() => router.push('/create-post')}
+      scaleTo={0.88}
+      accessibilityLabel="New post"
     >
       <View style={styles.createCircle}>
         <Icon source={tabIcons.plus} size={24} color="#FFFFFF" />
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 
