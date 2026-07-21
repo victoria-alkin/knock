@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   loader: { marginTop: 40 },
-  list: { paddingHorizontal: 20, paddingBottom: 120 },
+  list: { paddingHorizontal: 20, paddingBottom: 130 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -8,6 +8,7 @@ import {
   Platform,
   Pressable,
   StyleSheet,
+  Text,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -27,7 +28,14 @@ const TAB_ICON: Record<Exclude<SlotName, 'create'>, number> = {
   profile: tabIcons.profile,
 };
 
-const BUBBLE = 46;
+const TAB_LABEL: Record<Exclude<SlotName, 'create'>, string> = {
+  home: 'Home',
+  channels: 'Channels',
+  messages: 'Messages',
+  profile: 'Profile',
+};
+
+const BUBBLE = 44;
 const CHARCOAL = '#2C2340';
 const PURPLE = '#6D28D9';
 
@@ -96,7 +104,7 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
                 pointerEvents="none"
                 style={[
                   styles.bubble,
-                  { transform: [{ translateX }, { translateY: -BUBBLE / 2 }, { scaleX }] },
+                  { transform: [{ translateX }, { scaleX }] },
                 ]}
               />
             ) : null}
@@ -147,6 +155,11 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
                       color={active ? PURPLE : CHARCOAL}
                     />
                   </View>
+                  <Text
+                    style={[styles.label, { color: active ? PURPLE : CHARCOAL }]}
+                  >
+                    {TAB_LABEL[name]}
+                  </Text>
                 </Pressable>
               );
             })}
@@ -173,7 +186,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
   },
   bar: {
-    height: 70,
+    height: 76,
     borderRadius: 34,
     overflow: 'hidden',
     borderWidth: 1,
@@ -202,13 +215,24 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    // Leave room for the label pinned at the bottom of the slot.
+    paddingBottom: 18,
   },
   activeIcon: {
     transform: [{ translateY: -2 }],
   },
+  label: {
+    position: 'absolute',
+    bottom: 8,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    fontSize: 10.5,
+    fontWeight: '700',
+  },
   bubble: {
     position: 'absolute',
-    top: '50%',
+    top: 7,
     left: 0,
     width: BUBBLE,
     height: BUBBLE,
