@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -225,28 +226,40 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        <View style={styles.buildingCard}>
-          <Text style={styles.buildingName}>
-            {building?.name ?? 'Your building'}
-          </Text>
-          {building?.address ? (
-            <Text style={styles.buildingAddress}>{building.address}</Text>
-          ) : null}
+        <View style={styles.buildingHeader}>
+          <View style={styles.buildingHeaderLeft}>
+            <View style={styles.buildingNameRow}>
+              <Text style={styles.buildingName} numberOfLines={1}>
+                {building?.name ?? 'Your building'}
+              </Text>
+              <Feather name="chevron-down" size={22} color="#1F1438" />
+            </View>
+            {building?.address ? (
+              <Text style={styles.buildingAddress}>{building.address}</Text>
+            ) : null}
+          </View>
           <View
             style={[
-              styles.badge,
-              building?.verified ? styles.badgeVerified : styles.badgePending,
+              styles.verifiedPill,
+              building?.verified
+                ? styles.verifiedPillOn
+                : styles.verifiedPillPending,
             ]}
           >
+            <Feather
+              name="shield"
+              size={13}
+              color={building?.verified ? '#6D28D9' : '#9A6A15'}
+            />
             <Text
               style={[
-                styles.badgeText,
+                styles.verifiedText,
                 building?.verified
-                  ? styles.badgeTextVerified
-                  : styles.badgeTextPending,
+                  ? styles.verifiedTextOn
+                  : styles.verifiedTextPending,
               ]}
             >
-              {building?.verified ? '✓ Verified building' : 'Pending verification'}
+              {building?.verified ? 'Verified building' : 'Pending'}
             </Text>
           </View>
         </View>
@@ -430,47 +443,39 @@ const styles = StyleSheet.create({
     width: 130,
     height: 48,
   },
-  buildingCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#E7DFF5',
+  buildingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
     marginBottom: 24,
   },
+  buildingHeaderLeft: { flex: 1 },
+  buildingNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   buildingName: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 26,
+    fontWeight: '900',
     color: '#1F1438',
-    marginBottom: 4,
+    flexShrink: 1,
   },
   buildingAddress: {
     fontSize: 15,
     color: '#76698C',
-    marginBottom: 14,
+    marginTop: 3,
   },
-  badge: {
-    alignSelf: 'flex-start',
-    paddingVertical: 6,
+  verifiedPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 7,
     paddingHorizontal: 12,
     borderRadius: 999,
   },
-  badgeVerified: {
-    backgroundColor: '#E4F6EA',
-  },
-  badgePending: {
-    backgroundColor: '#F1ECFA',
-  },
-  badgeText: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  badgeTextVerified: {
-    color: '#1B873F',
-  },
-  badgeTextPending: {
-    color: '#6D28D9',
-  },
+  verifiedPillOn: { backgroundColor: '#EDE7FB' },
+  verifiedPillPending: { backgroundColor: '#FBF3DA' },
+  verifiedText: { fontSize: 13, fontWeight: '800' },
+  verifiedTextOn: { color: '#6D28D9' },
+  verifiedTextPending: { color: '#9A6A15' },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
