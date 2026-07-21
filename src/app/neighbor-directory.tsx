@@ -63,7 +63,7 @@ export default function NeighborDirectoryScreen() {
       >
         <Text style={styles.title}>Neighbor Directory</Text>
         <Text style={styles.subtitle}>
-          Neighbors who&apos;ve opted in. First names only.
+          Neighbors who&apos;ve opted in to the directory.
         </Text>
 
         {loading ? (
@@ -78,8 +78,8 @@ export default function NeighborDirectoryScreen() {
         ) : (
           neighbors.map((n) => (
             <View key={n.id} style={styles.row}>
-              <Avatar name={n.firstName} url={n.avatarUrl} size={44} />
-              <Text style={styles.name}>{n.firstName}</Text>
+              <Avatar name={n.name} url={n.avatarUrl} size={44} />
+              <Text style={styles.name}>{n.name}</Text>
             </View>
           ))
         )}

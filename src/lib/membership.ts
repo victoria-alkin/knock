@@ -17,17 +17,17 @@ export type MyProfile = {
 
 export type Neighbor = {
   id: string;
-  firstName: string;
+  name: string;
   avatarUrl: string | null;
 };
 
-/** Opted-in neighbors in your building (first names only). */
+/** Opted-in neighbors in your building (display names only). */
 export async function getNeighborDirectory(): Promise<Neighbor[]> {
   const { data, error } = await supabase.rpc('get_neighbor_directory');
   if (error || !data) return [];
-  return (data as { id: string; first_name: string; avatar_url: string | null }[]).map(
-    (r) => ({ id: r.id, firstName: r.first_name, avatarUrl: r.avatar_url }),
-  );
+  return (
+    data as { id: string; display_name: string; avatar_url: string | null }[]
+  ).map((r) => ({ id: r.id, name: r.display_name, avatarUrl: r.avatar_url }));
 }
 
 /**
