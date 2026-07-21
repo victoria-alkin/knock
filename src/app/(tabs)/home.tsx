@@ -228,12 +228,9 @@ export default function HomeScreen() {
 
         <View style={styles.buildingHeader}>
           <View style={styles.buildingHeaderLeft}>
-            <View style={styles.buildingNameRow}>
-              <Text style={styles.buildingName} numberOfLines={1}>
-                {building?.name ?? 'Your building'}
-              </Text>
-              <Feather name="chevron-down" size={22} color="#1F1438" />
-            </View>
+            <Text style={styles.buildingName} numberOfLines={1}>
+              {building?.name ?? 'Your building'}
+            </Text>
             {building?.address ? (
               <Text style={styles.buildingAddress}>{building.address}</Text>
             ) : null}
@@ -451,7 +448,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   buildingHeaderLeft: { flex: 1 },
-  buildingNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   buildingName: {
     fontSize: 26,
     fontWeight: '900',
