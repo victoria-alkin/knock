@@ -106,28 +106,25 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
   // Compress by ~10% when scrolling down; expand back when scrolling up.
   const barHeight = tabBarCompact.interpolate({
     inputRange: [0, 1],
-    outputRange: [76, 72],
+    outputRange: [76, 71],
   });
   const marginH = tabBarCompact.interpolate({
     inputRange: [0, 1],
-    outputRange: [18, 23],
+    outputRange: [18, 25],
   });
   const radius = tabBarCompact.interpolate({
     inputRange: [0, 1],
-    outputRange: [34, 32],
+    outputRange: [34, 31],
   });
   const bottomPad = tabBarCompact.interpolate({
     inputRange: [0, 1],
-    outputRange: [insets.bottom + 12, insets.bottom + 10],
+    outputRange: [insets.bottom + 12, insets.bottom + 9],
   });
+  // Icons + labels shrink in place, proportional to the bar. Scaling each slot
+  // (not the whole row) avoids the edge icons drifting toward the centre.
   const contentScale = tabBarCompact.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 0.95],
-  });
-  // Cancels the row's scale on the active bubble so it never changes size.
-  const bubbleCounterScale = tabBarCompact.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 1 / 0.95],
+    outputRange: [1, 0.94],
   });
 
   return (
@@ -147,22 +144,13 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
           <View style={styles.fill} />
           <View style={styles.topHighlight} />
 
-          <Animated.View
-            style={[styles.row, { transform: [{ scale: contentScale }] }]}
-            onLayout={onRowLayout}
-          >
+          <View style={styles.row} onLayout={onRowLayout}>
             {slotWidth > 0 && activeSlot >= 0 ? (
               <Animated.View
                 pointerEvents="none"
                 style={[
                   styles.bubble,
-                  {
-                    transform: [
-                      { translateX },
-                      { scaleX },
-                      { scale: bubbleCounterScale },
-                    ],
-                  },
+                  { transform: [{ translateX }, { scaleX }] },
                 ]}
               />
             ) : null}
@@ -206,22 +194,32 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
                   onPress={onPress}
                   accessibilityLabel={name}
                 >
-                  <View style={active ? styles.activeIcon : undefined}>
-                    <Icon
-                      source={active ? tabIconsFilled[name] : TAB_ICON[name]}
-                      size={active ? 25 : 23}
-                      color={active ? PURPLE : CHARCOAL}
-                    />
-                  </View>
-                  <Text
-                    style={[styles.label, { color: active ? PURPLE : CHARCOAL }]}
+                  <Animated.View
+                    style={[
+                      styles.slotInner,
+                      { transform: [{ scale: contentScale }] },
+                    ]}
                   >
-                    {TAB_LABEL[name]}
-                  </Text>
+                    <View style={active ? styles.activeIcon : undefined}>
+                      <Icon
+                        source={active ? tabIconsFilled[name] : TAB_ICON[name]}
+                        size={active ? 25 : 23}
+                        color={active ? PURPLE : CHARCOAL}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        styles.label,
+                        { color: active ? PURPLE : CHARCOAL },
+                      ]}
+                    >
+                      {TAB_LABEL[name]}
+                    </Text>
+                  </Animated.View>
                 </Pressable>
               );
             })}
-          </Animated.View>
+          </View>
         </Animated.View>
       </Animated.View>
     </Animated.View>
@@ -273,6 +271,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  slotInner: {
+    alignItems: 'center',
     gap: 3,
   },
   activeIcon: {
