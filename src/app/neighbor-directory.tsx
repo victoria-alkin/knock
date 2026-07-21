@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
@@ -12,13 +13,17 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
+import { startConversation } from '@/lib/dms';
 import { getNeighborDirectory, Neighbor } from '@/lib/membership';
+import { getCurrentUserId } from '@/lib/posts';
 
 export default function NeighborDirectoryScreen() {
   const router = useRouter();
   const [neighbors, setNeighbors] = useState<Neighbor[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -30,9 +35,13 @@ export default function NeighborDirectoryScreen() {
     useCallback(() => {
       let active = true;
       (async () => {
-        const rows = await getNeighborDirectory();
+        const [rows, uid] = await Promise.all([
+          getNeighborDirectory(),
+          getCurrentUserId(),
+        ]);
         if (active) {
           setNeighbors(rows);
+          setCurrentUserId(uid);
           setLoading(false);
         }
       })();
@@ -41,6 +50,19 @@ export default function NeighborDirectoryScreen() {
       };
     }, []),
   );
+
+  const handleMessage = async (n: Neighbor) => {
+    setError(null);
+    const { id, error: dmError } = await startConversation(n.id);
+    if (dmError || !id) {
+      setError(dmError ?? 'Could not start a conversation.');
+      return;
+    }
+    router.push({
+      pathname: '/dm/[conversationId]',
+      params: { conversationId: id, otherName: n.name },
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -63,8 +85,10 @@ export default function NeighborDirectoryScreen() {
       >
         <Text style={styles.title}>Neighbor Directory</Text>
         <Text style={styles.subtitle}>
-          Neighbors who&apos;ve opted in to the directory.
+          Neighbors who&apos;ve opted in to the directory. Tap to message.
         </Text>
+
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         {loading ? (
           <ActivityIndicator color="#6D28D9" style={styles.loader} />
@@ -76,12 +100,29 @@ export default function NeighborDirectoryScreen() {
             </Text>
           </View>
         ) : (
-          neighbors.map((n) => (
-            <View key={n.id} style={styles.row}>
-              <Avatar name={n.name} url={n.avatarUrl} size={44} />
-              <Text style={styles.name}>{n.name}</Text>
-            </View>
-          ))
+          neighbors.map((n) => {
+            const isMe = n.id === currentUserId;
+            if (isMe) {
+              return (
+                <View key={n.id} style={styles.row}>
+                  <Avatar name={n.name} url={n.avatarUrl} size={44} />
+                  <Text style={styles.name}>{n.name}</Text>
+                  <Text style={styles.youTag}>You</Text>
+                </View>
+              );
+            }
+            return (
+              <Pressable
+                key={n.id}
+                style={styles.row}
+                onPress={() => handleMessage(n)}
+              >
+                <Avatar name={n.name} url={n.avatarUrl} size={44} />
+                <Text style={styles.name}>{n.name}</Text>
+                <Feather name="message-circle" size={20} color="#6D28D9" />
+              </Pressable>
+            );
+          })
         )}
       </ScrollView>
     </SafeAreaView>
@@ -129,5 +170,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F0EBF9',
   },
-  name: { fontSize: 16, fontWeight: '700', color: '#1F1438' },
+  name: { flex: 1, fontSize: 16, fontWeight: '700', color: '#1F1438' },
+  youTag: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#6D28D9',
+    backgroundColor: '#F1ECFA',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#B4243F',
+    marginBottom: 12,
+  },
 });
