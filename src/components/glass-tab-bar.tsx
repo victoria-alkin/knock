@@ -36,6 +36,7 @@ const TAB_LABEL: Record<Exclude<SlotName, 'create'>, string> = {
 };
 
 const BUBBLE = 40;
+const ROW_PAD = 6;
 const CHARCOAL = '#2C2340';
 const PURPLE = '#6D28D9';
 
@@ -49,13 +50,15 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
 
   const focusedName = state.routes[state.index]?.name as SlotName | undefined;
   const activeSlot = focusedName ? SLOTS.indexOf(focusedName) : -1;
-  const slotWidth = rowWidth > 0 ? rowWidth / SLOTS.length : 0;
+  const slotWidth =
+    rowWidth > 0 ? (rowWidth - ROW_PAD * 2) / SLOTS.length : 0;
 
   // Slide the active bubble to the focused tab, stretching into a pill on the
   // way and settling back to a circle.
   useEffect(() => {
     if (slotWidth === 0 || activeSlot < 0) return;
-    const targetX = activeSlot * slotWidth + (slotWidth - BUBBLE) / 2;
+    const targetX =
+      ROW_PAD + activeSlot * slotWidth + (slotWidth - BUBBLE) / 2;
     Animated.parallel([
       Animated.spring(translateX, {
         toValue: targetX,
@@ -209,7 +212,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 6,
+    paddingHorizontal: ROW_PAD,
   },
   slot: {
     flex: 1,
