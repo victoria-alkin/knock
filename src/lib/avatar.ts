@@ -2,7 +2,7 @@ import { pickAndUploadImage } from './storage';
 
 /** Pick and upload the current user's avatar. Returns the public URL to store. */
 export async function pickAndUploadAvatar() {
-  return pickAndUploadImage({ bucket: 'avatars', aspect: [1, 1] });
+  return pickAndUploadImage({ bucket: 'avatars', aspect: [1, 1], maxDim: 512 });
 }
 
 /** Pick and upload a marketplace listing photo. Returns the public URL. */

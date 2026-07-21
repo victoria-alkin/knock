@@ -1,5 +1,6 @@
 import { encode } from 'base64-arraybuffer';
 import Constants from 'expo-constants';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import { Platform } from 'react-native';
 
@@ -29,6 +30,8 @@ function apiUrl(path: string): string {
 export async function pickAndUploadImage(opts: {
   bucket: string;
   aspect?: [number, number];
+  /** Longest edge to shrink to before upload (keeps payloads small/fast). */
+  maxDim?: number;
 }): Promise<{ url?: string; error?: string; canceled?: boolean }> {
   // Ask for photo-library access first (required on iOS).
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -44,8 +47,7 @@ export async function pickAndUploadImage(opts: {
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: opts.aspect,
-      quality: 0.6,
-      base64: true,
+      quality: 1,
     });
   } catch {
     return { error: 'Could not open the photo library.' };
@@ -59,8 +61,20 @@ export async function pickAndUploadImage(opts: {
   } = await supabase.auth.getSession();
   if (!session) return { error: 'You are not signed in.' };
 
-  // base64 on native; on web the picker may omit it, so derive it from the uri.
-  let base64 = asset.base64 ?? null;
+  // Shrink + recompress before upload so the payload is small and fast.
+  const maxDim = opts.maxDim ?? 1400;
+  let base64: string | null = null;
+  try {
+    const needsResize = !!asset.width && asset.width > maxDim;
+    const out = await manipulateAsync(
+      asset.uri,
+      needsResize ? [{ resize: { width: maxDim } }] : [],
+      { compress: 0.6, format: SaveFormat.JPEG, base64: true },
+    );
+    base64 = out.base64 ?? null;
+  } catch {
+    // Fall back to the original image if manipulation isn't available.
+  }
   if (!base64) {
     try {
       const buffer = await (await fetch(asset.uri)).arrayBuffer();
@@ -81,7 +95,7 @@ export async function pickAndUploadImage(opts: {
       body: JSON.stringify({
         bucket: opts.bucket,
         base64,
-        contentType: asset.mimeType ?? 'image/jpeg',
+        contentType: 'image/jpeg',
       }),
     });
   } catch {
