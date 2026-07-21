@@ -14,6 +14,6 @@ export function setTabBarCompact(compact: boolean) {
     toValue: next,
     useNativeDriver: false,
     speed: 12,
-    bounciness: 4,
+    bounciness: 0,
   }).start();
 }
