@@ -88,19 +88,27 @@ export default function ConversationScreen() {
                 Say hello to {otherName ?? 'your neighbor'}.
               </Text>
             ) : (
-              messages.map((m) => {
+              messages.map((m, i) => {
                 const mine = m.senderId === currentUserId;
+                const showDelivered = mine && i === messages.length - 1;
                 return (
                   <View
                     key={m.id}
-                    style={[
-                      styles.bubble,
-                      mine ? styles.bubbleMine : styles.bubbleTheirs,
-                    ]}
+                    style={mine ? styles.rowMine : styles.rowTheirs}
                   >
-                    <Text style={mine ? styles.textMine : styles.textTheirs}>
-                      {m.body}
-                    </Text>
+                    <View
+                      style={[
+                        styles.bubble,
+                        mine ? styles.bubbleMine : styles.bubbleTheirs,
+                      ]}
+                    >
+                      <Text style={mine ? styles.textMine : styles.textTheirs}>
+                        {m.body}
+                      </Text>
+                    </View>
+                    {showDelivered ? (
+                      <Text style={styles.deliveredText}>Delivered</Text>
+                    ) : null}
                   </View>
                 );
               })
@@ -155,6 +163,15 @@ const styles = StyleSheet.create({
     color: '#76698C',
     textAlign: 'center',
     marginTop: 40,
+  },
+  rowMine: { alignItems: 'flex-end' },
+  rowTheirs: { alignItems: 'flex-start' },
+  deliveredText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#9B8CAF',
+    marginTop: 3,
+    marginRight: 4,
   },
   bubble: {
     maxWidth: '80%',
