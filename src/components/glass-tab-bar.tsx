@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
@@ -202,7 +203,15 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
                   >
                     <View style={[styles.iconStack, active && styles.activeIcon]}>
                       <View style={{ opacity: active ? 0 : 1 }}>
-                        <Icon source={TAB_ICON[name]} size={24} color={CHARCOAL} />
+                        {name === 'channels' ? (
+                          <Feather name="grid" size={23} color={CHARCOAL} />
+                        ) : (
+                          <Icon
+                            source={TAB_ICON[name]}
+                            size={24}
+                            color={CHARCOAL}
+                          />
+                        )}
                       </View>
                       <View
                         style={[
@@ -289,6 +298,8 @@ const styles = StyleSheet.create({
   iconStack: {
     width: 24,
     height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   activeIcon: {
     transform: [{ translateY: -1 }],
