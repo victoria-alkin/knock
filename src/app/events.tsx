@@ -190,6 +190,8 @@ export default function EventsScreen() {
         </Pressable>
       </View>
 
+      <Text style={styles.pageTitle}>Events</Text>
+
       <View style={styles.tabs}>
         {FILTERS.map((f) => (
           <Pressable
@@ -252,6 +254,13 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: { paddingHorizontal: 20, paddingVertical: 12 },
   back: { fontSize: 16, color: '#6D28D9', fontWeight: '700' },
+  pageTitle: {
+    fontSize: 30,
+    fontWeight: '900',
+    color: '#1F1438',
+    paddingHorizontal: 20,
+    marginBottom: 14,
+  },
   tabs: {
     flexDirection: 'row',
     justifyContent: 'space-between',
