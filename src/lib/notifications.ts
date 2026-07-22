@@ -10,6 +10,8 @@ export type AppNotification = {
   postId: string | null;
   conversationId: string | null;
   eventId: string | null;
+  /** Start time of the linked event, if any (for event reminders). */
+  eventStartsAt: string | null;
 };
 
 export async function fetchNotifications(): Promise<AppNotification[]> {
@@ -22,7 +24,7 @@ export async function fetchNotifications(): Promise<AppNotification[]> {
     .limit(50);
 
   if (error || !data) return [];
-  return (
+  const rows = (
     data as {
       id: string;
       type: string;
@@ -44,7 +46,29 @@ export async function fetchNotifications(): Promise<AppNotification[]> {
     postId: n.post_id,
     conversationId: n.conversation_id,
     eventId: n.event_id,
+    eventStartsAt: null as string | null,
   }));
+
+  // Attach each linked event's start time so reminders can show the date and
+  // time in the viewer's own timezone (the server can't know it).
+  const eventIds = [...new Set(rows.map((n) => n.eventId).filter(Boolean))];
+  if (eventIds.length > 0) {
+    const { data: events } = await supabase
+      .from('events')
+      .select('id, starts_at')
+      .in('id', eventIds as string[]);
+    const startById = new Map(
+      (events ?? []).map((e) => [
+        (e as { id: string }).id,
+        (e as { starts_at: string }).starts_at,
+      ]),
+    );
+    for (const n of rows) {
+      if (n.eventId) n.eventStartsAt = startById.get(n.eventId) ?? null;
+    }
+  }
+
+  return rows;
 }
 
 /** Count of unread notifications for the badge. */

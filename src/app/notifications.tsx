@@ -16,6 +16,7 @@ import {
   fetchNotifications,
   markAllRead,
 } from '@/lib/notifications';
+import { formatEventTime } from '@/lib/events';
 import { relativeTime } from '@/lib/posts';
 import { setUnreadNotifications } from '@/lib/unread-notifications';
 
@@ -107,6 +108,11 @@ export default function NotificationsScreen() {
               {!n.read ? <View style={styles.dot} /> : <View style={styles.dotSpacer} />}
               <View style={styles.rowText}>
                 <Text style={styles.body}>{n.body}</Text>
+                {n.eventStartsAt ? (
+                  <Text style={styles.eventWhen}>
+                    {formatEventTime(n.eventStartsAt)}
+                  </Text>
+                ) : null}
                 <Text style={styles.time}>{relativeTime(n.createdAt)}</Text>
               </View>
             </Pressable>
@@ -170,5 +176,6 @@ const styles = StyleSheet.create({
   dotSpacer: { width: 9 },
   rowText: { flex: 1 },
   body: { fontSize: 15, color: '#1F1438', fontWeight: '600', lineHeight: 21 },
+  eventWhen: { fontSize: 13, color: '#6D28D9', fontWeight: '700', marginTop: 3 },
   time: { fontSize: 13, color: '#8A7BA3', marginTop: 4 },
 });
