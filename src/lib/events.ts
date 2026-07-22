@@ -343,6 +343,22 @@ export async function setRsvp(
   return error ? { error: error.message } : {};
 }
 
+/** Remove the current user's RSVP entirely (undo a selection). */
+export async function clearRsvp(eventId: string): Promise<{ error?: string }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('event_rsvps')
+    .delete()
+    .eq('event_id', eventId)
+    .eq('user_id', user.id);
+
+  return error ? { error: error.message } : {};
+}
+
 function toSummary(row: RawEvent, myId: string | null): EventSummary {
   const myStatus = row.event_rsvps.find((r) => r.user_id === myId)?.status ?? null;
   const relation: MyEventRelation | null =

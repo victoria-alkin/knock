@@ -28,6 +28,7 @@ import {
   EventDetail,
   fetchEvent,
   fetchEventComments,
+  clearRsvp,
   formatEventTime,
   RsvpStatus,
   setEventCommentLike,
@@ -90,7 +91,11 @@ export default function EventDetailScreen() {
     if (!eventId) return;
     setUpdating(true);
     setRsvpError(null);
-    const { error } = await setRsvp(eventId, status);
+    // Tapping the option you already picked clears the RSVP (undo it).
+    const { error } =
+      event?.myStatus === status
+        ? await clearRsvp(eventId)
+        : await setRsvp(eventId, status);
     if (error) {
       setRsvpError(
         error.includes('full') ? 'This event is full.' : error,
