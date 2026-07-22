@@ -16,7 +16,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
 import { Icon } from '@/components/icon';
@@ -43,6 +43,7 @@ const OPTIONS: { status: RsvpStatus; label: string }[] = [
 
 export default function EventDetailScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
 
   const [event, setEvent] = useState<EventDetail | null>(null);
@@ -365,7 +366,9 @@ export default function EventDetailScreen() {
                 </Pressable>
               </View>
             ) : null}
-            <View style={styles.composer}>
+            <View
+              style={[styles.composer, { paddingBottom: insets.bottom + 8 }]}
+            >
               <TextInput
                 value={commentBody}
                 onChangeText={setCommentBody}
@@ -548,7 +551,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: 10,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingTop: 10,
   },
   replyingBanner: {
     flexDirection: 'row',
@@ -580,6 +583,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingHorizontal: 16,
     paddingVertical: 12,
+    minHeight: 44,
     fontSize: 15,
     color: '#1F1438',
     borderWidth: 1,
