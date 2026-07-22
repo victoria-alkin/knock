@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ReportDialog } from '@/components/report-dialog';
 import { startConversation } from '@/lib/dms';
 import {
   deleteListing,
@@ -35,6 +36,7 @@ export default function ListingDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [reporting, setReporting] = useState(false);
 
   const load = useCallback(async () => {
     if (!listingId) return;
@@ -159,13 +161,26 @@ export default function ListingDetailScreen() {
             )}
           </View>
         ) : (
-          <Pressable style={styles.messageButton} onPress={handleMessageSeller}>
-            <Text style={styles.messageButtonText}>
-              Message {listing.sellerName}
-            </Text>
-          </Pressable>
+          <View style={styles.buyerActions}>
+            <Pressable style={styles.messageButton} onPress={handleMessageSeller}>
+              <Text style={styles.messageButtonText}>
+                Message {listing.sellerName}
+              </Text>
+            </Pressable>
+            <Pressable onPress={() => setReporting(true)}>
+              <Text style={styles.reportLink}>Report listing</Text>
+            </Pressable>
+          </View>
         )}
       </ScrollView>
+
+      <ReportDialog
+        visible={reporting}
+        targetType="listing"
+        targetId={listing.id}
+        targetLabel="listing"
+        onClose={() => setReporting(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -223,14 +238,15 @@ const styles = StyleSheet.create({
   confirmText: { fontSize: 14, color: '#67597F', marginRight: 'auto' },
   confirmYes: { fontSize: 14, fontWeight: '800', color: '#B4243F' },
   confirmCancel: { fontSize: 14, fontWeight: '700', color: '#6D28D9' },
+  buyerActions: { marginTop: 6, gap: 16, alignItems: 'flex-start' },
   messageButton: {
     alignSelf: 'flex-start',
     backgroundColor: '#6D28D9',
     borderRadius: 999,
     paddingVertical: 14,
     paddingHorizontal: 22,
-    marginTop: 6,
   },
   messageButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  reportLink: { fontSize: 15, fontWeight: '700', color: '#8A7BA3' },
   emptyText: { fontSize: 15, color: '#76698C' },
 });

@@ -18,6 +18,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { CHANNELS } from '@/constants/channels';
 import { Avatar } from '@/components/avatar';
 import { Icon } from '@/components/icon';
+import { ReportDialog } from '@/components/report-dialog';
+import type { ReportTargetType } from '@/lib/reports';
 import { UrgencyBadge } from '@/components/urgency-badge';
 import { likeIcons } from '@/constants/icons';
 import { startConversation } from '@/lib/dms';
@@ -55,6 +57,11 @@ export default function PostDetailScreen() {
   const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(
     null,
   );
+  const [reportTarget, setReportTarget] = useState<{
+    type: ReportTargetType;
+    id: string;
+    label: string;
+  } | null>(null);
 
   const load = useCallback(async () => {
     if (!postId) return;
@@ -254,7 +261,19 @@ export default function PostDetailScreen() {
                 <Pressable onPress={() => setConfirmingReplyId(reply.id)}>
                   <Text style={styles.replyDelete}>Delete</Text>
                 </Pressable>
-              ) : null}
+              ) : (
+                <Pressable
+                  onPress={() =>
+                    setReportTarget({
+                      type: 'reply',
+                      id: reply.id,
+                      label: 'comment',
+                    })
+                  }
+                >
+                  <Text style={styles.replyReport}>Report</Text>
+                </Pressable>
+              )}
             </View>
           )}
         </View>
@@ -341,16 +360,31 @@ export default function PostDetailScreen() {
                     </Pressable>
                   </View>
                 )
-              ) : post.allowDms && !post.isAnonymous ? (
-                <Pressable
-                  style={styles.messageButton}
-                  onPress={handleMessageAuthor}
-                >
-                  <Text style={styles.messageButtonText}>
-                    Message {post.authorName}
-                  </Text>
-                </Pressable>
-              ) : null}
+              ) : (
+                <View style={styles.nonOwnerRow}>
+                  {post.allowDms && !post.isAnonymous ? (
+                    <Pressable
+                      style={styles.messageButton}
+                      onPress={handleMessageAuthor}
+                    >
+                      <Text style={styles.messageButtonText}>
+                        Message {post.authorName}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                  <Pressable
+                    onPress={() =>
+                      setReportTarget({
+                        type: 'post',
+                        id: post.id,
+                        label: 'post',
+                      })
+                    }
+                  >
+                    <Text style={styles.reportLink}>Report post</Text>
+                  </Pressable>
+                </View>
+              )}
             </View>
 
             <Text style={styles.repliesTitle}>
@@ -413,6 +447,14 @@ export default function PostDetailScreen() {
           </View>
         ) : null}
       </KeyboardAvoidingView>
+
+      <ReportDialog
+        visible={reportTarget !== null}
+        targetType={reportTarget?.type ?? 'post'}
+        targetId={reportTarget?.id ?? ''}
+        targetLabel={reportTarget?.label ?? 'post'}
+        onClose={() => setReportTarget(null)}
+      />
     </SafeAreaView>
   );
 }
@@ -523,6 +565,15 @@ const styles = StyleSheet.create({
   replyDelete: { fontSize: 13, fontWeight: '700', color: '#B4243F' },
   replyLike: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   replyLikeCount: { fontSize: 13, fontWeight: '700', color: '#8A7BA3' },
+  replyReport: { fontSize: 13, fontWeight: '700', color: '#8A7BA3' },
+  nonOwnerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginTop: 14,
+  },
+  reportLink: { fontSize: 14, fontWeight: '700', color: '#8A7BA3' },
   replyingBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -583,7 +634,6 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingVertical: 9,
     paddingHorizontal: 16,
-    marginTop: 14,
   },
   messageButtonText: {
     color: '#6D28D9',

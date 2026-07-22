@@ -20,6 +20,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Avatar } from '@/components/avatar';
 import { Icon } from '@/components/icon';
+import { ReportDialog } from '@/components/report-dialog';
+import type { ReportTargetType } from '@/lib/reports';
 import { likeIcons, rsvpIcons } from '@/constants/icons';
 import {
   createEventComment,
@@ -61,6 +63,11 @@ export default function EventDetailScreen() {
   const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(
     null,
   );
+  const [reportTarget, setReportTarget] = useState<{
+    type: ReportTargetType;
+    id: string;
+    label: string;
+  } | null>(null);
 
   const load = useCallback(async () => {
     if (!eventId) return;
@@ -239,7 +246,19 @@ export default function EventDetailScreen() {
                 <Pressable onPress={() => setConfirmingCommentId(comment.id)}>
                   <Text style={styles.commentDelete}>Delete</Text>
                 </Pressable>
-              ) : null}
+              ) : (
+                <Pressable
+                  onPress={() =>
+                    setReportTarget({
+                      type: 'event_comment',
+                      id: comment.id,
+                      label: 'comment',
+                    })
+                  }
+                >
+                  <Text style={styles.commentReport}>Report</Text>
+                </Pressable>
+              )}
             </View>
           )}
         </View>
@@ -406,6 +425,14 @@ export default function EventDetailScreen() {
           </View>
         )}
       </KeyboardAvoidingView>
+
+      <ReportDialog
+        visible={reportTarget !== null}
+        targetType={reportTarget?.type ?? 'event_comment'}
+        targetId={reportTarget?.id ?? ''}
+        targetLabel={reportTarget?.label ?? 'comment'}
+        onClose={() => setReportTarget(null)}
+      />
     </SafeAreaView>
   );
 }
@@ -580,6 +607,7 @@ const styles = StyleSheet.create({
   },
   replyLink: { fontSize: 13, fontWeight: '700', color: '#6D28D9' },
   commentDelete: { fontSize: 13, fontWeight: '700', color: '#B4243F' },
+  commentReport: { fontSize: 13, fontWeight: '700', color: '#8A7BA3' },
   commentLike: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   commentLikeCount: { fontSize: 13, fontWeight: '700', color: '#8A7BA3' },
   composerInput: {

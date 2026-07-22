@@ -21,6 +21,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
+import { ReportDialog } from '@/components/report-dialog';
 import {
   fetchMessages,
   markConversationRead,
@@ -41,6 +42,7 @@ export default function ConversationScreen() {
   const [loading, setLoading] = useState(true);
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
+  const [reporting, setReporting] = useState(false);
   const insets = useSafeAreaInsets();
 
   const load = useCallback(async () => {
@@ -88,7 +90,13 @@ export default function ConversationScreen() {
           <Feather name="chevron-left" size={26} color="#6D28D9" />
         </Pressable>
         <Text style={styles.headerName}>{otherName ?? 'Conversation'}</Text>
-        <View style={styles.headerSpacer} />
+        <Pressable
+          onPress={() => setReporting(true)}
+          hitSlop={12}
+          style={styles.headerSpacer}
+        >
+          <Feather name="flag" size={18} color="#8A7BA3" />
+        </Pressable>
       </View>
 
       <KeyboardAvoidingView
@@ -160,6 +168,14 @@ export default function ConversationScreen() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+
+      <ReportDialog
+        visible={reporting}
+        targetType="dm"
+        targetId={conversationId ?? ''}
+        targetLabel="conversation"
+        onClose={() => setReporting(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -184,7 +200,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerName: { fontSize: 18, fontWeight: '800', color: '#1F1438', flex: 1 },
-  headerSpacer: { width: 34 },
+  headerSpacer: { width: 34, alignItems: 'flex-end', justifyContent: 'center' },
   loader: { marginTop: 40 },
   messages: { padding: 16, gap: 8 },
   emptyText: {
