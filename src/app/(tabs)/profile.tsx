@@ -4,7 +4,6 @@ import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -70,15 +69,8 @@ export default function ProfileScreen() {
     router.replace('/');
   };
 
-  // Close the sheet, then launch the picker only once it has fully dismissed.
-  // iOS won't present the native picker while a modal is still on screen, so
-  // launching immediately just hangs.
-  const startChangePhoto = () => {
-    setPhotoMenu(false);
-    setTimeout(() => void handleChangePhoto(), 350);
-  };
-
   const handleChangePhoto = async () => {
+    setPhotoMenu(false);
     setUploadingAvatar(true);
     setNotice(null);
     const { url, error: uploadError } = await pickAndUploadAvatar();
@@ -252,19 +244,15 @@ export default function ProfileScreen() {
         )}
       </ScrollView>
 
-      <Modal
-        visible={photoMenu}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setPhotoMenu(false)}
-      >
-        <Pressable
-          style={styles.sheetBackdrop}
-          onPress={() => setPhotoMenu(false)}
-        >
-          <Pressable style={styles.sheet}>
+      {photoMenu ? (
+        <View style={styles.overlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setPhotoMenu(false)}
+          />
+          <View style={styles.dialog}>
             <Text style={styles.sheetTitle}>Profile Photo</Text>
-            <Pressable style={styles.sheetPrimary} onPress={startChangePhoto}>
+            <Pressable style={styles.sheetPrimary} onPress={handleChangePhoto}>
               <Feather name="camera" size={18} color="#FFFFFF" />
               <Text style={styles.sheetPrimaryText}>
                 {profile?.avatar_url ? 'Change Photo' : 'Add Photo'}
@@ -281,9 +269,9 @@ export default function ProfileScreen() {
             >
               <Text style={styles.sheetCancelText}>Cancel</Text>
             </Pressable>
-          </Pressable>
-        </Pressable>
-      </Modal>
+          </View>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -429,17 +417,18 @@ const styles = StyleSheet.create({
   logoutConfirmText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
   cancelButton: { paddingVertical: 12, alignItems: 'center' },
   cancelButtonText: { color: '#6D28D9', fontSize: 15, fontWeight: '700' },
-  sheetBackdrop: {
-    flex: 1,
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(31, 20, 56, 0.35)',
-    justifyContent: 'flex-end',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
   },
-  sheet: {
+  dialog: {
+    width: '100%',
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderRadius: 24,
     padding: 20,
-    paddingBottom: 34,
   },
   sheetTitle: {
     fontSize: 17,
