@@ -16,7 +16,10 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import {
   fetchMessages,
@@ -38,6 +41,7 @@ export default function ConversationScreen() {
   const [loading, setLoading] = useState(true);
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const load = useCallback(async () => {
     if (!conversationId) return;
@@ -128,7 +132,9 @@ export default function ConversationScreen() {
           </ScrollView>
         )}
 
-        <View style={styles.composer}>
+        <View
+          style={[styles.composer, { paddingBottom: insets.bottom + 8 }]}
+        >
           <TextInput
             value={body}
             onChangeText={setBody}
@@ -217,7 +223,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: 10,
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: '#E7DFF5',
     backgroundColor: '#FDFCFF',
@@ -228,6 +234,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingHorizontal: 16,
     paddingVertical: 12,
+    minHeight: 44,
     fontSize: 15,
     color: '#1F1438',
     borderWidth: 1,
