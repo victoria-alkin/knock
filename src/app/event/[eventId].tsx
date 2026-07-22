@@ -289,8 +289,7 @@ export default function EventDetailScreen() {
           ) : null}
 
           <Text style={styles.counts}>
-            {event.goingCount} going · {event.maybeCount} maybe ·{' '}
-            {event.notGoingCount} not going
+            {event.goingCount} going · {event.maybeCount} maybe
           </Text>
 
           <Text style={styles.sectionLabel}>Your response</Text>
