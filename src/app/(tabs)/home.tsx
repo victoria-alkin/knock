@@ -343,7 +343,7 @@ export default function HomeScreen() {
                       {event.goingCount} going
                     </Text>
                     {event.relation === 'hosted' ? (
-                      <Text style={styles.eventYouBadge}>
+                      <Text style={[styles.eventYouBadge, styles.eventHostBadge]}>
                         You&apos;re hosting
                       </Text>
                     ) : event.myStatus === 'going' ? (
@@ -586,6 +586,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 999,
   },
+  eventHostBadge: { color: '#6D28D9', backgroundColor: '#F1ECFA' },
   feedHeader: {
     flexDirection: 'row',
     alignItems: 'center',
