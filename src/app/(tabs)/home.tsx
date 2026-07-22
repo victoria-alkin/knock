@@ -342,7 +342,11 @@ export default function HomeScreen() {
                     <Text style={styles.eventGoing}>
                       {event.goingCount} going
                     </Text>
-                    {event.myStatus === 'going' ? (
+                    {event.relation === 'hosted' ? (
+                      <Text style={styles.eventYouBadge}>
+                        You&apos;re hosting
+                      </Text>
+                    ) : event.myStatus === 'going' ? (
                       <Text style={styles.eventYouBadge}>You&apos;re going</Text>
                     ) : null}
                   </View>
