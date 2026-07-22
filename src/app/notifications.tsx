@@ -106,7 +106,7 @@ export default function NotificationsScreen() {
               style={[styles.row, !n.read && styles.rowUnread]}
               onPress={() => open(n)}
             >
-              {n.type === 'dm' ? (
+              {n.type === 'dm' || n.type === 'reply' || n.type === 'rsvp' ? (
                 <View>
                   <Avatar name={n.actorName} url={n.actorAvatar} size={40} />
                   {!n.read ? <View style={styles.avatarDot} /> : null}
