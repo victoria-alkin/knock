@@ -6,6 +6,7 @@ export type ConversationSummary = {
   otherAvatar: string | null;
   lastMessage: string | null;
   lastAt: string | null;
+  unread: number;
 };
 
 export type Message = {
@@ -48,17 +49,31 @@ export async function fetchConversations(): Promise<ConversationSummary[]> {
   const otherIds = [...new Set([...otherIdByConv.values()])];
   const convIds = rows.map((c) => c.id);
 
-  const [{ data: profiles }, { data: msgs }] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('id, display_name, avatar_url')
-      .in('id', otherIds),
-    supabase
-      .from('messages')
-      .select('conversation_id, body, created_at')
-      .in('conversation_id', convIds)
-      .order('created_at', { ascending: false }),
-  ]);
+  const [{ data: profiles }, { data: msgs }, { data: reads }] =
+    await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id, display_name, avatar_url')
+        .in('id', otherIds),
+      supabase
+        .from('messages')
+        .select('conversation_id, sender_id, body, created_at')
+        .in('conversation_id', convIds)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('conversation_reads')
+        .select('conversation_id, last_read_at')
+        .eq('user_id', user.id),
+    ]);
+
+  // How far each conversation has been read by me.
+  const readByConv = new Map<string, number>();
+  for (const r of (reads ?? []) as {
+    conversation_id: string;
+    last_read_at: string;
+  }[]) {
+    readByConv.set(r.conversation_id, new Date(r.last_read_at).getTime());
+  }
 
   const nameById = new Map<string, string>();
   const avatarById = new Map<string, string | null>();
@@ -72,13 +87,23 @@ export async function fetchConversations(): Promise<ConversationSummary[]> {
   }
 
   const lastByConv = new Map<string, { body: string; created_at: string }>();
+  const unreadByConv = new Map<string, number>();
   for (const m of (msgs ?? []) as {
     conversation_id: string;
+    sender_id: string;
     body: string;
     created_at: string;
   }[]) {
     if (!lastByConv.has(m.conversation_id)) {
       lastByConv.set(m.conversation_id, { body: m.body, created_at: m.created_at });
+    }
+    // Unread = messages from the other person newer than my last read.
+    const lastRead = readByConv.get(m.conversation_id) ?? 0;
+    if (m.sender_id !== user.id && new Date(m.created_at).getTime() > lastRead) {
+      unreadByConv.set(
+        m.conversation_id,
+        (unreadByConv.get(m.conversation_id) ?? 0) + 1,
+      );
     }
   }
 
@@ -91,6 +116,7 @@ export async function fetchConversations(): Promise<ConversationSummary[]> {
       otherAvatar: avatarById.get(otherId) ?? null,
       lastMessage: last?.body ?? null,
       lastAt: last?.created_at ?? null,
+      unread: unreadByConv.get(c.id) ?? 0,
     };
   });
 
@@ -113,6 +139,25 @@ export async function fetchMessages(conversationId: string): Promise<Message[]> 
       body: m.body,
       createdAt: m.created_at,
     }),
+  );
+}
+
+/** Mark a conversation as read up to now (clears its unread badge). */
+export async function markConversationRead(
+  conversationId: string,
+): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  await supabase.from('conversation_reads').upsert(
+    {
+      conversation_id: conversationId,
+      user_id: user.id,
+      last_read_at: new Date().toISOString(),
+    },
+    { onConflict: 'conversation_id,user_id' },
   );
 }
 

@@ -17,7 +17,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { fetchMessages, Message, sendMessage } from '@/lib/dms';
+import {
+  fetchMessages,
+  markConversationRead,
+  Message,
+  sendMessage,
+} from '@/lib/dms';
 import { getCurrentUserId } from '@/lib/posts';
 
 export default function ConversationScreen() {
@@ -42,6 +47,8 @@ export default function ConversationScreen() {
     setMessages(msgs);
     setCurrentUserId(uid);
     setLoading(false);
+    // Opening the thread clears its unread badge.
+    await markConversationRead(conversationId);
   }, [conversationId]);
 
   useFocusEffect(

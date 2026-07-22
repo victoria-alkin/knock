@@ -170,13 +170,26 @@ export default function MessagesScreen() {
                   <Text style={styles.rowName} numberOfLines={1}>
                     {c.otherName}
                   </Text>
-                  <Text style={styles.rowPreview} numberOfLines={1}>
+                  <Text
+                    style={[
+                      styles.rowPreview,
+                      c.unread > 0 && styles.rowPreviewUnread,
+                    ]}
+                    numberOfLines={1}
+                  >
                     {c.lastMessage ?? 'No messages yet'}
                   </Text>
                 </View>
-                {c.lastAt ? (
-                  <Text style={styles.rowTime}>{relativeTime(c.lastAt)}</Text>
-                ) : null}
+                <View style={styles.rowRight}>
+                  {c.lastAt ? (
+                    <Text style={styles.rowTime}>{relativeTime(c.lastAt)}</Text>
+                  ) : null}
+                  {c.unread > 0 ? (
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>{c.unread}</Text>
+                    </View>
+                  ) : null}
+                </View>
               </Pressable>
             ))
           )}
@@ -243,7 +256,19 @@ const styles = StyleSheet.create({
   rowText: { flex: 1 },
   rowName: { fontSize: 16, fontWeight: '800', color: '#1F1438' },
   rowPreview: { fontSize: 14, color: '#76698C', marginTop: 3 },
-  rowTime: { fontSize: 13, color: '#8A7BA3', alignSelf: 'flex-start', marginTop: 3 },
+  rowPreviewUnread: { color: '#1F1438', fontWeight: '700' },
+  rowRight: { alignItems: 'flex-end', gap: 6, marginTop: 2 },
+  rowTime: { fontSize: 13, color: '#8A7BA3' },
+  badge: {
+    minWidth: 20,
+    height: 20,
+    borderRadius: 999,
+    backgroundColor: '#6D28D9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  badgeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' },
   emptyWrap: { paddingHorizontal: 20, paddingTop: 8 },
   emptyCard: {
     backgroundColor: '#FFFFFF',
