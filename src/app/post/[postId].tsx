@@ -13,7 +13,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CHANNELS } from '@/constants/channels';
 import { Avatar } from '@/components/avatar';
@@ -40,6 +40,7 @@ const CHANNEL_BY_KEY = Object.fromEntries(CHANNELS.map((c) => [c.key, c]));
 
 export default function PostDetailScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { postId } = useLocalSearchParams<{ postId: string }>();
 
   const [post, setPost] = useState<Post | null>(null);
@@ -363,7 +364,9 @@ export default function PostDetailScreen() {
         )}
 
         {post && post.allowReplies ? (
-          <View style={styles.composer}>
+          <View
+            style={[styles.composer, { paddingBottom: insets.bottom + 8 }]}
+          >
             {error && <Text style={styles.errorText}>{error}</Text>}
             {replyingTo ? (
               <View style={styles.replyingBanner}>
@@ -613,7 +616,6 @@ const styles = StyleSheet.create({
     borderTopColor: '#E7DFF5',
     paddingHorizontal: 16,
     paddingTop: 10,
-    paddingBottom: 12,
     backgroundColor: '#FDFCFF',
   },
   repliesOff: {
@@ -638,6 +640,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingHorizontal: 16,
     paddingVertical: 12,
+    minHeight: 44,
     fontSize: 15,
     color: '#1F1438',
     borderWidth: 1,
