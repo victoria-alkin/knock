@@ -7,6 +7,8 @@ export type AppNotification = {
   read: boolean;
   createdAt: string;
   actorName: string;
+  actorId: string | null;
+  actorAvatar: string | null;
   postId: string | null;
   conversationId: string | null;
   eventId: string | null;
@@ -18,7 +20,7 @@ export async function fetchNotifications(): Promise<AppNotification[]> {
   const { data, error } = await supabase
     .from('notifications')
     .select(
-      'id, type, body, read, created_at, actor_name, post_id, conversation_id, event_id',
+      'id, type, body, read, created_at, actor_name, actor_id, post_id, conversation_id, event_id',
     )
     .order('created_at', { ascending: false })
     .limit(50);
@@ -32,6 +34,7 @@ export async function fetchNotifications(): Promise<AppNotification[]> {
       read: boolean;
       created_at: string;
       actor_name: string;
+      actor_id: string | null;
       post_id: string | null;
       conversation_id: string | null;
       event_id: string | null;
@@ -43,11 +46,31 @@ export async function fetchNotifications(): Promise<AppNotification[]> {
     read: n.read,
     createdAt: n.created_at,
     actorName: n.actor_name,
+    actorId: n.actor_id,
+    actorAvatar: null as string | null,
     postId: n.post_id,
     conversationId: n.conversation_id,
     eventId: n.event_id,
     eventStartsAt: null as string | null,
   }));
+
+  // Resolve each actor's avatar so notifications can show their photo.
+  const actorIds = [...new Set(rows.map((n) => n.actorId).filter(Boolean))];
+  if (actorIds.length > 0) {
+    const { data: actors } = await supabase
+      .from('profiles')
+      .select('id, avatar_url')
+      .in('id', actorIds as string[]);
+    const avatarById = new Map(
+      (actors ?? []).map((a) => [
+        (a as { id: string }).id,
+        (a as { avatar_url: string | null }).avatar_url,
+      ]),
+    );
+    for (const n of rows) {
+      if (n.actorId) n.actorAvatar = avatarById.get(n.actorId) ?? null;
+    }
+  }
 
   // Attach each linked event's start time so reminders can show the date and
   // time in the viewer's own timezone (the server can't know it).

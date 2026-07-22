@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Avatar } from '@/components/avatar';
 import {
   AppNotification,
   fetchNotifications,
@@ -105,7 +106,16 @@ export default function NotificationsScreen() {
               style={[styles.row, !n.read && styles.rowUnread]}
               onPress={() => open(n)}
             >
-              {!n.read ? <View style={styles.dot} /> : <View style={styles.dotSpacer} />}
+              {n.type === 'dm' ? (
+                <View>
+                  <Avatar name={n.actorName} url={n.actorAvatar} size={40} />
+                  {!n.read ? <View style={styles.avatarDot} /> : null}
+                </View>
+              ) : !n.read ? (
+                <View style={styles.dot} />
+              ) : (
+                <View style={styles.dotSpacer} />
+              )}
               <View style={styles.rowText}>
                 <Text style={styles.body}>{n.body}</Text>
                 {n.eventStartsAt ? (
@@ -174,6 +184,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#6D28D9',
   },
   dotSpacer: { width: 9 },
+  avatarDot: {
+    position: 'absolute',
+    top: -1,
+    right: -1,
+    width: 12,
+    height: 12,
+    borderRadius: 999,
+    backgroundColor: '#6D28D9',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
   rowText: { flex: 1 },
   body: { fontSize: 15, color: '#1F1438', fontWeight: '600', lineHeight: 21 },
   eventWhen: { fontSize: 13, color: '#6D28D9', fontWeight: '700', marginTop: 3 },
