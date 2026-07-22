@@ -20,7 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
 import { Icon } from '@/components/icon';
-import { rsvpIcons } from '@/constants/icons';
+import { likeIcons, rsvpIcons } from '@/constants/icons';
 import {
   createEventComment,
   deleteEventComment,
@@ -30,6 +30,7 @@ import {
   fetchEventComments,
   formatEventTime,
   RsvpStatus,
+  setEventCommentLike,
   setRsvp,
 } from '@/lib/events';
 import { getCurrentUserId, relativeTime } from '@/lib/posts';
@@ -114,6 +115,30 @@ export default function EventDetailScreen() {
     await load();
   };
 
+  const handleToggleCommentLike = async (commentId: string) => {
+    const target = comments.find((c) => c.id === commentId);
+    if (!target) return;
+    const nextLiked = !target.likedByMe;
+    const delta = nextLiked ? 1 : -1;
+    setComments((prev) =>
+      prev.map((c) =>
+        c.id === commentId
+          ? { ...c, likedByMe: nextLiked, likeCount: c.likeCount + delta }
+          : c,
+      ),
+    );
+    const { error: likeError } = await setEventCommentLike(commentId, nextLiked);
+    if (likeError) {
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === commentId
+            ? { ...c, likedByMe: !nextLiked, likeCount: c.likeCount - delta }
+            : c,
+        ),
+      );
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={[styles.container, styles.centered]}>
@@ -177,6 +202,24 @@ export default function EventDetailScreen() {
             </View>
           ) : (
             <View style={styles.commentActions}>
+              <Pressable
+                style={styles.commentLike}
+                onPress={() => handleToggleCommentLike(comment.id)}
+                hitSlop={8}
+              >
+                <Icon
+                  source={
+                    comment.likedByMe ? likeIcons.filled : likeIcons.outline
+                  }
+                  size={15}
+                  color={comment.likedByMe ? '#E23E57' : '#8A7BA3'}
+                />
+                {comment.likeCount > 0 ? (
+                  <Text style={styles.commentLikeCount}>
+                    {comment.likeCount}
+                  </Text>
+                ) : null}
+              </Pressable>
               {event.allowComments ? (
                 <Pressable
                   onPress={() =>
@@ -530,6 +573,8 @@ const styles = StyleSheet.create({
   },
   replyLink: { fontSize: 13, fontWeight: '700', color: '#6D28D9' },
   commentDelete: { fontSize: 13, fontWeight: '700', color: '#B4243F' },
+  commentLike: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  commentLikeCount: { fontSize: 13, fontWeight: '700', color: '#8A7BA3' },
   composerInput: {
     flex: 1,
     backgroundColor: '#FFFFFF',

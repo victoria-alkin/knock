@@ -201,6 +201,8 @@ export type EventComment = {
   body: string;
   createdAt: string;
   parentCommentId: string | null;
+  likeCount: number;
+  likedByMe: boolean;
 };
 
 export async function fetchEventComments(
@@ -209,13 +211,13 @@ export async function fetchEventComments(
   const { data, error } = await supabase
     .from('event_comments')
     .select(
-      'id, author_id, body, created_at, parent_comment_id, profiles ( display_name, avatar_url )',
+      'id, author_id, body, created_at, parent_comment_id, profiles ( display_name, avatar_url ), event_comment_likes ( count )',
     )
     .eq('event_id', eventId)
     .order('created_at', { ascending: true });
 
   if (error || !data) return [];
-  return (
+  const comments = (
     data as unknown as {
       id: string;
       author_id: string;
@@ -223,6 +225,7 @@ export async function fetchEventComments(
       created_at: string;
       parent_comment_id: string | null;
       profiles: { display_name: string | null; avatar_url: string | null } | null;
+      event_comment_likes: { count: number }[] | null;
     }[]
   ).map((row) => ({
     id: row.id,
@@ -232,7 +235,64 @@ export async function fetchEventComments(
     body: row.body,
     createdAt: row.created_at,
     parentCommentId: row.parent_comment_id ?? null,
+    likeCount: row.event_comment_likes?.[0]?.count ?? 0,
+    likedByMe: false,
   }));
+  await attachMyCommentLikes(comments);
+  return comments;
+}
+
+/** Fill in likedByMe for a set of comments based on the current user's likes. */
+async function attachMyCommentLikes(comments: EventComment[]): Promise<void> {
+  if (comments.length === 0) return;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data } = await supabase
+    .from('event_comment_likes')
+    .select('comment_id')
+    .eq('user_id', user.id)
+    .in(
+      'comment_id',
+      comments.map((c) => c.id),
+    );
+
+  const liked = new Set(
+    (data ?? []).map((r) => (r as { comment_id: string }).comment_id),
+  );
+  for (const comment of comments) {
+    comment.likedByMe = liked.has(comment.id);
+  }
+}
+
+/** Like or unlike an event comment. */
+export async function setEventCommentLike(
+  commentId: string,
+  liked: boolean,
+): Promise<{ error?: string }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: 'You are not signed in.' };
+
+  if (liked) {
+    const { error } = await supabase
+      .from('event_comment_likes')
+      .upsert(
+        { comment_id: commentId, user_id: user.id },
+        { onConflict: 'comment_id,user_id' },
+      );
+    return error ? { error: error.message } : {};
+  }
+
+  const { error } = await supabase
+    .from('event_comment_likes')
+    .delete()
+    .eq('comment_id', commentId)
+    .eq('user_id', user.id);
+  return error ? { error: error.message } : {};
 }
 
 export async function createEventComment(
