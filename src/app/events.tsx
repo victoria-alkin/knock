@@ -21,7 +21,6 @@ import {
   fetchEvents,
   fetchMyEvents,
   formatEventTime,
-  MyEvent,
   MyEventRelation,
 } from '@/lib/events';
 import { getMyBuilding } from '@/lib/membership';
@@ -115,7 +114,7 @@ export default function EventsScreen() {
     const weekday = d
       .toLocaleDateString(undefined, { weekday: 'short' })
       .toUpperCase();
-    const relation = (event as Partial<MyEvent>).relation;
+    const relation = event.relation;
 
     return (
       <Pressable

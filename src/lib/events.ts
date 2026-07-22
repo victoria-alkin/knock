@@ -15,6 +15,8 @@ export type EventSummary = {
   goingCount: number;
   goingPeople: { name: string; avatar: string | null }[];
   myStatus: RsvpStatus | null;
+  /** The current user's relationship to the event, or null if uninvolved. */
+  relation: MyEventRelation | null;
 };
 
 export type EventDetail = EventSummary & {
@@ -282,6 +284,15 @@ export async function setRsvp(
 }
 
 function toSummary(row: RawEvent, myId: string | null): EventSummary {
+  const myStatus = row.event_rsvps.find((r) => r.user_id === myId)?.status ?? null;
+  const relation: MyEventRelation | null =
+    myId && row.host_id === myId
+      ? 'hosted'
+      : myStatus === 'going'
+        ? 'attended'
+        : myStatus === 'maybe'
+          ? 'maybe'
+          : null;
   return {
     id: row.id,
     title: row.title,
@@ -299,7 +310,8 @@ function toSummary(row: RawEvent, myId: string | null): EventSummary {
         name: r.profiles?.display_name ?? 'Neighbor',
         avatar: r.profiles?.avatar_url ?? null,
       })),
-    myStatus: row.event_rsvps.find((r) => r.user_id === myId)?.status ?? null,
+    myStatus,
+    relation,
   };
 }
 
