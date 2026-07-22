@@ -17,6 +17,7 @@ import { Icon } from '@/components/icon';
 import { topBarIcons } from '@/constants/icons';
 import { useScrollToTop } from '@/hooks/use-scroll-to-top';
 import { useTabBarScroll } from '@/hooks/use-tab-bar-scroll';
+import { useUnreadNotifications } from '@/hooks/use-unread-notifications';
 import {
   getMyBuilding,
   getMyProfile,
@@ -24,7 +25,6 @@ import {
   MyProfile,
   signOut,
 } from '@/lib/membership';
-import { getUnreadCount } from '@/lib/notifications';
 
 type MenuItem = {
   icon: keyof typeof Feather.glyphMap;
@@ -38,7 +38,7 @@ export default function ProfileScreen() {
   const onScroll = useTabBarScroll();
   const [profile, setProfile] = useState<MyProfile | null>(null);
   const [building, setBuilding] = useState<MyBuilding | null>(null);
-  const [unread, setUnread] = useState(0);
+  const unread = useUnreadNotifications();
   const [loading, setLoading] = useState(true);
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -47,15 +47,10 @@ export default function ProfileScreen() {
     useCallback(() => {
       let active = true;
       (async () => {
-        const [p, b, n] = await Promise.all([
-          getMyProfile(),
-          getMyBuilding(),
-          getUnreadCount(),
-        ]);
+        const [p, b] = await Promise.all([getMyProfile(), getMyBuilding()]);
         if (active) {
           setProfile(p);
           setBuilding(b);
-          setUnread(n);
           setLoading(false);
         }
       })();

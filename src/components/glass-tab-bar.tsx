@@ -18,6 +18,7 @@ import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { tabIcons, tabIconsFilled } from '@/constants/icons';
 import { getUnreadDmCount } from '@/lib/dms';
+import { getUnreadCount } from '@/lib/notifications';
 import { supabase } from '@/lib/supabase';
 import { setTabBarCompact, tabBarCompact } from '@/lib/tab-bar-compact';
 import {
@@ -25,6 +26,7 @@ import {
   setUnreadDmCount,
   subscribeUnreadDms,
 } from '@/lib/unread-dms';
+import { setUnreadNotifications } from '@/lib/unread-notifications';
 
 // Slot order across the bar. "create" is the raised center button, not a tab.
 const SLOTS = ['home', 'channels', 'create', 'messages', 'profile'] as const;
@@ -135,9 +137,23 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
       )
       .subscribe();
 
+    // Keep the notification bell live too.
+    getUnreadCount().then(setUnreadNotifications);
+    const notifChannel = supabase
+      .channel('notif-unread')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications' },
+        () => {
+          getUnreadCount().then(setUnreadNotifications);
+        },
+      )
+      .subscribe();
+
     return () => {
       unsub();
       supabase.removeChannel(channel);
+      supabase.removeChannel(notifChannel);
     };
   }, []);
 

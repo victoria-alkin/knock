@@ -1,5 +1,4 @@
-import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useRouter } from 'expo-router';
 import {
   Image,
   Pressable,
@@ -15,25 +14,13 @@ import { CHANNELS } from '@/constants/channels';
 import { channelIcons, topBarIcons } from '@/constants/icons';
 import { useScrollToTop } from '@/hooks/use-scroll-to-top';
 import { useTabBarScroll } from '@/hooks/use-tab-bar-scroll';
-import { getUnreadCount } from '@/lib/notifications';
+import { useUnreadNotifications } from '@/hooks/use-unread-notifications';
 
 export default function ChannelsScreen() {
   const router = useRouter();
   const scrollRef = useScrollToTop();
   const onScroll = useTabBarScroll();
-  const [unread, setUnread] = useState(0);
-
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      getUnreadCount().then((n) => {
-        if (active) setUnread(n);
-      });
-      return () => {
-        active = false;
-      };
-    }, []),
-  );
+  const unread = useUnreadNotifications();
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>

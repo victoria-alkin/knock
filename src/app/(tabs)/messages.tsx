@@ -20,8 +20,8 @@ import { Icon } from '@/components/icon';
 import { topBarIcons } from '@/constants/icons';
 import { useScrollToTop } from '@/hooks/use-scroll-to-top';
 import { useTabBarScroll } from '@/hooks/use-tab-bar-scroll';
+import { useUnreadNotifications } from '@/hooks/use-unread-notifications';
 import { ConversationSummary, fetchConversations } from '@/lib/dms';
-import { getUnreadCount } from '@/lib/notifications';
 import { relativeTime } from '@/lib/posts';
 import { supabase } from '@/lib/supabase';
 import { setUnreadDmCount } from '@/lib/unread-dms';
@@ -31,18 +31,14 @@ export default function MessagesScreen() {
   const scrollRef = useScrollToTop();
   const onScroll = useTabBarScroll();
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
-  const [unread, setUnread] = useState(0);
+  const unread = useUnreadNotifications();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const [rows, n] = await Promise.all([
-      fetchConversations(),
-      getUnreadCount(),
-    ]);
+    const rows = await fetchConversations();
     setConversations(rows);
-    setUnread(n);
     setUnreadDmCount(rows.reduce((sum, c) => sum + c.unread, 0));
   }, []);
 

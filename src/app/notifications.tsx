@@ -17,6 +17,7 @@ import {
   markAllRead,
 } from '@/lib/notifications';
 import { relativeTime } from '@/lib/posts';
+import { setUnreadNotifications } from '@/lib/unread-notifications';
 
 export default function NotificationsScreen() {
   const router = useRouter();
@@ -42,6 +43,7 @@ export default function NotificationsScreen() {
         }
         // Clear the unread badge once they've opened the screen.
         await markAllRead();
+        setUnreadNotifications(0);
       })();
       return () => {
         active = false;

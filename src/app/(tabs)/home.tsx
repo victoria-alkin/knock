@@ -23,7 +23,7 @@ import { EventSummary, fetchEvents, formatEventTime } from '@/lib/events';
 import { getMyBuilding, MyBuilding } from '@/lib/membership';
 import { useScrollToTop } from '@/hooks/use-scroll-to-top';
 import { useTabBarScroll } from '@/hooks/use-tab-bar-scroll';
-import { getUnreadCount } from '@/lib/notifications';
+import { useUnreadNotifications } from '@/hooks/use-unread-notifications';
 import {
   fetchBuildingPosts,
   Post,
@@ -40,7 +40,7 @@ export default function HomeScreen() {
   const [building, setBuilding] = useState<MyBuilding | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [events, setEvents] = useState<EventSummary[]>([]);
-  const [unread, setUnread] = useState(0);
+  const unread = useUnreadNotifications();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -49,13 +49,11 @@ export default function HomeScreen() {
     const b = (await getMyBuilding()) ?? building;
     setBuilding(b);
     if (b) {
-      const [rows, n, ev] = await Promise.all([
+      const [rows, ev] = await Promise.all([
         fetchBuildingPosts(b.id),
-        getUnreadCount(),
         fetchEvents(b.id),
       ]);
       setPosts(rows);
-      setUnread(n);
       setEvents(ev);
     }
     setRefreshing(false);
@@ -74,19 +72,6 @@ export default function HomeScreen() {
       active = false;
     };
   }, []);
-
-  // Refresh the unread badge whenever the screen regains focus.
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      getUnreadCount().then((n) => {
-        if (active) setUnread(n);
-      });
-      return () => {
-        active = false;
-      };
-    }, []),
-  );
 
   // Refresh the feed whenever the screen regains focus (e.g. after posting).
   useFocusEffect(
