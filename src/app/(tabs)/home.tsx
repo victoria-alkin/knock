@@ -285,14 +285,23 @@ export default function HomeScreen() {
                   <Text style={styles.channelEmoji}>{channel.emoji}</Text>
                 )}
               </View>
-              <Text
-                style={styles.channelName}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.85}
-              >
-                {channel.name}
-              </Text>
+              {channel.name.trim().includes(' ') ? (
+                // Multi-word names (e.g. "Building Issues") wrap on the space.
+                <Text style={styles.channelName} numberOfLines={2}>
+                  {channel.name}
+                </Text>
+              ) : (
+                // Single words (e.g. "Marketplace") stay on one line, shrinking
+                // slightly rather than breaking mid-word.
+                <Text
+                  style={styles.channelName}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.85}
+                >
+                  {channel.name}
+                </Text>
+              )}
             </PressableScale>
           ))}
         </ScrollView>
