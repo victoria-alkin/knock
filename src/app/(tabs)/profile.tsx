@@ -177,13 +177,11 @@ export default function ProfileScreen() {
               url={profile?.avatar_url}
               size={56}
             />
-            <View style={styles.avatarBadge}>
-              {uploadingAvatar ? (
+            {uploadingAvatar ? (
+              <View style={styles.avatarBadge}>
                 <ActivityIndicator color="#FFFFFF" size="small" />
-              ) : (
-                <Feather name="camera" size={13} color="#FFFFFF" />
-              )}
-            </View>
+              </View>
+            ) : null}
           </Pressable>
           <View style={styles.profileText}>
             <Text style={styles.profileName}>{fullName}</Text>
