@@ -104,14 +104,18 @@ export default function MyEventsScreen() {
                         styles.flag,
                         event.relation === 'hosted'
                           ? styles.flagHosted
-                          : styles.flagAttended,
+                          : event.relation === 'maybe'
+                            ? styles.flagMaybe
+                            : styles.flagAttended,
                       ]}
                     >
                       {event.relation === 'hosted'
                         ? 'Hosted'
-                        : past
-                          ? 'Attended'
-                          : 'Attending'}
+                        : event.relation === 'maybe'
+                          ? 'Maybe'
+                          : past
+                            ? 'Attended'
+                            : 'Attending'}
                     </Text>
                     {past ? <Text style={styles.pastBadge}>Past</Text> : null}
                   </View>
@@ -194,6 +198,7 @@ const styles = StyleSheet.create({
   },
   flagHosted: { color: '#6D28D9', backgroundColor: '#F1ECFA' },
   flagAttended: { color: '#1B873F', backgroundColor: '#E4F6EA' },
+  flagMaybe: { color: '#9A6A15', backgroundColor: '#FBF3DA' },
   pastBadge: {
     fontSize: 12,
     fontWeight: '800',

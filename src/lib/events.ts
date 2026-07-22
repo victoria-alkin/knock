@@ -65,12 +65,12 @@ export async function fetchEvents(buildingId: string): Promise<EventSummary[]> {
   return (data as unknown as RawEvent[]).map((row) => toSummary(row, myId));
 }
 
-export type MyEventRelation = 'hosted' | 'attended';
+export type MyEventRelation = 'hosted' | 'attended' | 'maybe';
 export type MyEvent = EventSummary & { relation: MyEventRelation };
 
 /**
- * Events the current user is involved in — both the ones they host and the
- * ones they've RSVP'd "going" to — tagged with which, most recent first.
+ * Events the current user is involved in — hosting, RSVP'd "going", or
+ * RSVP'd "maybe" — tagged with which, most recent first.
  */
 export async function fetchMyEvents(): Promise<MyEvent[]> {
   const {
@@ -86,28 +86,31 @@ export async function fetchMyEvents(): Promise<MyEvent[]> {
       .limit(200),
     supabase
       .from('event_rsvps')
-      .select('event_id')
+      .select('event_id, status')
       .eq('user_id', user.id)
-      .eq('status', 'going'),
+      .in('status', ['going', 'maybe']),
   ]);
 
-  // Hosting takes precedence over attending for the same event.
+  // Hosting takes precedence over RSVP for the same event.
   const byId = new Map<string, MyEvent>();
   for (const row of (hosted.data ?? []) as unknown as RawEvent[]) {
     byId.set(row.id, { ...toSummary(row, user.id), relation: 'hosted' });
   }
 
-  const attendedIds = (rsvps.data ?? [])
-    .map((r) => (r as { event_id: string }).event_id)
-    .filter((id) => !byId.has(id));
+  const statusByEvent = new Map<string, RsvpStatus>();
+  for (const r of (rsvps.data ?? []) as { event_id: string; status: RsvpStatus }[]) {
+    if (!byId.has(r.event_id)) statusByEvent.set(r.event_id, r.status);
+  }
 
-  if (attendedIds.length > 0) {
+  const rsvpIds = [...statusByEvent.keys()];
+  if (rsvpIds.length > 0) {
     const { data } = await supabase
       .from('events')
       .select(EVENT_SELECT)
-      .in('id', attendedIds);
+      .in('id', rsvpIds);
     for (const row of (data ?? []) as unknown as RawEvent[]) {
-      byId.set(row.id, { ...toSummary(row, user.id), relation: 'attended' });
+      const relation = statusByEvent.get(row.id) === 'maybe' ? 'maybe' : 'attended';
+      byId.set(row.id, { ...toSummary(row, user.id), relation });
     }
   }
 

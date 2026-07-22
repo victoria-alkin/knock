@@ -21,10 +21,18 @@ import {
   fetchEvents,
   fetchMyEvents,
   formatEventTime,
+  MyEvent,
+  MyEventRelation,
 } from '@/lib/events';
 import { getMyBuilding } from '@/lib/membership';
 
 type Filter = 'upcoming' | 'week' | 'month' | 'mine';
+
+const RELATION_LABEL: Record<MyEventRelation, string> = {
+  hosted: 'Hosting',
+  attended: 'Going',
+  maybe: 'Maybe',
+};
 
 const FILTERS: { key: Filter; label: string }[] = [
   { key: 'upcoming', label: 'Upcoming' },
@@ -98,6 +106,7 @@ export default function EventsScreen() {
     const weekday = d
       .toLocaleDateString(undefined, { weekday: 'short' })
       .toUpperCase();
+    const relation = (event as Partial<MyEvent>).relation;
 
     return (
       <Pressable
@@ -123,6 +132,20 @@ export default function EventsScreen() {
             <Text style={styles.dateDay}>{d.getDate()}</Text>
             <Text style={styles.dateWeekday}>{weekday}</Text>
           </View>
+          {relation ? (
+            <View
+              style={[
+                styles.relBadge,
+                relation === 'hosted'
+                  ? styles.relHosted
+                  : relation === 'maybe'
+                    ? styles.relMaybe
+                    : styles.relGoing,
+              ]}
+            >
+              <Text style={styles.relBadgeText}>{RELATION_LABEL[relation]}</Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.cardBody}>
@@ -320,6 +343,18 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 3,
   },
+  relBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    borderRadius: 999,
+    paddingVertical: 5,
+    paddingHorizontal: 11,
+  },
+  relBadgeText: { fontSize: 12, fontWeight: '800', color: '#FFFFFF' },
+  relHosted: { backgroundColor: '#6D28D9' },
+  relGoing: { backgroundColor: '#1B873F' },
+  relMaybe: { backgroundColor: '#B4841F' },
   dateMonth: { fontSize: 11, fontWeight: '800', color: '#6D28D9' },
   dateDay: { fontSize: 20, fontWeight: '900', color: '#1F1438', lineHeight: 24 },
   dateWeekday: { fontSize: 10, fontWeight: '700', color: '#8A7BA3' },
