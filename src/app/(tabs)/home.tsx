@@ -285,7 +285,14 @@ export default function HomeScreen() {
                   <Text style={styles.channelEmoji}>{channel.emoji}</Text>
                 )}
               </View>
-              <Text style={styles.channelName}>{channel.name}</Text>
+              <Text
+                style={styles.channelName}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.85}
+              >
+                {channel.name}
+              </Text>
             </PressableScale>
           ))}
         </ScrollView>
@@ -497,7 +504,7 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   channelChip: {
-    width: 68,
+    width: 74,
     alignItems: 'center',
     gap: 8,
   },
