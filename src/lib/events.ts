@@ -114,9 +114,17 @@ export async function fetchMyEvents(): Promise<MyEvent[]> {
     }
   }
 
-  return [...byId.values()].sort(
-    (a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime(),
-  );
+  // Upcoming events soonest-first, then past events most-recent-first.
+  const now = Date.now();
+  const all = [...byId.values()];
+  const ts = (e: MyEvent) => new Date(e.startsAt).getTime();
+  const upcoming = all
+    .filter((e) => ts(e) >= now)
+    .sort((a, b) => ts(a) - ts(b));
+  const past = all
+    .filter((e) => ts(e) < now)
+    .sort((a, b) => ts(b) - ts(a));
+  return [...upcoming, ...past];
 }
 
 export async function fetchEvent(eventId: string): Promise<EventDetail | null> {
