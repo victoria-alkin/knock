@@ -13,6 +13,7 @@ export type EventSummary = {
   capacity: number | null;
   rsvpRequired: boolean;
   goingCount: number;
+  goingPeople: { name: string; avatar: string | null }[];
   myStatus: RsvpStatus | null;
 };
 
@@ -280,6 +281,13 @@ function toSummary(row: RawEvent, myId: string | null): EventSummary {
     capacity: row.capacity,
     rsvpRequired: row.rsvp_required ?? false,
     goingCount: row.event_rsvps.filter((r) => r.status === 'going').length,
+    goingPeople: row.event_rsvps
+      .filter((r) => r.status === 'going')
+      .slice(0, 4)
+      .map((r) => ({
+        name: r.profiles?.display_name ?? 'Neighbor',
+        avatar: r.profiles?.avatar_url ?? null,
+      })),
     myStatus: row.event_rsvps.find((r) => r.user_id === myId)?.status ?? null,
   };
 }
