@@ -18,6 +18,7 @@ import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { tabIcons, tabIconsFilled } from '@/constants/icons';
 import { getUnreadDmCount } from '@/lib/dms';
+import { supabase } from '@/lib/supabase';
 import { setTabBarCompact, tabBarCompact } from '@/lib/tab-bar-compact';
 import {
   getUnreadDmCountValue,
@@ -113,7 +114,31 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
   useEffect(() => {
     const unsub = subscribeUnreadDms((n) => setHasUnreadDms(n > 0));
     getUnreadDmCount().then(setUnreadDmCount);
-    return unsub;
+
+    // Live updates: refresh the count when a new message arrives from someone
+    // else. RLS limits delivered inserts to my own conversations.
+    let myId: string | null = null;
+    supabase.auth.getUser().then(({ data }) => {
+      myId = data.user?.id ?? null;
+    });
+    const channel = supabase
+      .channel('dm-unread')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        (payload) => {
+          const senderId = (payload.new as { sender_id?: string }).sender_id;
+          if (senderId !== myId) {
+            getUnreadDmCount().then(setUnreadDmCount);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      unsub();
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const onRowLayout = (e: LayoutChangeEvent) =>
