@@ -242,7 +242,11 @@ export default function PostDetailScreen() {
             <Text style={styles.emptyText}>This post is no longer available.</Text>
           </View>
         ) : (
-          <ScrollView contentContainerStyle={styles.content}>
+          <ScrollView
+            contentContainerStyle={styles.content}
+            keyboardDismissMode="on-drag"
+            keyboardShouldPersistTaps="handled"
+          >
             <View style={styles.postCard}>
               <View style={styles.postHeader}>
                 <Avatar name={post.authorName} url={post.authorAvatar} size={42} />
