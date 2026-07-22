@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import {
   useFocusEffect,
   useLocalSearchParams,
@@ -75,8 +76,12 @@ export default function ConversationScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
-          <Text style={styles.back}>‹</Text>
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={styles.backButton}
+        >
+          <Feather name="chevron-left" size={26} color="#6D28D9" />
         </Pressable>
         <Text style={styles.headerName}>{otherName ?? 'Conversation'}</Text>
         <View style={styles.headerSpacer} />
@@ -160,9 +165,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E7DFF5',
   },
-  back: { fontSize: 28, color: '#6D28D9', fontWeight: '700', width: 32 },
+  backButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 999,
+    backgroundColor: '#F1ECFA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   headerName: { fontSize: 18, fontWeight: '800', color: '#1F1438', flex: 1 },
-  headerSpacer: { width: 32 },
+  headerSpacer: { width: 34 },
   loader: { marginTop: 40 },
   messages: { padding: 16, gap: 8 },
   emptyText: {
