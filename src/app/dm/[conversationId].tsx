@@ -98,7 +98,11 @@ export default function ConversationScreen() {
         {loading ? (
           <ActivityIndicator color="#6D28D9" style={styles.loader} />
         ) : (
-          <ScrollView contentContainerStyle={styles.messages}>
+          <ScrollView
+            contentContainerStyle={styles.messages}
+            keyboardDismissMode="on-drag"
+            keyboardShouldPersistTaps="handled"
+          >
             {messages.length === 0 ? (
               <Text style={styles.emptyText}>
                 Say hello to {otherName ?? 'your neighbor'}.
