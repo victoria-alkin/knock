@@ -237,6 +237,8 @@ export default function EventsScreen() {
 
       <ScrollView
         contentContainerStyle={styles.content}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
