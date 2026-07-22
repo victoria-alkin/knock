@@ -23,6 +23,7 @@ import { useTabBarScroll } from '@/hooks/use-tab-bar-scroll';
 import { ConversationSummary, fetchConversations } from '@/lib/dms';
 import { getUnreadCount } from '@/lib/notifications';
 import { relativeTime } from '@/lib/posts';
+import { supabase } from '@/lib/supabase';
 import { setUnreadDmCount } from '@/lib/unread-dms';
 
 export default function MessagesScreen() {
@@ -60,6 +61,25 @@ export default function MessagesScreen() {
       })();
       return () => {
         active = false;
+      };
+    }, [load]),
+  );
+
+  // Live-update the list while it's on screen: refetch on any new message.
+  useFocusEffect(
+    useCallback(() => {
+      const channel = supabase
+        .channel('messages-list')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'messages' },
+          () => {
+            load();
+          },
+        )
+        .subscribe();
+      return () => {
+        supabase.removeChannel(channel);
       };
     }, [load]),
   );
