@@ -68,6 +68,15 @@ export default function WelcomeScreen() {
         >
           <Text style={styles.buttonText}>Get Started</Text>
         </Pressable>
+
+        <Pressable
+          style={styles.signInLink}
+          onPress={() => router.push('/sign-in')}
+        >
+          <Text style={styles.signInText}>
+            Already have an account? <Text style={styles.signInBold}>Sign in</Text>
+          </Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -124,4 +133,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '800',
   },
+  signInLink: { marginTop: 20, paddingVertical: 8 },
+  signInText: { fontSize: 15, color: '#67597F' },
+  signInBold: { color: '#6D28D9', fontWeight: '800' },
 });
