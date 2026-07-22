@@ -90,9 +90,6 @@ export async function fetchBuildingPosts(
     query = query.eq('channel', channel);
   }
 
-  // Hide expired posts.
-  query = query.or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
-
   const { data, error } = await query;
   if (error || !data) return [];
 
@@ -301,7 +298,6 @@ export async function createPost(input: {
   allowReplies?: boolean;
   allowDms?: boolean;
   isAnonymous?: boolean;
-  expiresAt?: string | null;
 }): Promise<{ error?: string }> {
   const {
     data: { user },
@@ -318,7 +314,6 @@ export async function createPost(input: {
     allow_replies: input.allowReplies ?? true,
     allow_dms: input.allowDms ?? true,
     is_anonymous: input.isAnonymous ?? false,
-    expires_at: input.expiresAt ?? null,
   });
 
   return error ? { error: error.message } : {};
