@@ -9,6 +9,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -46,6 +47,7 @@ export default function EventsScreen() {
   const [filter, setFilter] = useState<Filter>('upcoming');
   const [myScope, setMyScope] = useState<'upcoming' | 'past'>('upcoming');
   const [events, setEvents] = useState<EventSummary[]>([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -107,6 +109,15 @@ export default function EventsScreen() {
   );
 
   const openCreate = () => router.push('/create-event');
+
+  const query = search.trim().toLowerCase();
+  const visibleEvents = query
+    ? events.filter(
+        (e) =>
+          e.title.toLowerCase().includes(query) ||
+          (e.location ?? '').toLowerCase().includes(query),
+      )
+    : events;
 
   const renderEvent = (event: EventSummary) => {
     const d = new Date(event.startsAt);
@@ -235,16 +246,28 @@ export default function EventsScreen() {
           />
         }
       >
-        <View style={styles.createBar}>
-          <Pressable style={styles.createInput} onPress={openCreate}>
-            <Feather name="calendar" size={16} color="#9B8CAF" />
-            <Text style={styles.createInputText}>Create an event</Text>
-          </Pressable>
-          <Pressable style={styles.createBtn} onPress={openCreate}>
-            <Feather name="plus" size={15} color="#FFFFFF" />
-            <Text style={styles.createBtnText}>Event</Text>
-          </Pressable>
+        <View style={styles.searchBar}>
+          <Feather name="search" size={16} color="#9B8CAF" />
+          <TextInput
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search events"
+            placeholderTextColor="#9B8CAF"
+            style={styles.searchInput}
+            autoCorrect={false}
+            returnKeyType="search"
+          />
+          {search.length > 0 ? (
+            <Pressable onPress={() => setSearch('')} hitSlop={8}>
+              <Feather name="x" size={16} color="#9B8CAF" />
+            </Pressable>
+          ) : null}
         </View>
+
+        <Pressable style={styles.createBtn} onPress={openCreate}>
+          <Feather name="plus" size={16} color="#FFFFFF" />
+          <Text style={styles.createBtnText}>Create an event</Text>
+        </Pressable>
 
         {filter === 'mine' ? (
           <View style={styles.segment}>
@@ -272,19 +295,23 @@ export default function EventsScreen() {
 
         {loading ? (
           <ActivityIndicator color="#6D28D9" style={styles.loader} />
-        ) : events.length === 0 ? (
+        ) : visibleEvents.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>Nothing here</Text>
+            <Text style={styles.emptyTitle}>
+              {query ? 'No matches' : 'Nothing here'}
+            </Text>
             <Text style={styles.emptyText}>
-              {filter === 'mine'
-                ? myScope === 'past'
-                  ? "You don't have any past events yet."
-                  : 'Events you host or RSVP to will show up here.'
-                : 'Host the first one: rooftop drinks, game night, anything.'}
+              {query
+                ? `No events match "${search.trim()}".`
+                : filter === 'mine'
+                  ? myScope === 'past'
+                    ? "You don't have any past events yet."
+                    : 'Events you host or RSVP to will show up here.'
+                  : 'Host the first one: rooftop drinks, game night, anything.'}
             </Text>
           </View>
         ) : (
-          events.map(renderEvent)
+          visibleEvents.map(renderEvent)
         )}
       </ScrollView>
     </SafeAreaView>
@@ -327,9 +354,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#6D28D9',
   },
   content: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32 },
-  createBar: { flexDirection: 'row', gap: 10, marginBottom: 20 },
-  createInput: {
-    flex: 1,
+  searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -337,15 +362,24 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
+    marginBottom: 10,
   },
-  createInputText: { fontSize: 15, color: '#9B8CAF', fontWeight: '600' },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1F1438',
+    fontWeight: '600',
+    padding: 0,
+  },
   createBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'center',
+    gap: 6,
     backgroundColor: '#6D28D9',
     borderRadius: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 13,
+    marginBottom: 20,
   },
   createBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
   segment: {
