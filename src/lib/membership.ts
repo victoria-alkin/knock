@@ -109,6 +109,22 @@ export async function updateProfile(fields: {
   return {};
 }
 
+/** Update just the profile picture (leaves name and contact untouched). */
+export async function updateAvatar(
+  avatarUrl: string | null,
+): Promise<{ error?: string }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ avatar_url: avatarUrl })
+    .eq('id', user.id);
+  return error ? { error: error.message } : {};
+}
+
 /** Clear the current session. */
 export async function signOut(): Promise<void> {
   await supabase.auth.signOut();

@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -18,12 +19,14 @@ import { topBarIcons } from '@/constants/icons';
 import { useScrollToTop } from '@/hooks/use-scroll-to-top';
 import { useTabBarScroll } from '@/hooks/use-tab-bar-scroll';
 import { useUnreadNotifications } from '@/hooks/use-unread-notifications';
+import { pickAndUploadAvatar } from '@/lib/avatar';
 import {
   getMyBuilding,
   getMyProfile,
   MyBuilding,
   MyProfile,
   signOut,
+  updateAvatar,
 } from '@/lib/membership';
 
 type MenuItem = {
@@ -42,6 +45,8 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [photoMenu, setPhotoMenu] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -63,6 +68,30 @@ export default function ProfileScreen() {
   const handleSignOut = async () => {
     await signOut();
     router.replace('/');
+  };
+
+  const handleChangePhoto = async () => {
+    setPhotoMenu(false);
+    setUploadingAvatar(true);
+    setNotice(null);
+    const { url, error: uploadError } = await pickAndUploadAvatar();
+    if (url) {
+      const { error: saveError } = await updateAvatar(url);
+      if (saveError) setNotice(saveError);
+      else setProfile((p) => (p ? { ...p, avatar_url: url } : p));
+    } else if (uploadError) {
+      setNotice(uploadError);
+    }
+    setUploadingAvatar(false);
+  };
+
+  const handleRemovePhoto = async () => {
+    setPhotoMenu(false);
+    setUploadingAvatar(true);
+    const { error: saveError } = await updateAvatar(null);
+    if (saveError) setNotice(saveError);
+    else setProfile((p) => (p ? { ...p, avatar_url: null } : p));
+    setUploadingAvatar(false);
   };
 
   const comingSoon = (label: string) => setNotice(`${label} is coming soon.`);
@@ -139,11 +168,24 @@ export default function ProfileScreen() {
         <Text style={styles.title}>Profile</Text>
 
         <View style={styles.profileCard}>
-          <Avatar
-            name={profile?.display_name ?? '?'}
-            url={profile?.avatar_url}
-            size={56}
-          />
+          <Pressable
+            onPress={() => setPhotoMenu(true)}
+            hitSlop={8}
+            style={styles.avatarWrap}
+          >
+            <Avatar
+              name={profile?.display_name ?? '?'}
+              url={profile?.avatar_url}
+              size={56}
+            />
+            <View style={styles.avatarBadge}>
+              {uploadingAvatar ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <Feather name="camera" size={13} color="#FFFFFF" />
+              )}
+            </View>
+          </Pressable>
           <View style={styles.profileText}>
             <Text style={styles.profileName}>{fullName}</Text>
             <Text style={styles.profileHandle}>@{handle}</Text>
@@ -202,6 +244,39 @@ export default function ProfileScreen() {
           </Pressable>
         )}
       </ScrollView>
+
+      <Modal
+        visible={photoMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPhotoMenu(false)}
+      >
+        <Pressable
+          style={styles.sheetBackdrop}
+          onPress={() => setPhotoMenu(false)}
+        >
+          <Pressable style={styles.sheet}>
+            <Text style={styles.sheetTitle}>Profile Photo</Text>
+            <Pressable style={styles.sheetPrimary} onPress={handleChangePhoto}>
+              <Feather name="camera" size={18} color="#FFFFFF" />
+              <Text style={styles.sheetPrimaryText}>
+                {profile?.avatar_url ? 'Change Photo' : 'Add Photo'}
+              </Text>
+            </Pressable>
+            {profile?.avatar_url ? (
+              <Pressable style={styles.sheetRemove} onPress={handleRemovePhoto}>
+                <Text style={styles.sheetRemoveText}>Remove Photo</Text>
+              </Pressable>
+            ) : null}
+            <Pressable
+              style={styles.sheetCancel}
+              onPress={() => setPhotoMenu(false)}
+            >
+              <Text style={styles.sheetCancelText}>Cancel</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -248,6 +323,20 @@ const styles = StyleSheet.create({
     // Extra purple below the content for the menu card to overlap into.
     paddingBottom: 56,
     marginBottom: 0,
+  },
+  avatarWrap: { position: 'relative' },
+  avatarBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 24,
+    height: 24,
+    borderRadius: 999,
+    backgroundColor: '#4A1F9E',
+    borderWidth: 2,
+    borderColor: '#6D28D9',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   profileText: { flex: 1 },
   profileName: { fontSize: 19, fontWeight: '800', color: '#FFFFFF' },
@@ -333,4 +422,37 @@ const styles = StyleSheet.create({
   logoutConfirmText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
   cancelButton: { paddingVertical: 12, alignItems: 'center' },
   cancelButtonText: { color: '#6D28D9', fontSize: 15, fontWeight: '700' },
+  sheetBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(31, 20, 56, 0.35)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: 34,
+  },
+  sheetTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1F1438',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  sheetPrimary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#6D28D9',
+    borderRadius: 999,
+    paddingVertical: 15,
+  },
+  sheetPrimaryText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  sheetRemove: { paddingVertical: 15, alignItems: 'center', marginTop: 4 },
+  sheetRemoveText: { color: '#E23E57', fontSize: 16, fontWeight: '700' },
+  sheetCancel: { paddingVertical: 13, alignItems: 'center', marginTop: 2 },
+  sheetCancelText: { color: '#6D28D9', fontSize: 15, fontWeight: '700' },
 });
