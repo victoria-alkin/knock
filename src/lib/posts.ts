@@ -37,6 +37,8 @@ export type Reply = {
   authorName: string;
   authorAvatar: string | null;
   parentReplyId: string | null;
+  likeCount: number;
+  likedByMe: boolean;
 };
 
 /** The current user's id, or null. */
@@ -171,14 +173,14 @@ export async function fetchReplies(postId: string): Promise<Reply[]> {
   const { data, error } = await supabase
     .from('replies')
     .select(
-      'id, author_id, body, created_at, parent_reply_id, profiles ( display_name, avatar_url )',
+      'id, author_id, body, created_at, parent_reply_id, profiles ( display_name, avatar_url ), reply_likes ( count )',
     )
     .eq('post_id', postId)
     .order('created_at', { ascending: true });
 
   if (error || !data) return [];
 
-  return (data as unknown as RawReply[]).map((row) => ({
+  const replies = (data as unknown as RawReply[]).map((row) => ({
     id: row.id,
     authorId: row.author_id,
     body: row.body,
@@ -186,7 +188,64 @@ export async function fetchReplies(postId: string): Promise<Reply[]> {
     authorName: row.profiles?.display_name ?? 'Neighbor',
     authorAvatar: row.profiles?.avatar_url ?? null,
     parentReplyId: row.parent_reply_id ?? null,
+    likeCount: row.reply_likes?.[0]?.count ?? 0,
+    likedByMe: false,
   }));
+  await attachMyReplyLikes(replies);
+  return replies;
+}
+
+/** Fill in likedByMe for a set of replies based on the current user's likes. */
+async function attachMyReplyLikes(replies: Reply[]): Promise<void> {
+  if (replies.length === 0) return;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data } = await supabase
+    .from('reply_likes')
+    .select('reply_id')
+    .eq('user_id', user.id)
+    .in(
+      'reply_id',
+      replies.map((r) => r.id),
+    );
+
+  const liked = new Set(
+    (data ?? []).map((r) => (r as { reply_id: string }).reply_id),
+  );
+  for (const reply of replies) {
+    reply.likedByMe = liked.has(reply.id);
+  }
+}
+
+/** Like or unlike a reply. */
+export async function setReplyLike(
+  replyId: string,
+  liked: boolean,
+): Promise<{ error?: string }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: 'You are not signed in.' };
+
+  if (liked) {
+    const { error } = await supabase
+      .from('reply_likes')
+      .upsert(
+        { reply_id: replyId, user_id: user.id },
+        { onConflict: 'reply_id,user_id' },
+      );
+    return error ? { error: error.message } : {};
+  }
+
+  const { error } = await supabase
+    .from('reply_likes')
+    .delete()
+    .eq('reply_id', replyId)
+    .eq('user_id', user.id);
+  return error ? { error: error.message } : {};
 }
 
 /** Pin or unpin a post (RLS restricts this to your own). */
@@ -326,4 +385,5 @@ type RawReply = {
   created_at: string;
   parent_reply_id: string | null;
   profiles: RawProfile | null;
+  reply_likes: { count: number }[] | null;
 };

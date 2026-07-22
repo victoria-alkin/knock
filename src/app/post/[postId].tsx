@@ -33,6 +33,7 @@ import {
   Reply,
   setPostLike,
   setPostPinned,
+  setReplyLike,
 } from '@/lib/posts';
 
 const CHANNEL_BY_KEY = Object.fromEntries(CHANNELS.map((c) => [c.key, c]));
@@ -98,6 +99,30 @@ export default function PostDetailScreen() {
         p
           ? { ...p, likedByMe: !nextLiked, likeCount: p.likeCount - delta }
           : p,
+      );
+    }
+  };
+
+  const handleToggleReplyLike = async (replyId: string) => {
+    const target = replies.find((r) => r.id === replyId);
+    if (!target) return;
+    const nextLiked = !target.likedByMe;
+    const delta = nextLiked ? 1 : -1;
+    setReplies((prev) =>
+      prev.map((r) =>
+        r.id === replyId
+          ? { ...r, likedByMe: nextLiked, likeCount: r.likeCount + delta }
+          : r,
+      ),
+    );
+    const { error: likeError } = await setReplyLike(replyId, nextLiked);
+    if (likeError) {
+      setReplies((prev) =>
+        prev.map((r) =>
+          r.id === replyId
+            ? { ...r, likedByMe: !nextLiked, likeCount: r.likeCount - delta }
+            : r,
+        ),
       );
     }
   };
@@ -201,6 +226,20 @@ export default function PostDetailScreen() {
             </View>
           ) : (
             <View style={styles.replyActions}>
+              <Pressable
+                style={styles.replyLike}
+                onPress={() => handleToggleReplyLike(reply.id)}
+                hitSlop={8}
+              >
+                <Icon
+                  source={reply.likedByMe ? likeIcons.filled : likeIcons.outline}
+                  size={15}
+                  color={reply.likedByMe ? '#E23E57' : '#8A7BA3'}
+                />
+                {reply.likeCount > 0 ? (
+                  <Text style={styles.replyLikeCount}>{reply.likeCount}</Text>
+                ) : null}
+              </Pressable>
               {post?.allowReplies ? (
                 <Pressable
                   onPress={() =>
@@ -479,6 +518,8 @@ const styles = StyleSheet.create({
   },
   replyLink: { fontSize: 13, fontWeight: '700', color: '#6D28D9' },
   replyDelete: { fontSize: 13, fontWeight: '700', color: '#B4243F' },
+  replyLike: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  replyLikeCount: { fontSize: 13, fontWeight: '700', color: '#8A7BA3' },
   replyingBanner: {
     flexDirection: 'row',
     alignItems: 'center',
