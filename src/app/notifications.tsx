@@ -1,7 +1,9 @@
+import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -111,6 +113,20 @@ export default function NotificationsScreen() {
                   <Avatar name={n.actorName} url={n.actorAvatar} size={40} />
                   {!n.read ? <View style={styles.avatarDot} /> : null}
                 </View>
+              ) : n.eventId ? (
+                <View>
+                  {n.eventImage ? (
+                    <Image
+                      source={{ uri: n.eventImage }}
+                      style={styles.eventThumb}
+                    />
+                  ) : (
+                    <View style={[styles.eventThumb, styles.eventThumbFallback]}>
+                      <Feather name="calendar" size={18} color="#6D28D9" />
+                    </View>
+                  )}
+                  {!n.read ? <View style={styles.avatarDot} /> : null}
+                </View>
               ) : !n.read ? (
                 <View style={styles.dot} />
               ) : (
@@ -184,6 +200,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#6D28D9',
   },
   dotSpacer: { width: 9 },
+  eventThumb: { width: 40, height: 40, borderRadius: 12 },
+  eventThumbFallback: {
+    backgroundColor: '#F1ECFA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   avatarDot: {
     position: 'absolute',
     top: -1,

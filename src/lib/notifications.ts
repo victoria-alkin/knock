@@ -14,6 +14,8 @@ export type AppNotification = {
   eventId: string | null;
   /** Start time of the linked event, if any (for event reminders). */
   eventStartsAt: string | null;
+  /** Image of the linked event, if any. */
+  eventImage: string | null;
 };
 
 export async function fetchNotifications(): Promise<AppNotification[]> {
@@ -52,6 +54,7 @@ export async function fetchNotifications(): Promise<AppNotification[]> {
     conversationId: n.conversation_id,
     eventId: n.event_id,
     eventStartsAt: null as string | null,
+    eventImage: null as string | null,
   }));
 
   // Resolve each actor's avatar so notifications can show their photo.
@@ -78,16 +81,20 @@ export async function fetchNotifications(): Promise<AppNotification[]> {
   if (eventIds.length > 0) {
     const { data: events } = await supabase
       .from('events')
-      .select('id, starts_at')
+      .select('id, starts_at, image_url')
       .in('id', eventIds as string[]);
-    const startById = new Map(
+    const eventById = new Map(
       (events ?? []).map((e) => [
         (e as { id: string }).id,
-        (e as { starts_at: string }).starts_at,
+        e as { starts_at: string; image_url: string | null },
       ]),
     );
     for (const n of rows) {
-      if (n.eventId) n.eventStartsAt = startById.get(n.eventId) ?? null;
+      if (n.eventId) {
+        const e = eventById.get(n.eventId);
+        n.eventStartsAt = e?.starts_at ?? null;
+        n.eventImage = e?.image_url ?? null;
+      }
     }
   }
 
