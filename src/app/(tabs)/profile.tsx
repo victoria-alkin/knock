@@ -70,8 +70,15 @@ export default function ProfileScreen() {
     router.replace('/');
   };
 
-  const handleChangePhoto = async () => {
+  // Close the sheet, then launch the picker only once it has fully dismissed.
+  // iOS won't present the native picker while a modal is still on screen, so
+  // launching immediately just hangs.
+  const startChangePhoto = () => {
     setPhotoMenu(false);
+    setTimeout(() => void handleChangePhoto(), 350);
+  };
+
+  const handleChangePhoto = async () => {
     setUploadingAvatar(true);
     setNotice(null);
     const { url, error: uploadError } = await pickAndUploadAvatar();
@@ -257,7 +264,7 @@ export default function ProfileScreen() {
         >
           <Pressable style={styles.sheet}>
             <Text style={styles.sheetTitle}>Profile Photo</Text>
-            <Pressable style={styles.sheetPrimary} onPress={handleChangePhoto}>
+            <Pressable style={styles.sheetPrimary} onPress={startChangePhoto}>
               <Feather name="camera" size={18} color="#FFFFFF" />
               <Text style={styles.sheetPrimaryText}>
                 {profile?.avatar_url ? 'Change Photo' : 'Add Photo'}
