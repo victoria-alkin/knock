@@ -91,7 +91,6 @@ export async function updateProfile(fields: {
   const { error: profileError } = await supabase
     .from('profiles')
     .update({
-      full_name: fields.full_name.trim(),
       display_name: fields.display_name.trim(),
       avatar_url: fields.avatar_url,
       ...(fields.in_directory !== undefined
@@ -101,9 +100,14 @@ export async function updateProfile(fields: {
     .eq('id', user.id);
   if (profileError) return { error: profileError.message };
 
+  // Full name and phone are private to their owner (never shared-readable).
   const { error: contactError } = await supabase
     .from('private_contact')
-    .upsert({ id: user.id, phone: fields.phone.trim() });
+    .upsert({
+      id: user.id,
+      full_name: fields.full_name.trim(),
+      phone: fields.phone.trim(),
+    });
   if (contactError) return { error: contactError.message };
 
   return {};
@@ -140,12 +144,12 @@ export async function getMyProfile(): Promise<MyProfile | null> {
   const [profileRes, contactRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('full_name, display_name, avatar_url, in_directory')
+      .select('display_name, avatar_url, in_directory')
       .eq('id', user.id)
       .maybeSingle(),
     supabase
       .from('private_contact')
-      .select('phone')
+      .select('full_name, phone')
       .eq('id', user.id)
       .maybeSingle(),
   ]);
@@ -153,15 +157,17 @@ export async function getMyProfile(): Promise<MyProfile | null> {
   if (!profileRes.data) return null;
 
   const prof = profileRes.data as {
-    full_name: string | null;
     display_name: string | null;
     avatar_url: string | null;
     in_directory: boolean | null;
   };
-  const contact = contactRes.data as { phone: string | null } | null;
+  const contact = contactRes.data as {
+    full_name: string | null;
+    phone: string | null;
+  } | null;
 
   return {
-    full_name: prof.full_name,
+    full_name: contact?.full_name ?? null,
     display_name: prof.display_name,
     phone: contact?.phone ?? null,
     avatar_url: prof.avatar_url,

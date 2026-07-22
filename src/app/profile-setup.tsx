@@ -99,13 +99,11 @@ export default function ProfileSetupScreen() {
         return;
       }
 
-      // 2. Save the profile (owner-only per RLS). Phone goes in a separate
-      //    owner-only table so other residents can never read it.
+      // 2. Save the profile (owner-only per RLS). Full name and phone go in a
+      //    separate owner-only table so other residents can never read them;
+      //    only display_name and avatar_url are shared-readable.
       const { error: profileError } = await supabase.from('profiles').upsert({
         id: user.id,
-        full_name: [firstName.trim(), lastName.trim()]
-          .filter(Boolean)
-          .join(' '),
         display_name: displayName.trim(),
         avatar_url: avatarUrl,
         in_directory: inDirectory,
@@ -117,7 +115,13 @@ export default function ProfileSetupScreen() {
 
       const { error: contactError } = await supabase
         .from('private_contact')
-        .upsert({ id: user.id, phone: phone.trim() });
+        .upsert({
+          id: user.id,
+          full_name: [firstName.trim(), lastName.trim()]
+            .filter(Boolean)
+            .join(' '),
+          phone: phone.trim(),
+        });
       if (contactError) {
         setError(contactError.message);
         return;
