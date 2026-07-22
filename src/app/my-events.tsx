@@ -19,6 +19,7 @@ export default function MyEventsScreen() {
   const [events, setEvents] = useState<MyEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [scope, setScope] = useState<'upcoming' | 'past'>('upcoming');
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -43,6 +44,10 @@ export default function MyEventsScreen() {
   );
 
   const now = Date.now();
+  const visible = events.filter((event) => {
+    const past = new Date(event.startsAt).getTime() < now;
+    return scope === 'past' ? past : !past;
+  });
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -65,17 +70,38 @@ export default function MyEventsScreen() {
       >
         <Text style={styles.title}>My Events</Text>
 
+        <View style={styles.segment}>
+          {(['upcoming', 'past'] as const).map((s) => (
+            <Pressable
+              key={s}
+              style={[styles.segmentBtn, scope === s && styles.segmentBtnActive]}
+              onPress={() => setScope(s)}
+            >
+              <Text
+                style={[
+                  styles.segmentText,
+                  scope === s && styles.segmentTextActive,
+                ]}
+              >
+                {s === 'upcoming' ? 'Upcoming' : 'Past'}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
         {loading ? (
           <ActivityIndicator color="#6D28D9" style={styles.loader} />
-        ) : events.length === 0 ? (
+        ) : visible.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyTitle}>No events yet</Text>
             <Text style={styles.emptyText}>
-              Events you host or RSVP to will show up here.
+              {scope === 'past'
+                ? "You don't have any past events yet."
+                : 'Events you host or RSVP to will show up here.'}
             </Text>
           </View>
         ) : (
-          events.map((event) => {
+          visible.map((event) => {
             const past = new Date(event.startsAt).getTime() < now;
             return (
               <Pressable
@@ -145,6 +171,22 @@ const styles = StyleSheet.create({
     color: '#1F1438',
     marginBottom: 20,
   },
+  segment: {
+    flexDirection: 'row',
+    backgroundColor: '#F3F1F8',
+    borderRadius: 12,
+    padding: 3,
+    marginBottom: 18,
+  },
+  segmentBtn: {
+    flex: 1,
+    paddingVertical: 9,
+    alignItems: 'center',
+    borderRadius: 9,
+  },
+  segmentBtnActive: { backgroundColor: '#6D28D9' },
+  segmentText: { fontSize: 14, fontWeight: '700', color: '#76698C' },
+  segmentTextActive: { color: '#FFFFFF' },
   loader: { marginTop: 40 },
   emptyCard: {
     backgroundColor: '#FFFFFF',
