@@ -52,9 +52,15 @@ export default function MyEventsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={styles.headerSide}
+        >
           <Text style={styles.back}>‹ Back</Text>
         </Pressable>
+        <Text style={styles.pageTitle}>My Events</Text>
+        <View style={styles.headerSide} />
       </View>
 
       <ScrollView
@@ -68,8 +74,6 @@ export default function MyEventsScreen() {
           />
         }
       >
-        <Text style={styles.title}>My Events</Text>
-
         <View style={styles.segment}>
           {(['upcoming', 'past'] as const).map((s) => (
             <Pressable
@@ -162,15 +166,23 @@ export default function MyEventsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  header: { paddingHorizontal: 20, paddingVertical: 12 },
-  back: { fontSize: 16, color: '#6D28D9', fontWeight: '700' },
-  content: { paddingHorizontal: 20, paddingBottom: 32 },
-  title: {
-    fontSize: 30,
-    fontWeight: '900',
-    color: '#1F1438',
-    marginBottom: 20,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginBottom: 6,
   },
+  headerSide: { width: 60 },
+  back: { fontSize: 16, color: '#6D28D9', fontWeight: '700' },
+  pageTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#1F1438',
+  },
+  content: { paddingHorizontal: 20, paddingBottom: 32 },
   segment: {
     flexDirection: 'row',
     backgroundColor: '#F3F1F8',
