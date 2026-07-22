@@ -71,8 +71,8 @@ export type MyEventRelation = 'hosted' | 'attended' | 'maybe';
 export type MyEvent = EventSummary & { relation: MyEventRelation };
 
 /**
- * Events the current user is involved in — hosting, RSVP'd "going", or
- * RSVP'd "maybe" — tagged with which, most recent first.
+ * Events the current user is involved in: hosting, RSVP'd "going", or
+ * RSVP'd "maybe", tagged with which, most recent first.
  */
 export async function fetchMyEvents(): Promise<MyEvent[]> {
   const {

@@ -131,7 +131,7 @@ export default function VerifyLocationScreen() {
               <Text style={styles.statusText}>
                 You need to be inside {name ?? 'the building'} to verify
                 {distance != null
-                  ? ` — you're about ${formatDistance(distance)} away.`
+                  ? `. You're about ${formatDistance(distance)} away.`
                   : '.'}
               </Text>
             </View>

@@ -84,7 +84,7 @@ export default function ProfileSetupScreen() {
     setError(null);
 
     try {
-      // 1. Make sure we have an identity (anonymous — no verification yet).
+      // 1. Make sure we have an identity (anonymous, no verification yet).
       const { error: authError } = await ensureSignedIn();
       if (authError) {
         setError(authError);
@@ -222,14 +222,14 @@ export default function ProfileSetupScreen() {
           keyboardType="phone-pad"
           inputMode="tel"
         />
-        <Text style={styles.hint}>Private — only you can see this.</Text>
+        <Text style={styles.hint}>Private. Only you can see this.</Text>
 
         <View style={styles.toggleRow}>
           <View style={styles.toggleText}>
             <Text style={styles.toggleTitle}>Neighbor directory</Text>
             <Text style={styles.toggleSub}>
               List me so neighbors can find me. Shows your first name and photo
-              only — never your last name or unit.
+              only, never your last name or unit.
             </Text>
           </View>
           <GlassSwitch value={inDirectory} onValueChange={setInDirectory} />

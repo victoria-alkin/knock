@@ -68,7 +68,7 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
 
   // Slide the active bubble to the focused tab, stretching into a pill on the
   // way and settling back to a circle. On a bar resize (same tab), just
-  // reposition instantly — no slide or stretch.
+  // reposition instantly, no slide or stretch.
   useEffect(() => {
     if (slotWidth === 0 || activeSlot < 0) return;
     const targetX =

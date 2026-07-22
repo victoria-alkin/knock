@@ -49,7 +49,7 @@ export default function InviteScreen() {
     if (!link) return;
     try {
       await Share.share({
-        message: `Join me on Knock — our private community for ${buildingName}: ${link}`,
+        message: `Join me on Knock, our private community for ${buildingName}: ${link}`,
       });
     } catch {
       // user dismissed the share sheet
@@ -67,7 +67,7 @@ export default function InviteScreen() {
       <View style={styles.content}>
         <Text style={styles.title}>Invite your neighbors</Text>
         <Text style={styles.subtitle}>
-          Share this link so neighbors can join {buildingName} — it takes them
+          Share this link so neighbors can join {buildingName}. It takes them
           straight to your building.
         </Text>
 

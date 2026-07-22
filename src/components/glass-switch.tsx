@@ -7,7 +7,7 @@ const H = 32;
 const PAD = 3;
 const THUMB = H - PAD * 2;
 
-/** A purple/white "liquid glass" toggle — a blurred track with a sliding thumb. */
+/** A purple/white "liquid glass" toggle: a blurred track with a sliding thumb. */
 export function GlassSwitch({
   value,
   onValueChange,

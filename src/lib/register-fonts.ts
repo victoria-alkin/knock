@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, TextInput } from 'react-native';
 
-// Apply the app font (Inter — an SF Pro–like open font) to every Text/TextInput
+// Apply the app font (Inter, an SF Pro-like open font) to every Text/TextInput
 // without editing every style. Inter is a variable font, so existing
 // `fontWeight` values still select the right weight. A component's own
 // `fontFamily` (if any) wins because it comes later in the style array.

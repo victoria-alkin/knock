@@ -304,7 +304,7 @@ export default function EventDetailScreen() {
           </Text>
           {comments.length === 0 ? (
             <Text style={styles.noComments}>
-              No comments yet — ask a question or say you&apos;re in.
+              No comments yet. Ask a question or say you&apos;re in.
             </Text>
           ) : (
             topLevelComments.map((comment) => renderComment(comment, 0))

@@ -1,4 +1,4 @@
-// Registry of the app's PNG icons (black glyphs on transparent — tint as needed).
+// Registry of the app's PNG icons (black glyphs on transparent, tint as needed).
 
 export const channelIcons: Record<string, number> = {
   general: require('@/assets/images/elements/icons/Channels/general.png'),

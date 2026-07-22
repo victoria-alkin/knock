@@ -9,9 +9,9 @@ import {
 type Props = {
   children: ReactNode;
   onPress?: () => void;
-  /** Visual style — applied to the scaled inner view. */
+  /** Visual style, applied to the scaled inner view. */
   style?: StyleProp<ViewStyle>;
-  /** Layout style — applied to the outer pressable (e.g. flex: 1). */
+  /** Layout style, applied to the outer pressable (e.g. flex: 1). */
   outerStyle?: StyleProp<ViewStyle>;
   disabled?: boolean;
   scaleTo?: number;
@@ -20,7 +20,7 @@ type Props = {
 };
 
 /**
- * A Pressable that springs down slightly while held — the tactile "liquid
+ * A Pressable that springs down slightly while held. The tactile "liquid
  * glass" press feel. Uses the native driver so it stays smooth.
  */
 export function PressableScale({

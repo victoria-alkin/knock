@@ -115,7 +115,7 @@ export default function MarketplaceScreen() {
           <View style={styles.emptyCard}>
             <Text style={styles.emptyTitle}>Nothing listed yet</Text>
             <Text style={styles.emptyText}>
-              Post the first listing — sell something, give it away, or ask for
+              Post the first listing: sell something, give it away, or ask for
               what you need.
             </Text>
           </View>

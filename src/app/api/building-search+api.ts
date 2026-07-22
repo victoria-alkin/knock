@@ -3,7 +3,7 @@
 
 const AUTOCOMPLETE_URL = 'https://places.googleapis.com/v1/places:autocomplete';
 
-// Google tags named residential buildings inconsistently — many come back as a
+// Google tags named residential buildings inconsistently; many come back as a
 // generic establishment/point_of_interest with no residential type at all (e.g.
 // "Graduate Junction" is point_of_interest/establishment/service). An allow-list
 // of residential types therefore drops real apartment buildings, so instead we
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     headers: {
       'Content-Type': 'application/json',
       'X-Goog-Api-Key': apiKey,
-      // Ask only for what we render — smaller payloads, and it keeps the SKU on
+      // Ask only for what we render, for smaller payloads, and it keeps the SKU on
       // the cheaper Autocomplete tier.
       'X-Goog-FieldMask':
         'suggestions.placePrediction.placeId,suggestions.placePrediction.structuredFormat,suggestions.placePrediction.types',

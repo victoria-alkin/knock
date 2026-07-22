@@ -280,7 +280,7 @@ export default function EventsScreen() {
                 ? myScope === 'past'
                   ? "You don't have any past events yet."
                   : 'Events you host or RSVP to will show up here.'
-                : 'Host the first one — rooftop drinks, game night, anything.'}
+                : 'Host the first one: rooftop drinks, game night, anything.'}
             </Text>
           </View>
         ) : (

@@ -108,7 +108,7 @@ export async function fetchConversations(): Promise<ConversationSummary[]> {
   }
 
   const summaries: ConversationSummary[] = rows
-    // Only show conversations that actually have messages — starting one from
+    // Only show conversations that actually have messages. Starting one from
     // the directory shouldn't create an empty row until someone writes.
     .filter((c) => lastByConv.has(c.id))
     .map((c) => {

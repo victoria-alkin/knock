@@ -8,7 +8,7 @@ let target = 0;
 
 export function setTabBarCompact(compact: boolean) {
   const next = compact ? 1 : 0;
-  if (next === target) return; // ignore repeats — no constant re-animating
+  if (next === target) return; // ignore repeats, no constant re-animating
   target = next;
   Animated.spring(tabBarCompact, {
     toValue: next,

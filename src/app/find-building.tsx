@@ -83,7 +83,7 @@ export default function FindBuildingScreen() {
         sessionToken.current,
       );
 
-      // The session is now spent — start a fresh one for the next search.
+      // The session is now spent, so start a fresh one for the next search.
       sessionToken.current = newSessionToken();
 
       router.push({

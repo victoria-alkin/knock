@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Missing image data.' }, { status: 400 });
   }
 
-  // The path always starts with the verified user's id — the client can't
+  // The path always starts with the verified user's id, so the client can't
   // choose someone else's folder.
   const path = pathFor(bucket, user.id);
 
