@@ -107,18 +107,22 @@ export async function fetchConversations(): Promise<ConversationSummary[]> {
     }
   }
 
-  const summaries: ConversationSummary[] = rows.map((c) => {
-    const last = lastByConv.get(c.id) ?? null;
-    const otherId = otherIdByConv.get(c.id) ?? '';
-    return {
-      id: c.id,
-      otherName: nameById.get(otherId) ?? 'Neighbor',
-      otherAvatar: avatarById.get(otherId) ?? null,
-      lastMessage: last?.body ?? null,
-      lastAt: last?.created_at ?? null,
-      unread: unreadByConv.get(c.id) ?? 0,
-    };
-  });
+  const summaries: ConversationSummary[] = rows
+    // Only show conversations that actually have messages — starting one from
+    // the directory shouldn't create an empty row until someone writes.
+    .filter((c) => lastByConv.has(c.id))
+    .map((c) => {
+      const last = lastByConv.get(c.id) ?? null;
+      const otherId = otherIdByConv.get(c.id) ?? '';
+      return {
+        id: c.id,
+        otherName: nameById.get(otherId) ?? 'Neighbor',
+        otherAvatar: avatarById.get(otherId) ?? null,
+        lastMessage: last?.body ?? null,
+        lastAt: last?.created_at ?? null,
+        unread: unreadByConv.get(c.id) ?? 0,
+      };
+    });
 
   summaries.sort((x, y) => (y.lastAt ?? '').localeCompare(x.lastAt ?? ''));
   return summaries;
