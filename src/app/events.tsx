@@ -45,6 +45,7 @@ export default function EventsScreen() {
   const router = useRouter();
   const [buildingId, setBuildingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('upcoming');
+  const [myScope, setMyScope] = useState<'upcoming' | 'past'>('upcoming');
   const [events, setEvents] = useState<EventSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -61,7 +62,15 @@ export default function EventsScreen() {
   }, []);
 
   const fetchForFilter = useCallback(async (): Promise<EventSummary[]> => {
-    if (filter === 'mine') return fetchMyEvents();
+    if (filter === 'mine') {
+      const mine = await fetchMyEvents();
+      const now = Date.now();
+      return mine.filter((e) =>
+        myScope === 'past'
+          ? new Date(e.startsAt).getTime() < now
+          : new Date(e.startsAt).getTime() >= now,
+      );
+    }
     if (!buildingId) return [];
     const all = await fetchEvents(buildingId);
     if (filter === 'week') {
@@ -74,7 +83,7 @@ export default function EventsScreen() {
       return all.filter((e) => new Date(e.startsAt).getTime() <= end.getTime());
     }
     return all;
-  }, [buildingId, filter]);
+  }, [buildingId, filter, myScope]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -201,7 +210,10 @@ export default function EventsScreen() {
           <Pressable
             key={f.key}
             style={styles.tab}
-            onPress={() => setFilter(f.key)}
+            onPress={() => {
+              setFilter(f.key);
+              setMyScope('upcoming');
+            }}
           >
             <Text
               style={[styles.tabText, filter === f.key && styles.tabTextActive]}
@@ -235,6 +247,30 @@ export default function EventsScreen() {
           </Pressable>
         </View>
 
+        {filter === 'mine' ? (
+          <View style={styles.segment}>
+            {(['upcoming', 'past'] as const).map((scope) => (
+              <Pressable
+                key={scope}
+                style={[
+                  styles.segmentBtn,
+                  myScope === scope && styles.segmentBtnActive,
+                ]}
+                onPress={() => setMyScope(scope)}
+              >
+                <Text
+                  style={[
+                    styles.segmentText,
+                    myScope === scope && styles.segmentTextActive,
+                  ]}
+                >
+                  {scope === 'upcoming' ? 'Upcoming' : 'Past'}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
         {loading ? (
           <ActivityIndicator color="#6D28D9" style={styles.loader} />
         ) : events.length === 0 ? (
@@ -242,7 +278,9 @@ export default function EventsScreen() {
             <Text style={styles.emptyTitle}>Nothing here</Text>
             <Text style={styles.emptyText}>
               {filter === 'mine'
-                ? "Events you host or RSVP to will show up here."
+                ? myScope === 'past'
+                  ? "You don't have any past events yet."
+                  : 'Events you host or RSVP to will show up here.'
                 : 'Host the first one — rooftop drinks, game night, anything.'}
             </Text>
           </View>
@@ -311,6 +349,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   createBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
+  segment: {
+    flexDirection: 'row',
+    backgroundColor: '#F3F1F8',
+    borderRadius: 12,
+    padding: 3,
+    marginBottom: 18,
+  },
+  segmentBtn: {
+    flex: 1,
+    paddingVertical: 9,
+    alignItems: 'center',
+    borderRadius: 9,
+  },
+  segmentBtnActive: { backgroundColor: '#6D28D9' },
+  segmentText: { fontSize: 14, fontWeight: '700', color: '#76698C' },
+  segmentTextActive: { color: '#FFFFFF' },
   loader: { marginTop: 40 },
   emptyCard: {
     backgroundColor: '#FFFFFF',
