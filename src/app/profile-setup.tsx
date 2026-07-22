@@ -6,13 +6,13 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { GlassSwitch } from '@/components/glass-switch';
 import { pickAndUploadAvatar } from '@/lib/avatar';
 import { supabase } from '@/lib/supabase';
 
@@ -232,7 +232,13 @@ export default function ProfileSetupScreen() {
               only, never your last name or unit.
             </Text>
           </View>
-          <GlassSwitch value={inDirectory} onValueChange={setInDirectory} />
+          <Switch
+            value={inDirectory}
+            onValueChange={setInDirectory}
+            trackColor={{ true: '#6D28D9', false: '#D8CEE9' }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor="#D8CEE9"
+          />
         </View>
 
         {error && <Text style={styles.errorText}>{error}</Text>}
