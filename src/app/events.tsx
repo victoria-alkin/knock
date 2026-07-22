@@ -185,12 +185,16 @@ export default function EventsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={styles.headerSide}
+        >
           <Text style={styles.back}>‹ Back</Text>
         </Pressable>
+        <Text style={styles.pageTitle}>Events</Text>
+        <View style={styles.headerSide} />
       </View>
-
-      <Text style={styles.pageTitle}>Events</Text>
 
       <View style={styles.tabs}>
         {FILTERS.map((f) => (
@@ -252,14 +256,21 @@ export default function EventsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  header: { paddingHorizontal: 20, paddingVertical: 12 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginBottom: 6,
+  },
+  headerSide: { width: 60 },
   back: { fontSize: 16, color: '#6D28D9', fontWeight: '700' },
   pageTitle: {
-    fontSize: 30,
-    fontWeight: '900',
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: '800',
     color: '#1F1438',
-    paddingHorizontal: 20,
-    marginBottom: 14,
   },
   tabs: {
     flexDirection: 'row',
