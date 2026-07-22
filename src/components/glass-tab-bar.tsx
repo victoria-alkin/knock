@@ -17,7 +17,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { tabIcons, tabIconsFilled } from '@/constants/icons';
+import { getUnreadDmCount } from '@/lib/dms';
 import { setTabBarCompact, tabBarCompact } from '@/lib/tab-bar-compact';
+import {
+  getUnreadDmCountValue,
+  setUnreadDmCount,
+  subscribeUnreadDms,
+} from '@/lib/unread-dms';
 
 // Slot order across the bar. "create" is the raised center button, not a tab.
 const SLOTS = ['home', 'channels', 'create', 'messages', 'profile'] as const;
@@ -99,6 +105,16 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
   useEffect(() => {
     setTabBarCompact(false);
   }, [state.index]);
+
+  // Red dot on the Messages tab when there are any unread DMs.
+  const [hasUnreadDms, setHasUnreadDms] = useState(
+    getUnreadDmCountValue() > 0,
+  );
+  useEffect(() => {
+    const unsub = subscribeUnreadDms((n) => setHasUnreadDms(n > 0));
+    getUnreadDmCount().then(setUnreadDmCount);
+    return unsub;
+  }, []);
 
   const onRowLayout = (e: LayoutChangeEvent) =>
     setRowWidth(e.nativeEvent.layout.width);
@@ -216,6 +232,9 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
                           color={PURPLE}
                         />
                       </View>
+                      {name === 'messages' && hasUnreadDms ? (
+                        <View style={styles.dmDot} />
+                      ) : null}
                     </View>
                     <Text
                       style={[
@@ -291,6 +310,17 @@ const styles = StyleSheet.create({
     height: 24,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  dmDot: {
+    position: 'absolute',
+    top: -1,
+    right: -2,
+    width: 9,
+    height: 9,
+    borderRadius: 999,
+    backgroundColor: '#E23E57',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
   activeIcon: {
     transform: [{ translateY: -1 }],

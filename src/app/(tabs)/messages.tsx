@@ -23,6 +23,7 @@ import { useTabBarScroll } from '@/hooks/use-tab-bar-scroll';
 import { ConversationSummary, fetchConversations } from '@/lib/dms';
 import { getUnreadCount } from '@/lib/notifications';
 import { relativeTime } from '@/lib/posts';
+import { setUnreadDmCount } from '@/lib/unread-dms';
 
 export default function MessagesScreen() {
   const router = useRouter();
@@ -41,6 +42,7 @@ export default function MessagesScreen() {
     ]);
     setConversations(rows);
     setUnread(n);
+    setUnreadDmCount(rows.reduce((sum, c) => sum + c.unread, 0));
   }, []);
 
   const onRefresh = useCallback(async () => {

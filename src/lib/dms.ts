@@ -142,6 +142,12 @@ export async function fetchMessages(conversationId: string): Promise<Message[]> 
   );
 }
 
+/** Total unread messages across all of the current user's conversations. */
+export async function getUnreadDmCount(): Promise<number> {
+  const summaries = await fetchConversations();
+  return summaries.reduce((sum, c) => sum + c.unread, 0);
+}
+
 /** Mark a conversation as read up to now (clears its unread badge). */
 export async function markConversationRead(
   conversationId: string,
