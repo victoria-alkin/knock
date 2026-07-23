@@ -448,7 +448,6 @@ export default function PostDetailScreen() {
           userId={post.authorId}
           userName={post.isAnonymous ? 'this user' : post.authorName}
           reportLabel="Report post"
-          hideName
           onClose={() => setPostMenu(false)}
           onReport={() => {
             setPostMenu(false);
