@@ -137,7 +137,7 @@ export default function ProfileScreen() {
     {
       icon: 'help-circle',
       label: 'Help & Support',
-      onPress: () => comingSoon('Help & Support'),
+      onPress: () => router.push('/help-support'),
     },
     { icon: 'settings', label: 'Settings', onPress: () => comingSoon('Settings') },
   ];
