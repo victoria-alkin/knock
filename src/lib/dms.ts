@@ -128,6 +128,26 @@ export async function fetchConversations(): Promise<ConversationSummary[]> {
   return summaries;
 }
 
+/** The other participant's user id in a conversation (null if unavailable). */
+export async function getConversationOtherId(
+  conversationId: string,
+): Promise<string | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from('conversations')
+    .select('user_a, user_b')
+    .eq('id', conversationId)
+    .maybeSingle();
+  if (!data) return null;
+
+  const row = data as { user_a: string; user_b: string };
+  return row.user_a === user.id ? row.user_b : row.user_a;
+}
+
 export async function fetchMessages(conversationId: string): Promise<Message[]> {
   const { data, error } = await supabase
     .from('messages')

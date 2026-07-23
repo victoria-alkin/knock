@@ -130,6 +130,11 @@ export default function ProfileScreen() {
       onPress: () => router.push('/neighbor-directory'),
     },
     {
+      icon: 'slash',
+      label: 'Blocked Users',
+      onPress: () => router.push('/blocked-users'),
+    },
+    {
       icon: 'help-circle',
       label: 'Help & Support',
       onPress: () => comingSoon('Help & Support'),

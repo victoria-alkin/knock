@@ -22,8 +22,10 @@ import {
 } from 'react-native-safe-area-context';
 
 import { ReportDialog } from '@/components/report-dialog';
+import { UserActionsSheet } from '@/components/user-actions-sheet';
 import {
   fetchMessages,
+  getConversationOtherId,
   markConversationRead,
   Message,
   sendMessage,
@@ -43,16 +45,20 @@ export default function ConversationScreen() {
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const [reporting, setReporting] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+  const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
 
   const load = useCallback(async () => {
     if (!conversationId) return;
-    const [msgs, uid] = await Promise.all([
+    const [msgs, uid, otherId] = await Promise.all([
       fetchMessages(conversationId),
       getCurrentUserId(),
+      getConversationOtherId(conversationId),
     ]);
     setMessages(msgs);
     setCurrentUserId(uid);
+    setOtherUserId(otherId);
     setLoading(false);
     // Opening the thread clears its unread badge.
     await markConversationRead(conversationId);
@@ -91,11 +97,11 @@ export default function ConversationScreen() {
         </Pressable>
         <Text style={styles.headerName}>{otherName ?? 'Conversation'}</Text>
         <Pressable
-          onPress={() => setReporting(true)}
+          onPress={() => setShowActions(true)}
           hitSlop={12}
           style={styles.headerSpacer}
         >
-          <Feather name="flag" size={18} color="#8A7BA3" />
+          <Feather name="more-horizontal" size={22} color="#8A7BA3" />
         </Pressable>
       </View>
 
@@ -168,6 +174,21 @@ export default function ConversationScreen() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+
+      <UserActionsSheet
+        visible={showActions}
+        userId={otherUserId ?? ''}
+        userName={otherName ?? 'this neighbor'}
+        onClose={() => setShowActions(false)}
+        onReport={() => {
+          setShowActions(false);
+          setReporting(true);
+        }}
+        onBlocked={() => {
+          setShowActions(false);
+          router.back();
+        }}
+      />
 
       <ReportDialog
         visible={reporting}
