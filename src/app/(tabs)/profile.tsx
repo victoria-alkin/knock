@@ -93,8 +93,6 @@ export default function ProfileScreen() {
     setUploadingAvatar(false);
   };
 
-  const comingSoon = (label: string) => setNotice(`${label} is coming soon.`);
-
   if (loading) {
     return (
       <SafeAreaView style={[styles.container, styles.centered]}>
@@ -139,7 +137,11 @@ export default function ProfileScreen() {
       label: 'Help & Support',
       onPress: () => router.push('/help-support'),
     },
-    { icon: 'settings', label: 'Settings', onPress: () => comingSoon('Settings') },
+    {
+      icon: 'settings',
+      label: 'Settings',
+      onPress: () => router.push('/settings'),
+    },
   ];
 
   return (

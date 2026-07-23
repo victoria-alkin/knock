@@ -11,7 +11,7 @@ import { supabase } from './supabase';
 // server during development and the deployed origin otherwise.
 const PRODUCTION_ORIGIN = 'https://knock-psi.vercel.app';
 
-function apiUrl(path: string): string {
+export function apiUrl(path: string): string {
   if (Platform.OS === 'web') return path;
   if (__DEV__) {
     const hostUri = Constants.expoConfig?.hostUri;

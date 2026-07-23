@@ -1,3 +1,4 @@
+import { apiUrl } from './storage';
 import { supabase } from './supabase';
 
 export type MyBuilding = {
@@ -132,6 +133,42 @@ export async function updateAvatar(
 /** Clear the current session. */
 export async function signOut(): Promise<void> {
   await supabase.auth.signOut();
+}
+
+/**
+ * Permanently delete the current user's account and all of their data, then
+ * sign out. Deletion happens server-side (admin) so it can remove the auth
+ * user, which cascades to every table keyed on the profile.
+ */
+export async function deleteAccount(): Promise<{ error?: string }> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return { error: 'You are not signed in.' };
+
+  let res: Response;
+  try {
+    res = await fetch(apiUrl('/api/delete-account'), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+  } catch {
+    return { error: 'Could not reach the server. Please try again.' };
+  }
+
+  if (!res.ok) {
+    let message = 'Could not delete your account. Please try again.';
+    try {
+      const json = (await res.json()) as { error?: string };
+      if (json?.error) message = json.error;
+    } catch {
+      // keep default message
+    }
+    return { error: message };
+  }
+
+  await supabase.auth.signOut();
+  return {};
 }
 
 /** The current user's profile, or null. */
