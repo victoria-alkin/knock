@@ -12,6 +12,7 @@ export function UserActionsSheet({
   userId,
   userName,
   reportLabel = 'Report',
+  hideName = false,
   onClose,
   onReport,
   onBlocked,
@@ -21,6 +22,8 @@ export function UserActionsSheet({
   userName: string;
   /** Label for the report action (e.g. "Report post"). Defaults to "Report". */
   reportLabel?: string;
+  /** Hide the name header on the action menu (e.g. for anonymous posts). */
+  hideName?: boolean;
   onClose: () => void;
   onReport: () => void;
   onBlocked: () => void;
@@ -79,8 +82,11 @@ export function UserActionsSheet({
           </>
         ) : (
           <>
-            <Text style={styles.title}>{userName}</Text>
-            <Pressable style={styles.action} onPress={onReport}>
+            {hideName ? null : <Text style={styles.title}>{userName}</Text>}
+            <Pressable
+              style={[styles.action, hideName && styles.actionFirst]}
+              onPress={onReport}
+            >
               <Text style={styles.actionText}>{reportLabel}</Text>
             </Pressable>
             <Pressable
@@ -122,6 +128,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#F0EBF9',
   },
+  actionFirst: { borderTopWidth: 0 },
   actionText: { fontSize: 16, fontWeight: '700', color: '#2A1F42' },
   blockText: { color: '#B4243F' },
   error: { fontSize: 14, color: '#B4243F', marginBottom: 12 },
