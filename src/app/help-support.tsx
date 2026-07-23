@@ -57,6 +57,11 @@ export default function HelpSupportScreen() {
           Reach out about anything: a bug, a question, a safety concern, or an
           idea to make Knock better. We usually reply within a couple of days.
         </Text>
+
+        <Pressable style={styles.linkRow} onPress={() => router.push('/privacy')}>
+          <Feather name="shield" size={18} color="#6D28D9" />
+          <Text style={styles.linkText}>Privacy Policy</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -114,4 +119,13 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     marginTop: 18,
   },
+  linkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 24,
+    paddingVertical: 8,
+  },
+  linkText: { fontSize: 15, fontWeight: '700', color: '#6D28D9' },
 });
+

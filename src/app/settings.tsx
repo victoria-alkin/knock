@@ -27,7 +27,37 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.sectionLabel}>Account</Text>
+        <Text style={styles.sectionLabel}>Legal</Text>
+        <View style={styles.card}>
+          <Pressable
+            style={[styles.row, styles.rowDivider]}
+            onPress={() => router.push('/privacy')}
+          >
+            <Feather
+              name="shield"
+              size={20}
+              color="#4A3D63"
+              style={styles.rowIcon}
+            />
+            <Text style={styles.rowLabel}>Privacy Policy</Text>
+            <Feather name="chevron-right" size={20} color="#B9A9D4" />
+          </Pressable>
+          <Pressable
+            style={styles.row}
+            onPress={() => router.push('/help-support')}
+          >
+            <Feather
+              name="help-circle"
+              size={20}
+              color="#4A3D63"
+              style={styles.rowIcon}
+            />
+            <Text style={styles.rowLabel}>Help & Support</Text>
+            <Feather name="chevron-right" size={20} color="#B9A9D4" />
+          </Pressable>
+        </View>
+
+        <Text style={[styles.sectionLabel, styles.sectionSpacer]}>Account</Text>
         <View style={styles.card}>
           <Pressable
             style={styles.row}
@@ -87,6 +117,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
   },
+  rowDivider: { borderBottomWidth: 1, borderBottomColor: '#F0EBF9' },
+  sectionSpacer: { marginTop: 26 },
   rowIcon: { width: 32 },
   rowLabel: { flex: 1, fontSize: 16, fontWeight: '600', color: '#2A1F42' },
   danger: { color: '#B4243F', fontWeight: '700' },
