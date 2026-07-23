@@ -20,6 +20,6 @@ export const CHANNELS: Channel[] = [
   { key: 'sports', name: 'Sports', emoji: '⚽', description: 'Find players, teams, and watch parties.', color: '#E4F6EA', accent: '#2E9E5B' },
   { key: 'lost-found', name: 'Lost & Found', emoji: '🔑', description: 'Post found or missing items.', color: '#FBF3DA', accent: '#C99A1E' },
   { key: 'building-issues', name: 'Building Issues', emoji: '🔧', description: 'Report or discuss building issues.', color: '#ECE9F5', accent: '#6D28D9' },
-  { key: 'recommendations', name: 'Recommendations', emoji: '💡', description: 'Ask for local recs and share faves.', color: '#FBF6DA', accent: '#C99A1E' },
-  { key: 'announcements', name: 'Announcements', emoji: '📢', description: 'Official building announcements.', color: '#FDE7EC', accent: '#E23E57' },
+  { key: 'recommendations', name: 'Local Recs', emoji: '💡', description: 'Ask for local recs and share faves.', color: '#FBF6DA', accent: '#C99A1E' },
+  { key: 'announcements', name: 'Bulletin Board', emoji: '📢', description: 'Official building announcements.', color: '#FDE7EC', accent: '#E23E57' },
 ];
