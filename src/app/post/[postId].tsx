@@ -293,18 +293,7 @@ export default function PostDetailScreen() {
           <Text style={styles.back}>‹ Back</Text>
         </Pressable>
         {post && post.authorId !== currentUserId ? (
-          <Pressable
-            onPress={() =>
-              post.isAnonymous
-                ? setReportTarget({
-                    type: 'post',
-                    id: post.id,
-                    label: 'post',
-                  })
-                : setPostMenu(true)
-            }
-            hitSlop={12}
-          >
+          <Pressable onPress={() => setPostMenu(true)} hitSlop={12}>
             <Feather name="more-horizontal" size={22} color="#4A3D63" />
           </Pressable>
         ) : null}
@@ -457,7 +446,7 @@ export default function PostDetailScreen() {
         <UserActionsSheet
           visible={postMenu}
           userId={post.authorId}
-          userName={post.authorName}
+          userName={post.isAnonymous ? 'this user' : post.authorName}
           reportLabel="Report post"
           onClose={() => setPostMenu(false)}
           onReport={() => {
