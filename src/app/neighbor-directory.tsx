@@ -13,8 +13,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
-import { ReportDialog } from '@/components/report-dialog';
-import { UserActionsSheet } from '@/components/user-actions-sheet';
 import { startConversation } from '@/lib/dms';
 import { getNeighborDirectory, Neighbor } from '@/lib/membership';
 import { getCurrentUserId } from '@/lib/posts';
@@ -26,8 +24,6 @@ export default function NeighborDirectoryScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [reportUser, setReportUser] = useState<Neighbor | null>(null);
-  const [actionUser, setActionUser] = useState<Neighbor | null>(null);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -123,13 +119,6 @@ export default function NeighborDirectoryScreen() {
               >
                 <Avatar name={n.name} url={n.avatarUrl} size={44} />
                 <Text style={styles.name}>{n.name}</Text>
-                <Pressable
-                  onPress={() => setActionUser(n)}
-                  hitSlop={10}
-                  style={styles.flagBtn}
-                >
-                  <Feather name="more-horizontal" size={20} color="#B9A9D4" />
-                </Pressable>
                 <Feather name="message-circle" size={20} color="#6D28D9" />
               </Pressable>
             );
@@ -137,28 +126,6 @@ export default function NeighborDirectoryScreen() {
         )}
       </ScrollView>
 
-      <UserActionsSheet
-        visible={actionUser !== null}
-        userId={actionUser?.id ?? ''}
-        userName={actionUser?.name ?? 'this neighbor'}
-        onClose={() => setActionUser(null)}
-        onReport={() => {
-          setReportUser(actionUser);
-          setActionUser(null);
-        }}
-        onBlocked={() => {
-          setActionUser(null);
-          getNeighborDirectory().then(setNeighbors);
-        }}
-      />
-
-      <ReportDialog
-        visible={reportUser !== null}
-        targetType="user"
-        targetId={reportUser?.id ?? ''}
-        targetLabel="neighbor"
-        onClose={() => setReportUser(null)}
-      />
     </SafeAreaView>
   );
 }
@@ -205,7 +172,6 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F0EBF9',
   },
   name: { flex: 1, fontSize: 16, fontWeight: '700', color: '#1F1438' },
-  flagBtn: { padding: 4 },
   youTag: {
     fontSize: 12,
     fontWeight: '800',
