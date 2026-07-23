@@ -43,6 +43,19 @@ export default function SettingsScreen() {
             <Feather name="chevron-right" size={20} color="#B9A9D4" />
           </Pressable>
           <Pressable
+            style={[styles.row, styles.rowDivider]}
+            onPress={() => router.push('/terms')}
+          >
+            <Feather
+              name="file-text"
+              size={20}
+              color="#4A3D63"
+              style={styles.rowIcon}
+            />
+            <Text style={styles.rowLabel}>Terms of Service</Text>
+            <Feather name="chevron-right" size={20} color="#B9A9D4" />
+          </Pressable>
+          <Pressable
             style={styles.row}
             onPress={() => router.push('/help-support')}
           >

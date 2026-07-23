@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -45,6 +46,7 @@ export default function ProfileSetupScreen() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [inDirectory, setInDirectory] = useState(true);
+  const [agreed, setAgreed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,7 +74,8 @@ export default function ProfileSetupScreen() {
   const canSubmit =
     firstName.trim().length > 0 &&
     displayName.trim().length > 0 &&
-    phone.trim().length > 0;
+    phone.trim().length > 0 &&
+    agreed;
 
   const handleFinish = async () => {
     if (!placeId) {
@@ -245,6 +248,27 @@ export default function ProfileSetupScreen() {
           />
         </View>
 
+        <View style={styles.agreeRow}>
+          <Pressable onPress={() => setAgreed((v) => !v)} hitSlop={8}>
+            <View style={[styles.checkbox, agreed && styles.checkboxOn]}>
+              {agreed ? (
+                <Feather name="check" size={14} color="#FFFFFF" />
+              ) : null}
+            </View>
+          </Pressable>
+          <Text style={styles.agreeText}>
+            I agree to Knock&apos;s{' '}
+            <Text style={styles.link} onPress={() => router.push('/terms')}>
+              Terms of Service
+            </Text>{' '}
+            and{' '}
+            <Text style={styles.link} onPress={() => router.push('/privacy')}>
+              Privacy Policy
+            </Text>
+            .
+          </Text>
+        </View>
+
         {error && <Text style={styles.errorText}>{error}</Text>}
 
         <Pressable
@@ -371,6 +395,26 @@ const styles = StyleSheet.create({
   toggleText: { flex: 1 },
   toggleTitle: { fontSize: 15, fontWeight: '800', color: '#1F1438' },
   toggleSub: { fontSize: 13, color: '#76698C', marginTop: 3, lineHeight: 18 },
+  agreeRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginTop: 20,
+    marginBottom: 18,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#C9BCE4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  checkboxOn: { backgroundColor: '#6D28D9', borderColor: '#6D28D9' },
+  agreeText: { flex: 1, fontSize: 14, color: '#4A3D63', lineHeight: 21 },
+  link: { color: '#6D28D9', fontWeight: '800' },
   errorText: {
     fontSize: 15,
     color: '#B4243F',

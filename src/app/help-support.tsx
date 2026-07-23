@@ -62,6 +62,10 @@ export default function HelpSupportScreen() {
           <Feather name="shield" size={18} color="#6D28D9" />
           <Text style={styles.linkText}>Privacy Policy</Text>
         </Pressable>
+        <Pressable style={styles.linkRow} onPress={() => router.push('/terms')}>
+          <Feather name="file-text" size={18} color="#6D28D9" />
+          <Text style={styles.linkText}>Terms of Service</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
