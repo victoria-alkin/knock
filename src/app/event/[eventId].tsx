@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import {
   useFocusEffect,
   useLocalSearchParams,
@@ -21,6 +22,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Avatar } from '@/components/avatar';
 import { Icon } from '@/components/icon';
 import { ReportDialog } from '@/components/report-dialog';
+import { UserActionsSheet } from '@/components/user-actions-sheet';
 import type { ReportTargetType } from '@/lib/reports';
 import { likeIcons, rsvpIcons } from '@/constants/icons';
 import {
@@ -68,6 +70,7 @@ export default function EventDetailScreen() {
     id: string;
     label: string;
   } | null>(null);
+  const [eventMenu, setEventMenu] = useState(false);
 
   const load = useCallback(async () => {
     if (!eventId) return;
@@ -273,6 +276,11 @@ export default function EventDetailScreen() {
         <Pressable onPress={() => router.back()} hitSlop={12}>
           <Text style={styles.back}>‹ Back</Text>
         </Pressable>
+        {event.hostId !== currentUserId ? (
+          <Pressable onPress={() => setEventMenu(true)} hitSlop={12}>
+            <Feather name="more-horizontal" size={22} color="#4A3D63" />
+          </Pressable>
+        ) : null}
       </View>
 
       <KeyboardAvoidingView
@@ -426,6 +434,22 @@ export default function EventDetailScreen() {
         )}
       </KeyboardAvoidingView>
 
+      <UserActionsSheet
+        visible={eventMenu}
+        userId={event.hostId}
+        userName={event.hostName}
+        reportLabel="Report event"
+        onClose={() => setEventMenu(false)}
+        onReport={() => {
+          setEventMenu(false);
+          setReportTarget({ type: 'event', id: event.id, label: 'event' });
+        }}
+        onBlocked={() => {
+          setEventMenu(false);
+          router.back();
+        }}
+      />
+
       <ReportDialog
         visible={reportTarget !== null}
         targetType={reportTarget?.type ?? 'event_comment'}
@@ -441,7 +465,13 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   flex: { flex: 1 },
   centered: { alignItems: 'center', justifyContent: 'center' },
-  header: { paddingHorizontal: 20, paddingVertical: 12 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
   back: { fontSize: 16, color: '#6D28D9', fontWeight: '700' },
   content: { paddingHorizontal: 20, paddingBottom: 32 },
   cover: {

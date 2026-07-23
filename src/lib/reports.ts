@@ -6,7 +6,8 @@ export type ReportTargetType =
   | 'event_comment'
   | 'listing'
   | 'user'
-  | 'dm';
+  | 'dm'
+  | 'event';
 
 export const REPORT_REASONS = [
   'Spam',
