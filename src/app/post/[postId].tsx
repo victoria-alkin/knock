@@ -15,10 +15,13 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Feather } from '@expo/vector-icons';
+
 import { CHANNELS } from '@/constants/channels';
 import { Avatar } from '@/components/avatar';
 import { Icon } from '@/components/icon';
 import { ReportDialog } from '@/components/report-dialog';
+import { UserActionsSheet } from '@/components/user-actions-sheet';
 import type { ReportTargetType } from '@/lib/reports';
 import { UrgencyBadge } from '@/components/urgency-badge';
 import { likeIcons } from '@/constants/icons';
@@ -62,6 +65,7 @@ export default function PostDetailScreen() {
     id: string;
     label: string;
   } | null>(null);
+  const [postMenu, setPostMenu] = useState(false);
 
   const load = useCallback(async () => {
     if (!postId) return;
@@ -288,6 +292,22 @@ export default function PostDetailScreen() {
         <Pressable onPress={() => router.back()} hitSlop={12}>
           <Text style={styles.back}>‹ Back</Text>
         </Pressable>
+        {post && post.authorId !== currentUserId ? (
+          <Pressable
+            onPress={() =>
+              post.isAnonymous
+                ? setReportTarget({
+                    type: 'post',
+                    id: post.id,
+                    label: 'post',
+                  })
+                : setPostMenu(true)
+            }
+            hitSlop={12}
+          >
+            <Feather name="more-horizontal" size={22} color="#4A3D63" />
+          </Pressable>
+        ) : null}
       </View>
 
       <KeyboardAvoidingView
@@ -360,31 +380,16 @@ export default function PostDetailScreen() {
                     </Pressable>
                   </View>
                 )
-              ) : (
-                <View style={styles.nonOwnerRow}>
-                  {post.allowDms && !post.isAnonymous ? (
-                    <Pressable
-                      style={styles.messageButton}
-                      onPress={handleMessageAuthor}
-                    >
-                      <Text style={styles.messageButtonText}>
-                        Message {post.authorName}
-                      </Text>
-                    </Pressable>
-                  ) : null}
-                  <Pressable
-                    onPress={() =>
-                      setReportTarget({
-                        type: 'post',
-                        id: post.id,
-                        label: 'post',
-                      })
-                    }
-                  >
-                    <Text style={styles.reportLink}>Report post</Text>
-                  </Pressable>
-                </View>
-              )}
+              ) : post.allowDms && !post.isAnonymous ? (
+                <Pressable
+                  style={styles.messageButton}
+                  onPress={handleMessageAuthor}
+                >
+                  <Text style={styles.messageButtonText}>
+                    Message {post.authorName}
+                  </Text>
+                </Pressable>
+              ) : null}
             </View>
 
             <Text style={styles.repliesTitle}>
@@ -448,6 +453,24 @@ export default function PostDetailScreen() {
         ) : null}
       </KeyboardAvoidingView>
 
+      {post ? (
+        <UserActionsSheet
+          visible={postMenu}
+          userId={post.authorId}
+          userName={post.authorName}
+          reportLabel="Report post"
+          onClose={() => setPostMenu(false)}
+          onReport={() => {
+            setPostMenu(false);
+            setReportTarget({ type: 'post', id: post.id, label: 'post' });
+          }}
+          onBlocked={() => {
+            setPostMenu(false);
+            router.back();
+          }}
+        />
+      ) : null}
+
       <ReportDialog
         visible={reportTarget !== null}
         targetType={reportTarget?.type ?? 'post'}
@@ -473,6 +496,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 12,
   },
@@ -566,14 +592,6 @@ const styles = StyleSheet.create({
   replyLike: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   replyLikeCount: { fontSize: 13, fontWeight: '700', color: '#8A7BA3' },
   replyReport: { fontSize: 13, fontWeight: '700', color: '#8A7BA3' },
-  nonOwnerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginTop: 14,
-  },
-  reportLink: { fontSize: 14, fontWeight: '700', color: '#8A7BA3' },
   replyingBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -634,6 +652,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingVertical: 9,
     paddingHorizontal: 16,
+    marginTop: 14,
   },
   messageButtonText: {
     color: '#6D28D9',

@@ -11,6 +11,7 @@ export function UserActionsSheet({
   visible,
   userId,
   userName,
+  reportLabel = 'Report',
   onClose,
   onReport,
   onBlocked,
@@ -18,6 +19,8 @@ export function UserActionsSheet({
   visible: boolean;
   userId: string;
   userName: string;
+  /** Label for the report action (e.g. "Report post"). Defaults to "Report". */
+  reportLabel?: string;
   onClose: () => void;
   onReport: () => void;
   onBlocked: () => void;
@@ -78,7 +81,7 @@ export function UserActionsSheet({
           <>
             <Text style={styles.title}>{userName}</Text>
             <Pressable style={styles.action} onPress={onReport}>
-              <Text style={styles.actionText}>Report</Text>
+              <Text style={styles.actionText}>{reportLabel}</Text>
             </Pressable>
             <Pressable
               style={styles.action}
