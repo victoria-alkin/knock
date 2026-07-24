@@ -59,6 +59,7 @@ export default function EventDetailScreen() {
   const [rsvpError, setRsvpError] = useState<string | null>(null);
   const [commentBody, setCommentBody] = useState('');
   const [sending, setSending] = useState(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
   const [confirmingCommentId, setConfirmingCommentId] = useState<string | null>(
     null,
   );
@@ -118,11 +119,20 @@ export default function EventDetailScreen() {
   const handleSendComment = async () => {
     if (!eventId || commentBody.trim().length === 0) return;
     setSending(true);
-    await createEventComment(eventId, commentBody, replyingTo?.id ?? null);
+    const { error } = await createEventComment(
+      eventId,
+      commentBody,
+      replyingTo?.id ?? null,
+    );
+    setSending(false);
+    if (error) {
+      setCommentError(error);
+      return;
+    }
+    setCommentError(null);
     setCommentBody('');
     setReplyingTo(null);
     await load();
-    setSending(false);
   };
 
   const handleDeleteComment = async (commentId: string) => {
@@ -388,6 +398,9 @@ export default function EventDetailScreen() {
 
         {event.allowComments ? (
           <View style={styles.composerArea}>
+            {commentError ? (
+              <Text style={styles.commentError}>{commentError}</Text>
+            ) : null}
             {replyingTo ? (
               <View style={styles.replyingBanner}>
                 <Text style={styles.replyingText}>
@@ -607,6 +620,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E7DFF5',
     backgroundColor: '#FDFCFF',
+  },
+  commentError: {
+    fontSize: 13,
+    color: '#B4243F',
+    paddingHorizontal: 16,
+    paddingTop: 10,
   },
   composer: {
     flexDirection: 'row',

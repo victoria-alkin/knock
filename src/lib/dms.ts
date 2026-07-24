@@ -1,3 +1,4 @@
+import { moderateText, MODERATION_MESSAGE } from './moderation';
 import { supabase } from './supabase';
 
 export type ConversationSummary = {
@@ -199,6 +200,8 @@ export async function sendMessage(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: 'You are not signed in.' };
+
+  if ((await moderateText(body)).flagged) return { error: MODERATION_MESSAGE };
 
   const { error } = await supabase.from('messages').insert({
     conversation_id: conversationId,

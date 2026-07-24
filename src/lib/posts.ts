@@ -1,3 +1,4 @@
+import { moderateText, MODERATION_MESSAGE } from './moderation';
 import { supabase } from './supabase';
 
 export type PostUrgency = 'normal' | 'this_week' | 'asap';
@@ -279,6 +280,8 @@ export async function createReply(
   } = await supabase.auth.getUser();
   if (!user) return { error: 'You are not signed in.' };
 
+  if ((await moderateText(body)).flagged) return { error: MODERATION_MESSAGE };
+
   const { error } = await supabase.from('replies').insert({
     post_id: postId,
     author_id: user.id,
@@ -303,6 +306,10 @@ export async function createPost(input: {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: 'You are not signed in.' };
+
+  if ((await moderateText(input.body)).flagged) {
+    return { error: MODERATION_MESSAGE };
+  }
 
   const { error } = await supabase.from('posts').insert({
     building_id: input.buildingId,

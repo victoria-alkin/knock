@@ -44,6 +44,7 @@ export default function ConversationScreen() {
   const [loading, setLoading] = useState(true);
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const [reporting, setReporting] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [otherUserId, setOtherUserId] = useState<string | null>(null);
@@ -79,10 +80,15 @@ export default function ConversationScreen() {
   const handleSend = async () => {
     if (!conversationId || body.trim().length === 0) return;
     setSending(true);
-    await sendMessage(conversationId, body);
+    const { error } = await sendMessage(conversationId, body);
+    setSending(false);
+    if (error) {
+      setSendError(error);
+      return;
+    }
+    setSendError(null);
     setBody('');
     await load();
-    setSending(false);
   };
 
   return (
@@ -150,6 +156,9 @@ export default function ConversationScreen() {
           </ScrollView>
         )}
 
+        {sendError ? (
+          <Text style={styles.sendError}>{sendError}</Text>
+        ) : null}
         <View
           style={[styles.composer, { paddingBottom: insets.bottom + 8 }]}
         >
@@ -223,6 +232,12 @@ const styles = StyleSheet.create({
   headerName: { fontSize: 18, fontWeight: '800', color: '#1F1438', flex: 1 },
   headerSpacer: { width: 34, alignItems: 'flex-end', justifyContent: 'center' },
   loader: { marginTop: 40 },
+  sendError: {
+    fontSize: 13,
+    color: '#B4243F',
+    paddingHorizontal: 16,
+    paddingBottom: 6,
+  },
   messages: { padding: 16, gap: 8 },
   emptyText: {
     fontSize: 15,

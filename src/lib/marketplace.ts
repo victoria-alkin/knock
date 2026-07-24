@@ -1,3 +1,4 @@
+import { moderateText, MODERATION_MESSAGE } from './moderation';
 import { getCurrentUserId } from './posts';
 import { supabase } from './supabase';
 
@@ -68,6 +69,12 @@ export async function createListing(fields: {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: 'You are not signed in.' };
+
+  if (
+    (await moderateText(`${fields.title} ${fields.description}`)).flagged
+  ) {
+    return { error: MODERATION_MESSAGE };
+  }
 
   const { data, error } = await supabase
     .from('listings')
